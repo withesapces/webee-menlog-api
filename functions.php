@@ -458,7 +458,7 @@ class WooCommerce_API_Integration {
                 /**
                  * Suppression des PT2
                  */
-                if(isForumla($product)) {
+                if(isFormula($product)) {
                     // Dans le cas ou le PT1 est une formule
                 } else {
                     // Ici, PT1 n'est pas une formule
@@ -535,7 +535,7 @@ class WooCommerce_API_Integration {
 
         // Suppression des PT3 qui ne sont plus dans Menlog (et des PT2 associés aux PT3)
         // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
-        if(isForumla($product)) {
+        if(isFormula($product)) {
             // Dans le cas où le produit en cours est une formule
         } else {
             // Dans le cas où le produit en cours est un produit simple
@@ -652,8 +652,13 @@ class WooCommerce_API_Integration {
      * @param array $menlogProducts Tous les produits de Menlog (pour passer à la fonction update_product())
      */
     private function update_product_with_category($product_id, $product, $menlogProducts) {
+        // Récupérer le produit WooCommerce existant à partir de son ID
         $wc_product = wc_get_product($product_id);
+
+        // Obtenir les IDs de catégorie actuels du produit WooCommerce
         $current_category_ids = $wc_product->get_category_ids();
+
+        // Obtenir l'ID de la nouvelle catégorie à partir de son slug
         $new_category_id = get_term_by('slug', $product['idCategory'], 'product_cat')->term_id;
 
         // Ajouter la nouvelle catégorie si elle n'est pas déjà associée au produit
@@ -663,10 +668,10 @@ class WooCommerce_API_Integration {
             $wc_product->save();
             $this->products_updated++;
             $this->product_updates[] = "Product '{$product['sku']}' updated: Added category '{$product['idCategory']}'";
-        } else {
-            // Mettre à jour le produit existant s'il y a d'autres modifications
-            $this->update_product($product_id, $product, $menlogProducts);
         }
+
+        // Mettre à jour le produit existant s'il y a d'autres modifications
+        $this->update_product($product_id, $product, $menlogProducts);
     }
     
     /**
@@ -905,15 +910,12 @@ class WooCommerce_API_Integration {
     public function isFormula($product) {
         // Vérifie si le produit a des sous-produits (PT3)
         if (!empty($product['subProducts'])) {
+            // Il y a des sous-produits (PT3)
+            // Pour chaque PT3, on cherche des PT4
             foreach ($product['subProducts'] as $isFormula_subProduct) {
-                // Vérifie si un PT3 a des sous-produits de type PT4
                 if (!empty($isFormula_subProduct['subProducts'])) {
-                    foreach ($isFormula_subProduct['subProducts'] as $pt4) {
-                        // Si le PT4 a des sous-produits PT3, c'est une formule
-                        if (!empty($pt4['subProducts'])) {
-                            return true;
-                        }
-                    }
+                    // On a un PT4, donc c'est une formule
+                    return true;
                 }
             }
         }
