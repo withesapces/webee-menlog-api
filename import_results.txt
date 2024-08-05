@@ -1,0 +1,14 @@
+Catégories : 0 créées, 0 mises à jour, 13 skipped.
+Produits type 1 : 
+         0 créés,
+         0 mis à jour, 
+         416 skipped, 
+         0 supprimés,
+         0 produits type 1 on un ou plusieurs PT3
+Produits type 3 : 
+         0 créés,
+         0 mis à jour, 
+         20 skipped, 
+         0 supprimés
+
+Détails des messages :
