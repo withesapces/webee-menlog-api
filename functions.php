@@ -406,7 +406,7 @@ class WooCommerce_API_Integration {
     private function process_sub_products( $product_id, $sub_products_sku, $all_products, $product = null ) {
         global $wpdb;
 
-        // Récupérer les questions existantes pour ce produit
+        // Récupérer les questions existantes pour ce produit dans la BDD
         $existing_questions = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d", $product_id), ARRAY_A);
         
         // Pour chaque sous-produit du productType 1
@@ -462,7 +462,7 @@ class WooCommerce_API_Integration {
                     // Dans le cas ou le PT1 est une formule
                 } else {
                     // Ici, PT1 n'est pas une formule
-                    
+
                     // Récupérer les options existantes pour cette question dans la BDD
                     $existing_options = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id), ARRAY_A);
                     $existing_option_skus = array_column($existing_options, 'sku');
@@ -495,8 +495,7 @@ class WooCommerce_API_Integration {
                     $sub_product = $this->get_product_by_sku($all_products, $subQuestionSku);
         
                     if ($sub_product['productType'] == 2) {
-                        // On va ajouter / modifier / supprimer un productType 2 pour le productType 3
-                        // TODO : S'il n'existe plus, on le supprime
+                        // On va ajouter / modifier un productType 2 pour le productType 3
 
                         // Vérifier si l'option existe déjà
                         $existing_option = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s", $question_id, $sub_product['sku']), ARRAY_A);
@@ -534,11 +533,43 @@ class WooCommerce_API_Integration {
             }
         }
 
-        // Supprimer les questions qui ne sont plus dans Menlog
-        foreach ($existing_questions as $existing_question) {
-            if (!in_array($existing_question['sku'], $sub_products_sku)) {
-                $this->delete_question($existing_question['id']);
-                $this->products_PT3_deleted++;
+        // Suppression des PT3 qui ne sont plus dans Menlog (et des PT2 associés aux PT3)
+        // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
+        if(isForumla($product)) {
+            // Dans le cas où le produit en cours est une formule
+        } else {
+            // Dans le cas où le produit en cours est un produit simple
+
+            // Pour chaque questions (PT3) de la BDD pour le produit en cours (PT1)
+            foreach ($existing_questions as $existing_question) {
+                // Vérifie si le SKU de la question PT3 actuelle n'est pas présent dans la liste des SKUs des sous-produits de Menlog
+                // Cette liste ($sub_products_sku) contient les SKUs des questions PT3 associées au produit principal.
+                // Exemple : $sub_products_sku = ['SKU123', 'SKU456', 'SKU789'];
+                if (!in_array($existing_question['sku'], $sub_products_sku)) {
+
+                    // Si le SKU de la question n'est pas dans la liste, elle doit être supprimée, car elle n'est plus associée au produit principal PT1
+                    // Pour cela, on commence par récupérer toutes les options PT2 associées à cette question PT3 puisque un PT2 est relié au PT3
+                    $existing_options = $wpdb->get_results($wpdb->prepare(
+                        "SELECT id FROM {$wpdb->prefix}custom_options WHERE question_id = %d", 
+                        $existing_question['id']
+                    ), ARRAY_A);
+
+                    // Parcourt chaque option PT2 trouvée pour cette question PT3
+                    foreach ($existing_options as $option) {
+                        
+                        // Supprime l'option PT2 de la base de données en utilisant son ID
+                        // Exemple : Suppression de l'option avec ID 101 si elle est associée à la question actuelle
+                        $this->delete_option($option['id']);
+                    }
+                    
+                    // Supprime la question PT3 de la base de données, car elle n'est plus valide pour le produit principal PT1
+                    // Exemple : Suppression de la question avec ID 200 qui a le SKU 'SKU101'
+                    $this->delete_question($existing_question['id']);
+                    
+                    // Incrémente le compteur de questions PT3 supprimées pour suivi ou rapport
+                    // Ceci peut être utilisé pour des statistiques ou des logs pour savoir combien de questions ont été supprimées
+                    $this->products_PT3_deleted++;
+                }
             }
         }
     }
