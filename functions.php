@@ -1019,6 +1019,8 @@ function activate_woocommerce_api_integration() {
 register_activation_hook(__FILE__, 'activate_woocommerce_api_integration');
 
 
+add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
+
 function display_custom_questions_and_options() {
     global $post, $wpdb;
 
@@ -1066,7 +1068,7 @@ function display_custom_questions_and_options() {
 
                     // Générer un bouton radio pour chaque option
                     echo '<label>';
-                    echo "<input type='checkbox' name='option_{$question_id}[]' value='{$option_sku}' class='option-checkbox' data-price='{$option_price}' {$checked}> {$option_name} (+{$option_price} €)";
+                    echo "<input type='checkbox' name='option_{$question_id}[{$option_sku}]' value='{$option_name}' class='option-checkbox' data-price='{$option_price}' {$checked} data-question='{$question_text}'> {$option_name} (+{$option_price} €)";
                     echo '</label><br>';
                 }
                 echo '</div>';
@@ -1074,6 +1076,8 @@ function display_custom_questions_and_options() {
             echo '</div>';
         }
         echo '</div>';
+        // Champ caché pour transmettre le prix total
+        echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
     }
 
     // Ajout de JavaScript pour gérer la logique des minimum, maximum et mise à jour des prix
@@ -1093,6 +1097,9 @@ function display_custom_questions_and_options() {
                 });
                 currentPrice = basePrice + additionalPrice;
                 $('.woocommerce-Price-amount').text(currentPrice.toFixed(2) + ' €');
+
+                // Mettre à jour le champ caché avec le nouveau prix total
+                $('#custom_total_price').val(currentPrice.toFixed(2));
             }
 
             // Fonction pour valider si les sélections respectent les conditions de minimum
@@ -1175,7 +1182,56 @@ function display_custom_questions_and_options() {
     </script>
     <?php
 }
-add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
+
+// Ajuster le prix du produit et ajouter les options comme méta-données au panier
+add_filter('woocommerce_add_cart_item_data', 'add_custom_options_to_cart', 10, 3);
+function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id) {
+    if (isset($_POST['custom_total_price'])) {
+        // Ajouter le prix personnalisé au panier
+        $cart_item_data['custom_price'] = (float) sanitize_text_field($_POST['custom_total_price']);
+    }
+
+    // Ajouter les options sélectionnées comme méta-données
+    foreach ($_POST as $key => $value) {
+        if (strpos($key, 'option_') === 0) {
+            foreach ($value as $option_name) {
+                $cart_item_data['custom_options'][] = sanitize_text_field($option_name);
+            }
+        }
+    }
+
+    return $cart_item_data;
+}
+
+// Modifier le prix affiché dans le panier
+add_action('woocommerce_before_calculate_totals', 'update_cart_price');
+function update_cart_price($cart) {
+    if (is_admin() && !defined('DOING_AJAX')) {
+        return;
+    }
+
+    // Mettre à jour le prix de chaque article dans le panier
+    foreach ($cart->get_cart() as $cart_item) {
+        if (isset($cart_item['custom_price'])) {
+            $cart_item['data']->set_price($cart_item['custom_price']);
+        }
+    }
+}
+
+// Afficher les options sélectionnées dans le panier
+add_filter('woocommerce_get_item_data', 'display_custom_options_in_cart', 10, 2);
+function display_custom_options_in_cart($item_data, $cart_item) {
+    if (isset($cart_item['custom_options'])) {
+        $item_data[] = [
+            'key'   => 'Options',
+            'value' => implode(', ', $cart_item['custom_options'])
+        ];
+    }
+    return $item_data;
+}
+
+
+
 
 
 
