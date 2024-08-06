@@ -44,6 +44,11 @@ class WooCommerce_API_Integration {
     private $products_PT3_skipped = 0;
     private $products_PT3_deleted = 0;
 
+    private $products_PT2_created = 0;
+    private $products_PT2_updated = 0;
+    private $products_PT2_skipped = 0;
+    private $products_PT2_deleted = 0;
+
     // Tableaux pour stocker les détails des mises à jour
     private $category_updates = [];
     private $product_updates = [];
@@ -362,7 +367,7 @@ class WooCommerce_API_Integration {
                         }
                     } else {
                         // Gérer le cas où le produit n'a pas pu être créé
-                        $this->message_erreur .= 'Erreur: Le produit n\'a pas pu être créé.';
+                        $this->message_erreur .= 'Erreur: Le produit dont le SKU doit être' . $product['sku'] .' n\'a pas pu être créé dans la fonction import_products().';
                     }
                 } else {
                     // Vérifier si la catégorie est différente et mettre à jour le produit existant si nécessaire
@@ -452,15 +457,24 @@ class WooCommerce_API_Integration {
                     ) {
                         // Met à jour la question existante avec les nouvelles données fournies.
                         // Ici, $question contient toute la question de Menlog
-                        $this->update_question($question_id, $question);
-                        $this->products_PT3_updated++;
+                        if (!$this->update_question($question_id, $question)) {
+                            // Enregistre un message d'erreur si la mise à jour échoue
+                            $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$question['sku']}' n'a pas pu être mise à jour pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                        } else {
+                            $this->products_PT3_updated++;
+                        }
                     } else {
                         $this->products_PT3_skipped++;
                     }
                 } else {
                     // Ajouter une nouvelle question
                     $question_id = $this->insert_question($product_id, $question);
-                    $this->products_PT3_created++;
+                    if (!$question_id) {
+                        // Enregistre un message d'erreur si l'insertion échoue
+                        $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$question['sku']}' n'a pas pu être ajoutée pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                    } else {
+                        $this->products_PT3_created++;
+                    }
                 }
 
                 /**
@@ -478,6 +492,7 @@ class WooCommerce_API_Integration {
                     // Collecter les SKUs des nouvelles options dans Menlog
                     $new_option_skus = [];
 
+                    // Parcours des SKUs des PT3 de Menlog (donc des PT2)
                     foreach ($question['subProducts'] as $subProductSku) {
                         // Récupérer le sous-produit complet à partir de son SKU
                         $subProduct = $this->get_product_by_sku($all_products, $subProductSku);
@@ -488,10 +503,18 @@ class WooCommerce_API_Integration {
 
                     // Supprimer les options qui ne sont plus présentes dans Menlog
                     foreach ($existing_option_skus as $existing_option_sku) {
+                        // Si le PT2 BDD n'est pas présent dans la liste des PT2 Menlog pour le PT3 en cours...
                         if (!in_array($existing_option_sku, $new_option_skus)) {
+                            // On va chercher l'option dans la BDD
                             $option_to_delete = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s", $question_id, $existing_option_sku), ARRAY_A);
+                            // Si on trouve l'option dans la BDD, on tente de la supprimer
                             if ($option_to_delete) {
-                                $this->delete_option($option_to_delete['id']);
+                                if (!$this->delete_option($option_to_delete['id'])) {
+                                    // Enregistre un message d'erreur si la suppression échoue
+                                    $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$existing_option_sku}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$question['sku']}' pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                                } else {
+                                    $this->products_PT2_deleted++;
+                                }
                             }
                         }
                     }
@@ -523,11 +546,24 @@ class WooCommerce_API_Integration {
                                 $existing_option['id_category'] !== $sub_product['idCategory']
                             ) {
                                 // Mettre à jour l'option existante
-                                $this->update_option($existing_option['id'], $sub_product);
+                                if (!$this->update_option($existing_option['id'], $sub_product)) {
+                                    // Enregistre un message d'erreur si la mise à jour échoue
+                                    $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$sub_product['sku']}' n'a pas pu être mise à jour pour la question PT3 avec SKU '{$question['sku']}' pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                                } else {
+                                    $this->products_PT2_updated++;
+                                }
+                            } else {
+                                // Le PT2 existe dans la BDD, mais pas besoin de le mettre à jour car c'est le même que dans Menlog
+                                $this->products_PT2_skipped++;
                             }
                         } else {
                             // Ajouter une nouvelle option
-                            $this->insert_option($question_id, $sub_product);
+                            if (!$this->insert_option($question_id, $sub_product)) {
+                                // Enregistre un message d'erreur si l'insertion échoue
+                                $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$sub_product['sku']}' n'a pas pu être ajoutée pour la question PT3 avec SKU '{$question['sku']}' pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                            } else {
+                                $this->products_PT2_created++;
+                            }
                         }
                     } 
                     // elseif ($sub_product['productType'] == 4) {
@@ -544,6 +580,10 @@ class WooCommerce_API_Integration {
                     //     }
                     // }
                 }
+            } else {
+                // S'il n'y a pas de productType3, normallement process_sub_products n'est pas lancée
+                // Donc si on tombe ici, il y a un problème
+                $this->message_erreur .= "Erreur : Le sous-produit PT3 avec SKU '{$subProductSku}' n'a pas été trouvé pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
             }
         }
 
@@ -569,21 +609,23 @@ class WooCommerce_API_Integration {
                         $existing_question['id']
                     ), ARRAY_A);
 
-                    // Parcourt chaque option PT2 trouvée pour cette question PT3
                     foreach ($existing_options as $option) {
-                        
                         // Supprime l'option PT2 de la base de données en utilisant son ID
                         // Exemple : Suppression de l'option avec ID 101 si elle est associée à la question actuelle
-                        $this->delete_option($option['id']);
+                        if (!$this->delete_option($option['id'])) {
+                            // Enregistre un message d'erreur si la suppression échoue
+                            $this->message_erreur .= "Erreur : L'option PT2 associée à la question PT3 avec SKU '{$existing_question['sku']}' n'a pas pu être supprimée pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                        }
                     }
-                    
+
                     // Supprime la question PT3 de la base de données, car elle n'est plus valide pour le produit principal PT1
                     // Exemple : Suppression de la question avec ID 200 qui a le SKU 'SKU101'
-                    $this->delete_question($existing_question['id']);
-                    
-                    // Incrémente le compteur de questions PT3 supprimées pour suivi ou rapport
-                    // Ceci peut être utilisé pour des statistiques ou des logs pour savoir combien de questions ont été supprimées
-                    $this->products_PT3_deleted++;
+                    if (!$this->delete_question($existing_question['id'])) {
+                        // Enregistre un message d'erreur si la suppression échoue
+                        $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$existing_question['SKU']}' n'a pas pu être supprimée pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                    } else {
+                        $this->products_PT3_deleted++;
+                    }
                 }
             }
         }
@@ -618,7 +660,8 @@ class WooCommerce_API_Integration {
      */
     private function update_question($question_id, $question) {
         global $wpdb;
-        $wpdb->update("{$wpdb->prefix}custom_questions", [
+        // Effectue la mise à jour et retourne le nombre de lignes affectées
+        $updated = $wpdb->update("{$wpdb->prefix}custom_questions", [
             'question_text' => $question['name'],
             'price' => $question['price'],
             'id_category' => $question['idCategory'],
@@ -626,7 +669,11 @@ class WooCommerce_API_Integration {
             'min' => $question['min'],
             'max' => $question['max']
         ], ['id' => $question_id]);
+    
+        // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
+        return $updated !== false && $updated > 0;
     }
+    
 
     /**
      * Supprime un productType 3 de la BDD.
@@ -635,8 +682,12 @@ class WooCommerce_API_Integration {
      */
     private function delete_question($question_id) {
         global $wpdb;
-        $wpdb->delete("{$wpdb->prefix}custom_questions", ['id' => $question_id]);
+        // Effectue la suppression et retourne le nombre de lignes affectées
+        $deleted = $wpdb->delete("{$wpdb->prefix}custom_questions", ['id' => $question_id]);
+        // Si $deleted est égal à false ou 0, cela signifie que la suppression a échoué
+        return $deleted !== false && $deleted > 0;
     }
+    
 
     private function get_products() {
         $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
@@ -814,7 +865,8 @@ class WooCommerce_API_Integration {
      */
     private function insert_option($question_id, $option) {
         global $wpdb;
-        $wpdb->insert("{$wpdb->prefix}custom_options", [
+        // Effectue l'insertion de l'option dans la base de données
+        $inserted = $wpdb->insert("{$wpdb->prefix}custom_options", [
             'question_id' => $question_id,
             'sku' => $option['sku'],
             'option_name' => $option['name'],
@@ -822,8 +874,11 @@ class WooCommerce_API_Integration {
             'id_category' => $option['idCategory'],
             'description' => $option['description']
         ]);
+    
+        // Retourne true si l'insertion a affecté au moins une ligne, false sinon
+        return $inserted !== false && $wpdb->insert_id > 0;
     }
-
+    
     /**
      * Met à jour un productType 2 dans la BDD
      * @param mixed $question_id
@@ -832,15 +887,20 @@ class WooCommerce_API_Integration {
      */
     private function update_option($question_id, $option) {
         global $wpdb;
-        $wpdb->update("{$wpdb->prefix}custom_options", [
+        // Effectue la mise à jour de l'option dans la base de données
+        $updated = $wpdb->update("{$wpdb->prefix}custom_options", [
             'question_id' => $question_id,
             'sku' => $option['sku'],
             'option_name' => $option['name'],
             'price' => $option['price'],
             'id_category' => $option['idCategory'],
             'description' => $option['description']
-        ]);
+        ], ['id' => $option['id']]);
+    
+        // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
+        return $updated !== false && $updated > 0;
     }
+    
 
     /**
      * Supprime un productType 2 de la BDD
@@ -850,10 +910,11 @@ class WooCommerce_API_Integration {
     private function delete_option($option_id) {
         global $wpdb;
         // Supprimer l'option de la table custom_options en utilisant l'ID
-        $wpdb->delete("{$wpdb->prefix}custom_options", [
-            'id' => $option_id
-        ]);
-    }
+        $deleted = $wpdb->delete("{$wpdb->prefix}custom_options", ['id' => $option_id]);
+    
+        // Retourne true si la suppression a affecté au moins une ligne, false sinon
+        return $deleted !== false && $deleted > 0;
+    }    
 
     
     private function insert_formula_product($question_id, $formula_product) {
@@ -894,16 +955,16 @@ class WooCommerce_API_Integration {
         $file_path = plugin_dir_path(__FILE__) . 'import_results.txt';
         $content = "Catégories : {$this->categories_created} créées, {$this->categories_updated} mises à jour, {$this->categories_skipped} skipped.\n";
         if (!empty($this->category_updates)) {
-            $content .= "Détails des mises à jour des catégories:\n" . implode("\n", $this->category_updates) . "\n";
+            $content .= "Détails des mises à jour des catégories:\n" . implode("\n", $this->category_updates) . "\n\n";
         }
         $content .= "Produits type 1 : 
          {$this->products_created} créés,
          {$this->products_updated} mis à jour, 
          {$this->products_skipped} skipped, 
          {$this->products_deleted} supprimés,
-         {$this->products_with_PT3} produits type 1 on un ou plusieurs PT3\n";
+         {$this->products_with_PT3} produits type 1 on un ou plusieurs PT3\n\n";
         if (!empty($this->product_updates)) {
-            $content .= "Détails des mises à jour des produits:\n" . implode("\n", $this->product_updates) . "\n\n";
+            $content .= "Détails des mises à jour des produits PT1:\n" . implode("\n", $this->product_updates) . "\n\n";
         }
 
         $content .= "Produits type 3 : 
@@ -911,6 +972,12 @@ class WooCommerce_API_Integration {
          {$this->products_PT3_updated} mis à jour, 
          {$this->products_PT3_skipped} skipped, 
          {$this->products_PT3_deleted} supprimés\n\n";
+
+        $content .= "Produits type 2 : 
+         {$this->products_PT2_created} créés,
+         {$this->products_PT2_updated} mis à jour, 
+         {$this->products_PT2_skipped} skipped, 
+         {$this->products_PT2_deleted} supprimés\n\n";
 
         $content .= "Détails des messages :\n";
         $content .= $this->message_erreur;
@@ -951,4 +1018,169 @@ function activate_woocommerce_api_integration() {
 }
 register_activation_hook(__FILE__, 'activate_woocommerce_api_integration');
 
+
+function display_custom_questions_and_options() {
+    global $post, $wpdb;
+
+    // Obtenir l'ID du produit actuel
+    $product_id = $post->ID;
+
+    // Obtenir le produit WooCommerce actuel pour récupérer le prix
+    $product = wc_get_product($product_id);
+    $base_price = $product->get_price();
+
+    // Récupérer les questions PT3 associées à ce produit
+    $questions = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+        $product_id
+    ), ARRAY_A);
+
+    // Si des questions existent, les afficher
+    if (!empty($questions)) {
+        echo '<div class="custom-questions">';
+        foreach ($questions as $question) {
+            $question_id = esc_attr($question['id']);
+            $question_text = esc_html($question['question_text']);
+            $min = intval($question['min']);
+            $max = intval($question['max']);
+
+            echo "<div class='question' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
+            echo "<p><strong>{$question_text}</strong></p>";
+            
+            // Récupérer les options PT2 pour chaque question
+            $options = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d",
+                $question['id']
+            ), ARRAY_A);
+
+            // Si des options existent, les afficher
+            if (!empty($options)) {
+                echo '<div class="options">';
+                foreach ($options as $index => $option) {
+                    $option_name = esc_html($option['option_name']);
+                    $option_price = esc_html($option['price']);
+                    $option_sku = esc_attr($option['sku']);
+
+                    // Ajouter un attribut pour sélectionner par défaut si l'index est inférieur au minimum
+                    $checked = $index < $min ? 'checked' : '';
+
+                    // Générer un bouton radio pour chaque option
+                    echo '<label>';
+                    echo "<input type='checkbox' name='option_{$question_id}[]' value='{$option_sku}' class='option-checkbox' data-price='{$option_price}' {$checked}> {$option_name} (+{$option_price} €)";
+                    echo '</label><br>';
+                }
+                echo '</div>';
+            }
+            echo '</div>';
+        }
+        echo '</div>';
+    }
+
+    // Ajout de JavaScript pour gérer la logique des minimum, maximum et mise à jour des prix
+    ?>
+    <script>
+        jQuery(document).ready(function($) {
+            const basePrice = parseFloat('<?php echo $base_price; ?>');
+            let currentPrice = basePrice;
+
+            // Fonction pour mettre à jour le prix total affiché
+            function updatePrice() {
+                let additionalPrice = 0;
+                $('.custom-questions .question').each(function() {
+                    $(this).find('.option-checkbox:checked').each(function() {
+                        additionalPrice += parseFloat($(this).data('price'));
+                    });
+                });
+                currentPrice = basePrice + additionalPrice;
+                $('.woocommerce-Price-amount').text(currentPrice.toFixed(2) + ' €');
+            }
+
+            // Fonction pour valider si les sélections respectent les conditions de minimum
+            function validateSelections() {
+                let valid = true;
+                $('.custom-questions .question').each(function() {
+                    const questionDiv = $(this);
+                    const minOptions = parseInt(questionDiv.data('min'));
+                    const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
+
+                    if (selectedOptions < minOptions) {
+                        valid = false;
+                    }
+                });
+                return valid;
+            }
+
+            // Fonction pour afficher/masquer et activer/désactiver le bouton d'ajout au panier
+            function toggleAddToCartButton() {
+                const isValid = validateSelections();
+                const addToCartButton = $('button.single_add_to_cart_button');
+
+                if (isValid) {
+                    addToCartButton.prop('disabled', false).show(); // Activer et afficher le bouton
+                } else {
+                    addToCartButton.prop('disabled', true).hide();  // Désactiver et masquer le bouton
+                }
+            }
+
+            // Initialiser les questions et gérer les interactions
+            $('.custom-questions .question').each(function() {
+                const questionDiv = $(this);
+                const minOptions = parseInt(questionDiv.data('min'));
+                const maxOptions = parseInt(questionDiv.data('max'));
+
+                // Sélectionner par défaut le nombre minimum d'options
+                questionDiv.find('.option-checkbox').slice(0, minOptions).prop('checked', true);
+
+                // Vérifier le nombre d'options sélectionnées après la sélection par défaut
+                const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
+
+                // Activer/désactiver les cases à cocher en fonction du nombre d'options sélectionnées
+                if (selectedOptions >= maxOptions) {
+                    questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', true);
+                } else {
+                    questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', false);
+                }
+
+                questionDiv.find('.option-checkbox').change(function() {
+                    const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
+
+                    // Activer/désactiver les cases à cocher en fonction du nombre d'options sélectionnées
+                    if (selectedOptions >= maxOptions) {
+                        questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', true);
+                    } else {
+                        questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', false);
+                    }
+
+                    // Mettre à jour le prix total en fonction des options sélectionnées
+                    updatePrice();
+
+                    // Mettre à jour l'affichage et l'état du bouton d'ajout au panier
+                    toggleAddToCartButton();
+                });
+            });
+
+            // Validation avant l'ajout au panier
+            $('form.cart').on('submit', function(e) {
+                if (!validateSelections()) {
+                    e.preventDefault(); // Empêche la soumission du formulaire si la validation échoue
+                    alert('Veuillez vérifier que vous avez sélectionné les options requises pour chaque question.');
+                }
+            });
+
+            // Initialiser le prix et l'état du bouton d'ajout au panier lors du chargement de la page
+            updatePrice();
+            toggleAddToCartButton();
+        });
+
+    </script>
+    <?php
+}
+add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
+
+
+
+
+
 ?>
+
+

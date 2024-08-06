@@ -1,20 +1,21 @@
 Catégories : 0 créées, 0 mises à jour, 13 skipped.
 Produits type 1 : 
-         412 créés,
-         4 mis à jour, 
-         4 skipped, 
+         0 créés,
+         0 mis à jour, 
+         416 skipped, 
          0 supprimés,
-         16 produits type 1 on un ou plusieurs PT3
-Détails des mises à jour des produits:
-Product 'CTgUb7wgi5leJNftu86z*0' updated: Added category 'F6*FZ7cwi5*c5eRNPrsOE*'
-Product 'wBoRb7wgi5leJNftu86z*0' updated: Added category 'yjfgT7cwi5*c5eRNPrsOE*'
-Product 'w8qRb7wgi5leJNftu86z*0' updated: Added category 'yjfgT7cwi5*c5eRNPrsOE*'
-Product '2buQb7wgi5leJNftu86z*0' updated: Added category 'yjfgT7cwi5*c5eRNPrsOE*'
+         0 produits type 1 on un ou plusieurs PT3
 
 Produits type 3 : 
-         20 créés,
+         0 créés,
          0 mis à jour, 
-         0 skipped, 
+         20 skipped, 
+         0 supprimés
+
+Produits type 2 : 
+         0 créés,
+         0 mis à jour, 
+         20 skipped, 
          0 supprimés
 
 Détails des messages :
