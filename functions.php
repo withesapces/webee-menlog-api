@@ -466,7 +466,7 @@ class WooCommerce_API_Integration {
                 /**
                  * Suppression des PT2
                  */
-                if($this->isFormula($product)) {
+                if ($this->isFormula($product)) {
                     // Dans le cas ou le PT1 est une formule
                 } else {
                     // Ici, PT1 n'est pas une formule
@@ -474,12 +474,18 @@ class WooCommerce_API_Integration {
                     // Récupérer les options existantes pour cette question dans la BDD
                     $existing_options = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id), ARRAY_A);
                     $existing_option_skus = array_column($existing_options, 'sku');
-    
+
                     // Collecter les SKUs des nouvelles options dans Menlog
-                    $new_option_skus = array_column(array_filter($question['subProducts'], function($subProduct) {
-                        return $subProduct['productType'] == 2;
-                    }), 'sku');
-    
+                    $new_option_skus = [];
+
+                    foreach ($question['subProducts'] as $subProductSku) {
+                        // Récupérer le sous-produit complet à partir de son SKU
+                        $subProduct = $this->get_product_by_sku($all_products, $subProductSku);
+                        if ($subProduct && $subProduct['productType'] == 2) {
+                            $new_option_skus[] = $subProduct['sku'];
+                        }
+                    }
+
                     // Supprimer les options qui ne sont plus présentes dans Menlog
                     foreach ($existing_option_skus as $existing_option_sku) {
                         if (!in_array($existing_option_sku, $new_option_skus)) {
