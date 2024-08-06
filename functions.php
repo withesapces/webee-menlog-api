@@ -413,7 +413,7 @@ class WooCommerce_API_Integration {
         // Donc pour chaque productType 3 du productType 1
         foreach ( $sub_products_sku as $subProductSku ) {
 
-            // Si trouvé, récupère tout le productType 3 (la question)
+            // Si trouvé, récupère tout le productType 3 (la question) Menlog
             // La variable contient alors tout le contenu de productType3
             $question = $this->get_product_by_sku( $all_products, $subProductSku );
 
@@ -423,6 +423,7 @@ class WooCommerce_API_Integration {
             if ( !empty($question) ) {
 
                 // Vérifier si la question existe déjà
+                // Donc on compare la PT3 de la BDD avec la PT3 Menlog
                 if (!empty($existing_questions)) {
                     $existing_question = array_filter($existing_questions, function($q) use ($question) {
                         return $q['sku'] === $question['sku'];
@@ -430,11 +431,17 @@ class WooCommerce_API_Integration {
                 }
 
                 // Si la question (PT3) existe déjà, on met à jour ou on passe
-                // Sinon, on ajoute la question
+                // Sinon, nous ajoutons la question comme nouvelle entrée.
                 if (!empty($existing_question)) {
-                    // Vérifier si les données ont changé avant de mettre à jour
+                    // Vérifie si la question existante n'est pas vide. Cela signifie que la question est déjà présente dans la base de données.
+
+                    // Récupère le premier élément de l'array $existing_question pour obtenir les données actuelles de la question.
                     $existing_question_data = array_values($existing_question)[0];
+
+                    // Récupère l'ID de la question existante pour l'utiliser lors de la mise à jour.
                     $question_id = $existing_question_data['id'];
+
+                    // Vérifie si l'une des données importantes de la question a changé en comparant les valeurs actuelles et les nouvelles.
                     if (
                         $existing_question_data['question_text'] !== $question['name'] ||
                         $existing_question_data['price'] != $question['price'] ||  // Comparaison non stricte pour les valeurs numériques
@@ -443,7 +450,8 @@ class WooCommerce_API_Integration {
                         $existing_question_data['min'] != $question['min'] ||  // Comparaison non stricte pour les valeurs numériques
                         $existing_question_data['max'] != $question['max']  // Comparaison non stricte pour les valeurs numériques
                     ) {
-                        // Mettre à jour la question existante
+                        // Met à jour la question existante avec les nouvelles données fournies.
+                        // Ici, $question contient toute la question de Menlog
                         $this->update_question($question_id, $question);
                         $this->products_PT3_updated++;
                     } else {
@@ -458,7 +466,7 @@ class WooCommerce_API_Integration {
                 /**
                  * Suppression des PT2
                  */
-                if(isFormula($product)) {
+                if($this->isFormula($product)) {
                     // Dans le cas ou le PT1 est une formule
                 } else {
                     // Ici, PT1 n'est pas une formule
@@ -487,8 +495,8 @@ class WooCommerce_API_Integration {
                 /**
                  * Ajout et modification de PT2 dans la partie produit simple
                  */
-                // Pour chaque sous-produit du productType 3
-                // Donc pour chaque productType 2 ou 4 du productType 3
+                // Pour chaque sous-produit du productType 3 de menlog
+                // Donc pour chaque productType 2 ou 4 du productType 3 de menlog
                 foreach ($question['subProducts'] as $subQuestionSku) {
     
                     // Si trouvé, récupère tout le productType 2 ou 4 (l'option ou le produit de la formule)
@@ -535,7 +543,7 @@ class WooCommerce_API_Integration {
 
         // Suppression des PT3 qui ne sont plus dans Menlog (et des PT2 associés aux PT3)
         // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
-        if(isFormula($product)) {
+        if($this->isFormula($product)) {
             // Dans le cas où le produit en cours est une formule
         } else {
             // Dans le cas où le produit en cours est un produit simple
@@ -543,12 +551,13 @@ class WooCommerce_API_Integration {
             // Pour chaque questions (PT3) de la BDD pour le produit en cours (PT1)
             foreach ($existing_questions as $existing_question) {
                 // Vérifie si le SKU de la question PT3 actuelle n'est pas présent dans la liste des SKUs des sous-produits de Menlog
-                // Cette liste ($sub_products_sku) contient les SKUs des questions PT3 associées au produit principal.
+
+                // La liste $sub_products_sku contient les SKUs des questions PT3 associées au produit principal.
                 // Exemple : $sub_products_sku = ['SKU123', 'SKU456', 'SKU789'];
                 if (!in_array($existing_question['sku'], $sub_products_sku)) {
 
                     // Si le SKU de la question n'est pas dans la liste, elle doit être supprimée, car elle n'est plus associée au produit principal PT1
-                    // Pour cela, on commence par récupérer toutes les options PT2 associées à cette question PT3 puisque un PT2 est relié au PT3
+                    // Pour cela, on commence par récupérer toutes les options PT2 de le BDD associées à cette question PT3 puisque un PT2 est relié au PT3
                     $existing_options = $wpdb->get_results($wpdb->prepare(
                         "SELECT id FROM {$wpdb->prefix}custom_options WHERE question_id = %d", 
                         $existing_question['id']
@@ -686,46 +695,61 @@ class WooCommerce_API_Integration {
      * @param array $menlogProducts Tous les produits de Menlog
      */
     private function update_product($product_id, $product_data, $menlogProducts) {
+        // Crée une instance de produit WooCommerce simple pour l'ID donné
         $wc_product = new WC_Product_Simple($product_id);
 
+        // Récupère le nom actuel du produit WooCommerce
         $current_name = $wc_product->get_name();
+        // Récupère le prix actuel du produit WooCommerce
         $current_price = $wc_product->get_regular_price();
+        // Récupère la description actuelle du produit WooCommerce
         $current_description = $wc_product->get_description();
+        // Récupère les IDs des catégories actuelles du produit WooCommerce
         $current_category_ids = $wc_product->get_category_ids();
 
+        // Récupère l'ID de la catégorie correspondant au slug de catégorie fourni dans les données du produit
         $category_id = get_term_by('slug', $product_data['idCategory'], 'product_cat')->term_id;
 
+        // Vérifie si le nom du produit a changé
         $is_name_different = $current_name !== $product_data['name'];
+        // Vérifie si le prix du produit a changé (comparaison non stricte)
         $is_price_different = $current_price != $product_data['price'];
+        // Vérifie si la description du produit a changé
         $is_description_different = $current_description !== $product_data['description'];
+        // Vérifie si la catégorie du produit a changé ou si une nouvelle catégorie doit être ajoutée
         $is_category_different = !in_array($category_id, $current_category_ids);
 
+        // Initialise un tableau pour garder trace des mises à jour effectuées
         $updates = [];
+        // Met à jour le nom du produit si nécessaire et enregistre le changement
         if ($is_name_different) {
             $updates[] = "Name: '{$current_name}' to '{$product_data['name']}'";
             $wc_product->set_name($product_data['name']);
         }
+        // Met à jour le prix du produit si nécessaire et enregistre le changement
         if ($is_price_different) {
             $updates[] = "Price: '{$current_price}' to '{$product_data['price']}'";
             $wc_product->set_regular_price($product_data['price']);
         }
+        // Met à jour la description du produit si nécessaire et enregistre le changement
         if ($is_description_different) {
             $updates[] = "Description: '{$current_description}' to '{$product_data['description']}'";
             $wc_product->set_description($product_data['description']);
         }
+        // Ajoute une nouvelle catégorie au produit si nécessaire et enregistre le changement
         if ($is_category_different) {
             $current_category_ids[] = $category_id;
             $updates[] = "Category added: '{$product_data['idCategory']}'";
             $wc_product->set_category_ids($current_category_ids);
         }
 
-        // Mettre à jour les productType 3 associés
+        // Vérifie et met à jour les sous-produits associés (productType 3) si le PT1 a des PT3 associés
+        // TODO : Faire également la mise à jour d'une formule (4, 3, 2)
         if (!empty($product_data['subProducts'])) {
+            // Traite les sous-produits associés au produit principal PT1 en cours
             $this->process_sub_products($product_id, $product_data['subProducts'], $menlogProducts);
         }
 
-        // Mise à jour du productType 1 + du productType 3 associé
-        // TODO : faire aussi la maj pour le productType 2 ET 4, 3, 2
         if (!empty($updates)) {
             $this->products_updated++;
             $this->product_updates[] = "Product '{$product_data['sku']}' updated: " . implode('; ', $updates);
@@ -741,7 +765,6 @@ class WooCommerce_API_Integration {
      * @param array $menlog_skus_product_type_1 Liste des SKU des produits de type 1 présents sur Menlog.
      */
     private function set_missing_products_to_draft($menlog_skus_product_type_1) {
-        // TODO : Que faire des productType 2, 3 et 4 au moment de la mise en brouillon ?
         // Récupérer tous les produits WooCommerce
         $args = array(
             'post_type' => 'product',
@@ -757,6 +780,7 @@ class WooCommerce_API_Integration {
 
         $query = new WP_Query($args);
 
+        // Parcours de tous les produits
         while ($query->have_posts()) {
             $query->the_post();
             $product_id = get_the_ID();
@@ -768,26 +792,12 @@ class WooCommerce_API_Integration {
                 $product->set_status('draft');
                 $product->save();
 
-                // Supprimer les productType 3 associés, s'il y a 
-                $this->delete_related_questions($product_id);
-                $this->products_PT3_deleted++;
-
                 $this->products_deleted++;
             }
         }
 
         // Réinitialiser la requête globale de WordPress
         wp_reset_postdata();
-    }
-
-    /**
-     * Supprime les productType 3 (questions) associés à un produit principal (productType 1).
-     * 
-     * @param int $product_id L'ID du produit principal de type 1.
-     */
-    private function delete_related_questions($product_id) {
-        global $wpdb;
-        $wpdb->delete("{$wpdb->prefix}custom_questions", ['product_id' => $product_id]);
     }
 
     /**
