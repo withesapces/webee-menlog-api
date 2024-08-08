@@ -54,6 +54,16 @@ class WooCommerce_API_Integration {
     private $products_PT4_skipped = 0;
     private $products_PT4_deleted = 0;
 
+    private $products_PT3_PT4_created = 0;
+    private $products_PT3_PT4_updated = 0;
+    private $products_PT3_PT4_skipped = 0;
+    private $products_PT3_PT4_deleted = 0;
+
+    private $products_PT2_PT3_PT4_created = 0;
+    private $products_PT2_PT3_PT4_updated = 0;
+    private $products_PT2_PT3_PT4_kipped = 0;
+    private $products_PT2_PT3_PT4_deleted = 0;
+
     // Tableaux pour stocker les détails des mises à jour
     private $category_updates = [];
     private $product_updates = [];
@@ -799,10 +809,10 @@ class WooCommerce_API_Integration {
                                        // Enregistre un message d'erreur si la mise à jour échoue
                                         $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$pt3_menlog['sku']}' n'a pas pu être mise à jour pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
                                     } else {
-                                        $this->products_PT3_updated++;
+                                        $this->products_PT3_PT4_updated++;
                                     }
                                 } else {
-                                    $this->products_PT3_skipped++;
+                                    $this->products_PT3_PT4_skipped;
                                 }
                             } else {
                                 // Si le PT3 n'existe pas, on doit l'ajouter
@@ -812,7 +822,7 @@ class WooCommerce_API_Integration {
                                     $error_message = $wpdb->last_error;
                                     $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$nested_question['sku']}' n'a pas pu être ajoutée (id {$formula_product_id}) pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products(). Raison : {$error_message}\n";
                                 } else {
-                                    $this->products_PT3_created++;
+                                    $this->products_PT3_PT4_created++;
                                 }
                             }
 
@@ -838,17 +848,17 @@ class WooCommerce_API_Integration {
                                         if (!$this->update_option($existing_nested_option['id'], $nested_option)) {
                                             $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$nested_option['sku']}' n'a pas pu être mise à jour pour la question PT3 avec SKU '{$nested_question['sku']}' pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products().\n";
                                         } else {
-                                            $this->products_PT2_updated++;
+                                            $this->products_PT2_PT3_PT4_updated++;
                                         }
                                     } else {
-                                        $this->products_PT2_skipped++;
+                                        $this->products_PT2_PT3_PT4_skipped++;
                                     }
                                 } else {
                                     // Ajouter une nouvelle option PT2
                                     if (!$this->insert_option($nested_question_id, $nested_option)) {
                                         $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$nested_option['sku']}' n'a pas pu être ajoutée pour la question PT3 avec SKU '{$nested_question['sku']}' pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products().\n";
                                     } else {
-                                        $this->products_PT2_created++;
+                                        $this->products_PT2_PT3_PT4_created++;
                                     }
                                 }
                             }
@@ -866,6 +876,7 @@ class WooCommerce_API_Integration {
         // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
         if($this->isFormula($product)) {
             // Dans le cas où le produit en cours est une formule
+            // TODO : Dans le cas où le produit en cours est une formule, supprimer le PT3 puis tous les sous-prpduits (PT4, PT3, PT2)
         } else {
             // Dans le cas où le produit en cours est un produit simple
 
@@ -1267,6 +1278,25 @@ class WooCommerce_API_Integration {
          {$this->products_PT2_updated} mis à jour, 
          {$this->products_PT2_skipped} skipped, 
          {$this->products_PT2_deleted} supprimés\n\n";
+
+        $content .= "Produits type 4 : 
+         {$this->products_PT4_created} créés,
+         {$this->products_PT4_updated} mis à jour, 
+         {$this->products_PT4_skipped} skipped, 
+         {$this->products_PT4_deleted} supprimés\n\n";
+
+        $content .= "Produits type 3 du 4 : 
+         {$this->products_PT3_PT4_created} créés,
+         {$this->products_PT3_PT4_updated} mis à jour, 
+         {$this->products_PT3_PT4_skipped} skipped, 
+         {$this->products_PT3_PT4_deleted} supprimés\n\n";
+
+        $content .= "Produits type 2 du 3 du 4 : 
+         {$this->products_PT2_PT3_PT4_created} créés,
+         {$this->products_PT2_PT3_PT4_updated} mis à jour, 
+         {$this->products_PT2_PT3_PT4_skipped} skipped, 
+         {$this->products_PT2_PT3_PT4_deleted} supprimés\n\n";
+
 
         $content .= "Détails des messages :\n";
         $content .= $this->message_erreur;
