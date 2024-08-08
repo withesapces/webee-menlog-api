@@ -49,6 +49,11 @@ class WooCommerce_API_Integration {
     private $products_PT2_skipped = 0;
     private $products_PT2_deleted = 0;
 
+    private $products_PT4_created = 0;
+    private $products_PT4_updated = 0;
+    private $products_PT4_skipped = 0;
+    private $products_PT4_deleted = 0;
+
     // Tableaux pour stocker les détails des mises à jour
     private $category_updates = [];
     private $product_updates = [];
@@ -804,7 +809,8 @@ class WooCommerce_API_Integration {
                                 // Ajouter une nouvelle question PT3 pour le PT4
                                 $nested_question_id = $this->insert_question($formula_product_id, $nested_question);
                                 if (!$nested_question_id) {
-                                    $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$nested_question['sku']}' n'a pas pu être ajoutée pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products().\n";
+                                    $error_message = $wpdb->last_error;
+                                    $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$nested_question['sku']}' n'a pas pu être ajoutée (id {$formula_product_id}) pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products(). Raison : {$error_message}\n";
                                 } else {
                                     $this->products_PT3_created++;
                                 }
@@ -1314,6 +1320,11 @@ function display_custom_questions_and_options() {
     $product = wc_get_product($product_id);
     $base_price = $product->get_price();
 
+    // Vérifier si le produit n'est pas une formule
+    if (strpos($product->get_name(), 'Formule') !== false) {
+        return;
+    }
+
     // Récupérer les questions PT3 associées à ce produit
     $questions = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
@@ -1513,6 +1524,110 @@ function display_custom_options_in_cart($item_data, $cart_item) {
     return $item_data;
 }
 
+add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options_for_formula', 15);
+function display_custom_questions_and_options_for_formula() {
+    global $post, $wpdb;
+
+    // Obtenir l'ID du produit actuel
+    $product_id = $post->ID;
+
+    // Obtenir le produit WooCommerce actuel pour récupérer le prix
+    $product = wc_get_product($product_id);
+    $base_price = $product->get_price();
+
+    // Vérifier si le produit est une formule
+    if (strpos($product->get_name(), 'Formule') === false) {
+        return;
+    }
+
+    // Récupérer les questions PT3 associées à ce produit
+    $questions = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+        $product_id
+    ), ARRAY_A);
+
+    // Si des questions existent, les afficher
+    if (!empty($questions)) {
+        echo '<div class="custom-questions">';
+        foreach ($questions as $question) {
+            $question_id = esc_attr($question['id']);
+            $question_text = esc_html($question['question_text']);
+            $min = intval($question['min']);
+            $max = intval($question['max']);
+
+            echo "<div class='question' style='border: 1px solid red; margin-bottom: 24px;' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
+            echo "<p><strong>{$question_text}</strong></p>";
+            
+            // Récupérer les produits de formule PT4 associés à cette question PT3
+            $formula_products = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d",
+                $question_id
+            ), ARRAY_A);
+
+            // Si des produits de formule existent, les afficher
+            if (!empty($formula_products)) {
+                foreach ($formula_products as $formula_product) {
+                    $formula_product_id = esc_attr($formula_product['id']);
+                    $formula_product_name = esc_html($formula_product['product_name']);
+                    $formula_product_price = esc_html($formula_product['price']);
+
+                    echo "<div class='formula-product' style='margin: 12px; border: 1px solid blue;' data-formula-id='{$formula_product_id}'>";
+                    echo "<p><strong>{$formula_product_name}</strong> (+{$formula_product_price} €)</p>";
+
+                    // Récupérer les questions PT3 associées à chaque produit de formule
+                    $nested_questions = $wpdb->get_results($wpdb->prepare(
+                        "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+                        $formula_product_id
+                    ), ARRAY_A);
+
+                    if (!empty($nested_questions)) {
+                        foreach ($nested_questions as $nested_question) {
+                            $nested_question_id = esc_attr($nested_question['id']);
+                            $nested_question_text = esc_html($nested_question['question_text']);
+                            $nested_min = intval($nested_question['min']);
+                            $nested_max = intval($nested_question['max']);
+
+                            echo "<div class='nested-question' data-question-id='{$nested_question_id}' data-min='{$nested_min}' data-max='{$nested_max}'>";
+                            echo "<p><strong>{$nested_question_text}</strong></p>";
+
+                            // Récupérer les options PT2 pour chaque question PT3 associée à un produit de formule
+                            $nested_options = $wpdb->get_results($wpdb->prepare(
+                                "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d",
+                                $nested_question_id
+                            ), ARRAY_A);
+
+                            if (!empty($nested_options)) {
+                                echo '<div class="options">';
+                                foreach ($nested_options as $index => $option) {
+                                    $option_name = esc_html($option['option_name']);
+                                    $option_price = esc_html($option['price']);
+                                    $option_sku = esc_attr($option['sku']);
+
+                                    // Ajouter un attribut pour sélectionner par défaut si l'index est inférieur au minimum
+                                    $checked = $index < $nested_min ? 'checked' : '';
+
+                                    // Générer un bouton radio pour chaque option
+                                    echo '<label>';
+                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' class='option-checkbox' data-price='{$option_price}' {$checked} data-question='{$nested_question_text}'> {$option_name} (+{$option_price} €)";
+                                    echo '</label><br>';
+                                }
+                                echo '</div>';
+                            }
+                            echo '</div>';
+                        }
+                    } else {
+                        echo "<p>Pas de question de formule</p>";
+                    }
+                    echo '</div>';
+                }
+            }
+            echo '</div>';
+        }
+        echo '</div>';
+        // Champ caché pour transmettre le prix total
+        echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
+    }
+}
 
 
 
