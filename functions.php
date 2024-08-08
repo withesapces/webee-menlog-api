@@ -418,6 +418,7 @@ class WooCommerce_API_Integration {
         
         // Pour chaque sous-produit du productType 1
         // Donc pour chaque productType 3 Menlog du productType 1 en cours
+        // Donc la combinaison (PT1 > PT3)
         foreach ( $sub_products_sku as $subProductSku ) {
 
             // Si trouvé, récupère tout le productType 3 (la question) Menlog
@@ -736,17 +737,20 @@ class WooCommerce_API_Integration {
                     // On doit donc ajouter PT4, puis les PT3, puis les PT2
                     elseif ($sub_product['productType'] == 4) {
                         // On va ajouter / modifier un PT4 pour la combinaison PT1 > PT3 en cours
+                        // Donc on est dans PT1 > PT3 > PT4
 
-                        // Vérifier si le PT4 existe déjà en base
+                        // Vérifier si le PT4 existe déjà en BDD
                         $existing_pt4 = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d AND sku = %s", $question_id, $sub_product['sku']), ARRAY_A);
 
                         // Si PT4 existe déjà
                         if ($existing_pt4) {
-                            // TODO : On va chercher à MAJ le PT4 puis le ou les PT3 puis le ou les PT2
+                            // TODO : On va chercher à MAJ le PT4 
+                            // puis le ou les PT3 puis le ou les PT2
                             $formula_product_id = $existing_pt4['id'];
                             $this->products_PT4_skipped++; // Assume skipping as PT4 exists
                         } else {
-                            // Ajouter un nouveau PT4
+                            // Sinon, PT4 n'existe pas pour la combinaison PT1 > PT3 en cours
+                            // On insère le PT4 dans la BDD et on récupère son ID
                             $formula_product_id = $this->insert_formula_product($question_id, $sub_product);
                             if (!$formula_product_id) {
                                 $this->message_erreur .= "Erreur : Le produit de formule PT4 avec SKU '{$sub_product['sku']}' n'a pas pu être ajouté pour le PT3 avec SKU '{$question['sku']}' dans la fonction process_sub_products().\n";
@@ -755,17 +759,48 @@ class WooCommerce_API_Integration {
                             }
                         }
 
-                        // Ajout des PT3 pour le PT4
+                        // Ajout des PT3 puis des PT2 pour le PT4 qu'on regarde et/ou qu'on a inséré
+                        // $sub_product contient tout le PT4 de Menlog
+                        // $sub_product['subProducts'] contient tous les SKUs des PT3 (donc de PT1 > PT2 > PT4 > Tous les skus des PT3 associés au PT4)
+                        // Pour chaque SKUs PT3 du PT4 qu'on regarde...
                         foreach ($sub_product['subProducts'] as $nestedQuestionSku) {
+                            // On récupère le PT3 complet sur menlog de la combinaison PT1 > PT3 > PT4 > PT3
                             $nested_question = $this->get_product_by_sku($all_products, $nestedQuestionSku);
 
                             // Vérifier si la question existe déjà
+                            // Donc PT1 > PT3 > PT4 > PT3 BDD
                             $existing_nested_question = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d AND sku = %s", $formula_product_id, $nested_question['sku']), ARRAY_A);
 
+                            // Si le PT3 pour ce PT4 existe déjà on le met à jour ou on skip
+                            // Sinon, on ajoute le PT3 dans la BDD
                             if ($existing_nested_question) {
+                                // Récupération de l'ID du PT3
                                 $nested_question_id = $existing_nested_question['id'];
-                                $this->products_PT3_skipped++;
+
+                                // Récupération du PT3 correspondant de menlog
+                                // $pt3_menlog contient donc l'ensemble du PT3 actuel sur menlog qui a ce sku
+                                $pt3_menlog = $this->get_product_by_sku($all_products, $existing_nested_question['sku']);
+
+                                // Vérifie si l'une des données importantes de la question a changé en comparant les valeurs actuelles du PT3 BDD et les nouvelles données du PT3 MEnlog.
+                                if (
+                                    $existing_nested_question['question_text'] !== $pt3_menlog['name'] ||
+                                    $existing_nested_question['price'] != $pt3_menlog['price'] ||  // Comparaison non stricte pour les valeurs numériques
+                                    $existing_nested_question['id_category'] !== $pt3_menlog['idCategory'] ||
+                                    $existing_nested_question['description'] !== $pt3_menlog['description'] ||
+                                    $existing_nested_question['min'] != $pt3_menlog['min'] ||  // Comparaison non stricte pour les valeurs numériques
+                                    $existing_nested_question['max'] != $pt3_menlog['max']  // Comparaison non stricte pour les valeurs numériques
+                                ) {
+                                    if (!$this->update_question($nested_question_id, $pt3_menlog)) {
+                                       // Enregistre un message d'erreur si la mise à jour échoue
+                                        $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$pt3_menlog['sku']}' n'a pas pu être mise à jour pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
+                                    } else {
+                                        $this->products_PT3_updated++;
+                                    }
+                                } else {
+                                    $this->products_PT3_skipped++;
+                                }
                             } else {
+                                // Si le PT3 n'existe pas, on doit l'ajouter
                                 // Ajouter une nouvelle question PT3 pour le PT4
                                 $nested_question_id = $this->insert_question($formula_product_id, $nested_question);
                                 if (!$nested_question_id) {
@@ -776,7 +811,10 @@ class WooCommerce_API_Integration {
                             }
 
                             // Ajout des PT2 pour chaque question PT3
+                            // Donc le dernier élément de la combinaison PT1 > PT3 > PT4 > PT3 > PT2
+                            // $nested_question['subProducts'] contient tous les SKUs PT2 du PT3 qui lui appartient au PT4 qui lui appartient au PT3 qui lui appartient au PT1
                             foreach ($nested_question['subProducts'] as $nestedOptionSku) {
+                                // On récupère le PT2 complet sur Menlog
                                 $nested_option = $this->get_product_by_sku($all_products, $nestedOptionSku);
 
                                 // Vérifier si l'option PT2 existe déjà
@@ -1032,7 +1070,6 @@ class WooCommerce_API_Integration {
         }
 
         // Vérifie et met à jour les sous-produits associés (productType 3) si le PT1 a des PT3 associés
-        // TODO : Faire également la mise à jour d'une formule (4, 3, 2)
         if (!empty($product_data['subProducts'])) {
             // Traite les sous-produits associés au produit principal PT1 en cours
             $this->process_sub_products($product_id, $product_data['subProducts'], $menlogProducts);
