@@ -793,7 +793,6 @@ class WooCommerce_API_Integration {
                         // Si PT4 existe déjà
                         if ($existing_pt4) {
                             // TODO : On va chercher à MAJ le PT4 
-                            // puis le ou les PT3 puis le ou les PT2
                             $formula_product_id = $existing_pt4['id'];
                             $this->products_PT4_skipped++; // Assume skipping as PT4 exists
                         } else {
@@ -1708,108 +1707,321 @@ function display_custom_options_in_cart($item_data, $cart_item) {
 }
 
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options_for_formula', 15);
+
 function display_custom_questions_and_options_for_formula() {
     global $post, $wpdb;
 
-    // Obtenir l'ID du produit actuel
     $product_id = $post->ID;
-
-    // Obtenir le produit WooCommerce actuel pour récupérer le prix
     $product = wc_get_product($product_id);
     $base_price = $product->get_price();
 
-    // Vérifier si le produit est une formule
     if (strpos($product->get_name(), 'Formule') === false) {
         return;
     }
 
-    // Récupérer les questions PT3 associées à ce produit
     $questions = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
         $product_id
     ), ARRAY_A);
 
-    // Si des questions existent, les afficher
     if (!empty($questions)) {
-        echo '<div class="custom-questions">';
+        echo '<div class="formula-builder">';
+        
         foreach ($questions as $question) {
             $question_id = esc_attr($question['id']);
             $question_text = esc_html($question['question_text']);
             $min = intval($question['min']);
             $max = intval($question['max']);
 
-            echo "<div class='question' style='border: 1px solid red; margin-bottom: 24px;' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
-            echo "<p><strong>{$question_text}</strong></p>";
+            echo "<div class='formula-section' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
+            echo "<h4>{$question_text}</h4>";
             
-            // Récupérer les produits de formule PT4 associés à cette question PT3
             $formula_products = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d",
                 $question_id
             ), ARRAY_A);
 
-            // Si des produits de formule existent, les afficher
             if (!empty($formula_products)) {
+                echo "<div class='formula-options'>";
                 foreach ($formula_products as $formula_product) {
                     $formula_product_id = esc_attr($formula_product['id']);
                     $formula_product_name = esc_html($formula_product['product_name']);
                     $formula_product_price = esc_html($formula_product['price']);
 
-                    echo "<div class='formula-product' style='margin: 12px; border: 1px solid blue;' data-formula-id='{$formula_product_id}'>";
-                    echo "<p><strong>{$formula_product_name}</strong> (+{$formula_product_price} €)</p>";
+                    echo "<div class='formula-option' data-formula-id='{$formula_product_id}'>";
+                    echo "<label class='formula-option-label'>";
+                    echo "<input type='radio' name='formula_option_{$question_id}' value='{$formula_product_id}'>";
+                    echo "<span class='formula-option-name'>{$formula_product_name}</span>";
+                    echo "<span class='formula-option-price'>+{$formula_product_price} €</span>";
+                    echo "</label>";
 
-                    // Récupérer les questions PT3 associées à chaque produit de formule
                     $nested_questions = $wpdb->get_results($wpdb->prepare(
                         "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
                         $formula_product_id
                     ), ARRAY_A);
 
                     if (!empty($nested_questions)) {
+                        echo "<div class='formula-suboptions' style='display:none;'>";
                         foreach ($nested_questions as $nested_question) {
                             $nested_question_id = esc_attr($nested_question['id']);
                             $nested_question_text = esc_html($nested_question['question_text']);
                             $nested_min = intval($nested_question['min']);
                             $nested_max = intval($nested_question['max']);
 
-                            echo "<div class='nested-question' data-question-id='{$nested_question_id}' data-min='{$nested_min}' data-max='{$nested_max}'>";
-                            echo "<p><strong>{$nested_question_text}</strong></p>";
+                            echo "<div class='formula-suboption' data-question-id='{$nested_question_id}' data-min='{$nested_min}' data-max='{$nested_max}'>";
+                            echo "<h5>{$nested_question_text}</h5>";
 
-                            // Récupérer les options PT2 pour chaque question PT3 associée à un produit de formule
                             $nested_options = $wpdb->get_results($wpdb->prepare(
                                 "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d",
                                 $nested_question_id
                             ), ARRAY_A);
 
                             if (!empty($nested_options)) {
-                                echo '<div class="options">';
+                                echo '<div class="formula-suboption-choices">';
                                 foreach ($nested_options as $index => $option) {
                                     $option_name = esc_html($option['option_name']);
                                     $option_price = esc_html($option['price']);
                                     $option_sku = esc_attr($option['sku']);
-
-                                    // Ajouter un attribut pour sélectionner par défaut si l'index est inférieur au minimum
                                     $checked = $index < $nested_min ? 'checked' : '';
 
-                                    // Générer un bouton radio pour chaque option
-                                    echo '<label>';
-                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' class='option-checkbox' data-price='{$option_price}' {$checked} data-question='{$nested_question_text}'> {$option_name} (+{$option_price} €)";
-                                    echo '</label><br>';
+                                    echo "<label class='formula-suboption-choice'>";
+                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' {$checked} data-price='{$option_price}'>";
+                                    echo "<span class='formula-suboption-name'>{$option_name}</span>";
+                                    echo "<span class='formula-suboption-price'>+{$option_price} €</span>";
+                                    echo "</label>";
                                 }
                                 echo '</div>';
                             }
                             echo '</div>';
                         }
-                    } else {
-                        echo "<p>Pas de question de formule pour le PT4 dont l'ID est {$formula_product_id}</p>";
+                        echo '</div>';
                     }
                     echo '</div>';
                 }
+                echo '</div>';
             }
             echo '</div>';
         }
+        echo '<div class="formula-total">Total : <span id="formula-total-price">' . esc_html($base_price) . ' €</span></div>';
         echo '</div>';
-        // Champ caché pour transmettre le prix total
         echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
     }
+}
+
+// Ajoutez ce script JavaScript pour gérer l'interaction et le calcul du prix
+add_action('wp_footer', 'formula_builder_script');
+function formula_builder_script() { 
+    ?>
+    <script>
+            jQuery(document).ready(function($) {
+                $('.formula-option-label input[type="radio"]').change(function() {
+                    $(this).closest('.formula-option').find('.formula-suboptions').slideDown();
+                    $(this).closest('.formula-options').find('.formula-option').not($(this).closest('.formula-option')).find('.formula-suboptions').slideUp();
+                    updateTotal();
+                });
+
+                $('.formula-suboption-choice input[type="checkbox"]').change(function() {
+                    updateTotal();
+                });
+
+                function updateTotal() {
+                    var total = parseFloat($('#custom_total_price').val());
+                    $('.formula-option-label input[type="radio"]:checked').each(function() {
+                        total += parseFloat($(this).closest('.formula-option-label').find('.formula-option-price').text().replace('+', '').replace('€', '').trim());
+                    });
+                    $('.formula-suboption-choice input[type="checkbox"]:checked').each(function() {
+                        total += parseFloat($(this).closest('.formula-suboption-choice').find('.formula-suboption-price').text().replace('+', '').replace('€', '').trim());
+                    });
+                    $('#formula-total-price').text(total.toFixed(2) + ' €');
+                    $('#custom_total_price').val(total.toFixed(2));
+                }
+            });
+    </script>
+    <?php
+}
+
+// Ajoutez ce style CSS pour améliorer l'apparence
+add_action('wp_head', 'formula_builder_style');
+function formula_builder_style() {
+    ?>
+    <style>
+        .formula-builder {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            margin-bottom: 40px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .formula-builder h3 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .formula-section {
+            margin-bottom: 32px;
+        }
+
+        .formula-section h4 {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .formula-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .formula-option {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .formula-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(52, 152, 219, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .formula-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .formula-option-label input[type="radio"] {
+            display: none;
+        }
+
+        .formula-option-label input[type="radio"]:checked + .formula-option-name::before {
+            content: '✓';
+            position: absolute;
+            left: -24px;
+            color: #27ae60;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .formula-option-label input[type="radio"]:checked ~ .formula-option::before {
+            opacity: 1;
+        }
+
+        .formula-option-name {
+            flex-grow: 1;
+            font-size: 18px;
+            color: #34495e;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .formula-option-price,
+        .formula-suboption-price {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .formula-suboptions {
+            margin-top: 16px;
+            padding-left: 24px;
+            border-left: 2px dashed #bdc3c7;
+        }
+
+        .formula-suboption h5 {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+
+        .formula-suboption-choice {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .formula-suboption-choice input[type="checkbox"] {
+            display: none;
+        }
+
+        .formula-suboption-choice input[type="checkbox"] + span {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .formula-suboption-choice input[type="checkbox"]:checked + span {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .formula-suboption-choice input[type="checkbox"]:checked + span::after {
+            content: '✔';
+            color: #ffffff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+
+        .formula-suboption-name {
+            flex-grow: 1;
+            font-size: 16px;
+            color: #34495e;
+        }
+
+        .formula-total {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 32px;
+            text-align: right;
+            color: #2c3e50;
+            padding: 16px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .formula-builder {
+                padding: 20px;
+            }
+
+            .formula-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <?php
 }
 
 
