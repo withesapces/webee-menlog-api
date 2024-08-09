@@ -1495,167 +1495,262 @@ add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_an
 function display_custom_questions_and_options() {
     global $post, $wpdb;
 
-    // Obtenir l'ID du produit actuel
     $product_id = $post->ID;
-
-    // Obtenir le produit WooCommerce actuel pour récupérer le prix
     $product = wc_get_product($product_id);
     $base_price = $product->get_price();
 
-    // Vérifier si le produit n'est pas une formule
     if (strpos($product->get_name(), 'Formule') !== false) {
         return;
     }
 
-    // Récupérer les questions PT3 associées à ce produit
     $questions = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
         $product_id
     ), ARRAY_A);
 
-    // Si des questions existent, les afficher
     if (!empty($questions)) {
-        echo '<div class="custom-questions">';
+        echo '<div class="product-customizer">';
+        
         foreach ($questions as $question) {
             $question_id = esc_attr($question['id']);
             $question_text = esc_html($question['question_text']);
             $min = intval($question['min']);
             $max = intval($question['max']);
 
-            echo "<div class='question' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
-            echo "<p><strong>{$question_text}</strong></p>";
+            echo "<div class='customizer-section' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
+            echo "<h4>{$question_text}</h4>";
             
-            // Récupérer les options PT2 pour chaque question
             $options = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d",
                 $question['id']
             ), ARRAY_A);
 
-            // Si des options existent, les afficher
             if (!empty($options)) {
-                echo '<div class="options">';
+                echo '<div class="customizer-options">';
                 foreach ($options as $index => $option) {
                     $option_name = esc_html($option['option_name']);
                     $option_price = esc_html($option['price']);
                     $option_sku = esc_attr($option['sku']);
-
-                    // Ajouter un attribut pour sélectionner par défaut si l'index est inférieur au minimum
                     $checked = $index < $min ? 'checked' : '';
 
-                    // Générer un bouton radio pour chaque option
-                    echo '<label>';
-                    echo "<input type='checkbox' name='option_{$question_id}[{$option_sku}]' value='{$option_name}' class='option-checkbox' data-price='{$option_price}' {$checked} data-question='{$question_text}'> {$option_name} (+{$option_price} €)";
-                    echo '</label><br>';
+                    echo "<div class='customizer-option'>";
+                    echo "<label class='customizer-option-label'>";
+                    echo "<input type='checkbox' name='option_{$question_id}[{$option_sku}]' value='{$option_name}' class='option-checkbox' data-price='{$option_price}' {$checked} data-question='{$question_text}'>";
+                    echo "<span class='customizer-option-name'>{$option_name}</span>";
+                    echo "<span class='customizer-option-price'>+{$option_price} €</span>";
+                    echo "</label>";
+                    echo "</div>";
                 }
                 echo '</div>';
             }
             echo '</div>';
         }
+        echo '<div class="product-total">Total : <span id="product-total-price">' . esc_html($base_price) . ' €</span></div>';
         echo '</div>';
-        // Champ caché pour transmettre le prix total
         echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
     }
 
-    // Ajout de JavaScript pour gérer la logique des minimum, maximum et mise à jour des prix
+    add_action('wp_footer', 'product_customizer_script');
+}
+
+function product_customizer_script() {
     ?>
     <script>
-        jQuery(document).ready(function($) {
-            const basePrice = parseFloat('<?php echo $base_price; ?>');
-            let currentPrice = basePrice;
+    jQuery(document).ready(function($) {
+        const basePrice = parseFloat($('#custom_total_price').val());
+        let currentPrice = basePrice;
 
-            // Fonction pour mettre à jour le prix total affiché
-            function updatePrice() {
-                let additionalPrice = 0;
-                $('.custom-questions .question').each(function() {
-                    $(this).find('.option-checkbox:checked').each(function() {
-                        additionalPrice += parseFloat($(this).data('price'));
-                    });
-                });
-                currentPrice = basePrice + additionalPrice;
-                $('.woocommerce-Price-amount').text(currentPrice.toFixed(2) + ' €');
-
-                // Mettre à jour le champ caché avec le nouveau prix total
-                $('#custom_total_price').val(currentPrice.toFixed(2));
-            }
-
-            // Fonction pour valider si les sélections respectent les conditions de minimum
-            function validateSelections() {
-                let valid = true;
-                $('.custom-questions .question').each(function() {
-                    const questionDiv = $(this);
-                    const minOptions = parseInt(questionDiv.data('min'));
-                    const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
-
-                    if (selectedOptions < minOptions) {
-                        valid = false;
-                    }
-                });
-                return valid;
-            }
-
-            // Fonction pour afficher/masquer et activer/désactiver le bouton d'ajout au panier
-            function toggleAddToCartButton() {
-                const isValid = validateSelections();
-                const addToCartButton = $('button.single_add_to_cart_button');
-
-                if (isValid) {
-                    addToCartButton.prop('disabled', false).show(); // Activer et afficher le bouton
-                } else {
-                    addToCartButton.prop('disabled', true).hide();  // Désactiver et masquer le bouton
-                }
-            }
-
-            // Initialiser les questions et gérer les interactions
-            $('.custom-questions .question').each(function() {
-                const questionDiv = $(this);
-                const minOptions = parseInt(questionDiv.data('min'));
-                const maxOptions = parseInt(questionDiv.data('max'));
-
-                // Sélectionner par défaut le nombre minimum d'options
-                questionDiv.find('.option-checkbox').slice(0, minOptions).prop('checked', true);
-
-                // Vérifier le nombre d'options sélectionnées après la sélection par défaut
-                const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
-
-                // Activer/désactiver les cases à cocher en fonction du nombre d'options sélectionnées
-                if (selectedOptions >= maxOptions) {
-                    questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', true);
-                } else {
-                    questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', false);
-                }
-
-                questionDiv.find('.option-checkbox').change(function() {
-                    const selectedOptions = questionDiv.find('.option-checkbox:checked').length;
-
-                    // Activer/désactiver les cases à cocher en fonction du nombre d'options sélectionnées
-                    if (selectedOptions >= maxOptions) {
-                        questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', true);
-                    } else {
-                        questionDiv.find('.option-checkbox:not(:checked)').prop('disabled', false);
-                    }
-
-                    // Mettre à jour le prix total en fonction des options sélectionnées
-                    updatePrice();
-
-                    // Mettre à jour l'affichage et l'état du bouton d'ajout au panier
-                    toggleAddToCartButton();
+        function updatePrice() {
+            let additionalPrice = 0;
+            $('.customizer-section').each(function() {
+                $(this).find('.option-checkbox:checked').each(function() {
+                    additionalPrice += parseFloat($(this).data('price'));
                 });
             });
+            currentPrice = basePrice + additionalPrice;
+            $('#product-total-price').text(currentPrice.toFixed(2) + ' €');
+            $('#custom_total_price').val(currentPrice.toFixed(2));
+        }
 
-            // Validation avant l'ajout au panier
-            $('form.cart').on('submit', function(e) {
-                if (!validateSelections()) {
-                    e.preventDefault(); // Empêche la soumission du formulaire si la validation échoue
-                    alert('Veuillez vérifier que vous avez sélectionné les options requises pour chaque question.');
+        function validateSelections() {
+            let valid = true;
+            $('.customizer-section').each(function() {
+                const minOptions = parseInt($(this).data('min'));
+                const selectedOptions = $(this).find('.option-checkbox:checked').length;
+                if (selectedOptions < minOptions) {
+                    valid = false;
                 }
             });
+            return valid;
+        }
 
-            // Initialiser le prix et l'état du bouton d'ajout au panier lors du chargement de la page
-            updatePrice();
-            toggleAddToCartButton();
+        function toggleAddToCartButton() {
+            const isValid = validateSelections();
+            const addToCartButton = $('button.single_add_to_cart_button');
+            if (isValid) {
+                addToCartButton.prop('disabled', false).removeClass('disabled');
+            } else {
+                addToCartButton.prop('disabled', true).addClass('disabled');
+            }
+        }
+
+        $('.customizer-section').each(function() {
+            const section = $(this);
+            const minOptions = parseInt(section.data('min'));
+            const maxOptions = parseInt(section.data('max'));
+
+            section.find('.option-checkbox').slice(0, minOptions).prop('checked', true);
+
+            section.find('.option-checkbox').change(function() {
+                const selectedOptions = section.find('.option-checkbox:checked').length;
+                section.find('.option-checkbox').prop('disabled', selectedOptions >= maxOptions);
+                section.find('.option-checkbox:checked').prop('disabled', false);
+                updatePrice();
+                toggleAddToCartButton();
+            });
         });
 
+        $('form.cart').on('submit', function(e) {
+            if (!validateSelections()) {
+                e.preventDefault();
+                alert('Veuillez vérifier que vous avez sélectionné les options requises pour chaque section.');
+            }
+        });
+
+        updatePrice();
+        toggleAddToCartButton();
+    });
     </script>
+    <?php
+}
+
+add_action('wp_head', 'product_customizer_style');
+function product_customizer_style() {
+    ?>
+    <style>
+        .product-customizer {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            margin-bottom: 40px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .product-customizer h3 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .customizer-section {
+            margin-bottom: 32px;
+        }
+
+        .customizer-section h4 {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .customizer-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .customizer-option {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .customizer-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .customizer-option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .customizer-option-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .customizer-option-label input[type="checkbox"] + .customizer-option-name::before {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+        }
+
+        .customizer-option-label input[type="checkbox"]:checked + .customizer-option-name::before {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .customizer-option-label input[type="checkbox"]:checked + .customizer-option-name::after {
+            content: '✔';
+            color: #ffffff;
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+        }
+
+        .customizer-option-name {
+            flex-grow: 1;
+            font-size: 16px;
+            color: #34495e;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .customizer-option-price {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .product-total {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 32px;
+            text-align: right;
+            color: #2c3e50;
+            padding: 16px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .product-customizer {
+                padding: 20px;
+            }
+
+            .customizer-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
     <?php
 }
 
