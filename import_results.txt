@@ -25,15 +25,15 @@ Produits type 4 :
          0 supprimés
 
 Produits type 3 du 4 : 
-         7 créés,
+         0 créés,
          0 mis à jour, 
          0 skipped, 
          0 supprimés
 
 Produits type 2 du 3 du 4 : 
-         7 créés,
+         0 créés,
          0 mis à jour, 
-         0 skipped, 
+         7 skipped, 
          0 supprimés
 
 Détails des messages :

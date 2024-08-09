@@ -817,7 +817,7 @@ class WooCommerce_API_Integration {
 
                             // Vérifier si la question existe déjà
                             // Donc PT1 > PT3 > PT4 > PT3 BDD
-                            $existing_nested_question = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d AND sku = %s", $formula_product_id, $nested_question['sku']), ARRAY_A);
+                            $existing_nested_question = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d AND sku = %s", $formula_product_id, $nested_question['sku']), ARRAY_A);
 
                             // Si le PT3 pour ce PT4 existe déjà on le met à jour ou on skip
                             // Sinon, on ajoute le PT3 dans la BDD
@@ -845,7 +845,7 @@ class WooCommerce_API_Integration {
                                         $this->products_PT3_PT4_updated++;
                                     }
                                 } else {
-                                    $this->products_PT3_PT4_skipped;
+                                    $this->products_PT3_PT4_skipped++;
                                 }
                             } else {
                                 // Si le PT3 n'existe pas, on doit l'ajouter
@@ -867,7 +867,7 @@ class WooCommerce_API_Integration {
                                 $nested_option = $this->get_product_by_sku($all_products, $nestedOptionSku);
 
                                 // Vérifier si l'option PT2 existe déjà
-                                $existing_nested_option = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s", $nested_question_id, $nested_option['sku']), ARRAY_A);
+                                $existing_nested_option = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d AND sku = %s", $nested_question_id, $nested_option['sku']), ARRAY_A);
 
                                 if ($existing_nested_option) {
                                     // Vérifier si les données ont changé avant de mettre à jour
