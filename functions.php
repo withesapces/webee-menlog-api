@@ -1828,8 +1828,9 @@ function display_custom_questions_and_options_for_formula() {
             $min = intval($question['min']);
             $max = intval($question['max']);
 
-            echo "<div class='formula-section' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
+            echo "<div class='formula-section pt3-section' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
             echo "<h4>{$question_text}</h4>";
+            echo "<p class='selection-info'>Sélectionnez entre {$min} et {$max} options.</p>";
             
             $formula_products = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d",
@@ -1843,12 +1844,15 @@ function display_custom_questions_and_options_for_formula() {
                     $formula_product_name = esc_html($formula_product['product_name']);
                     $formula_product_price = esc_html($formula_product['price']);
 
-                    echo "<div class='formula-option' data-formula-id='{$formula_product_id}'>";
-                    echo "<label class='formula-option-label'>";
-                    echo "<input type='radio' name='formula_option_{$question_id}' value='{$formula_product_id}'>";
+                    echo "<div class='formula-option pt4-option' data-formula-id='{$formula_product_id}' data-price='{$formula_product_price}'>";
+                    echo "<input type='radio' name='formula_option_{$question_id}' id='formula_option_{$formula_product_id}' value='{$formula_product_id}'>";
+                    echo "<label for='formula_option_{$formula_product_id}' class='formula-option-label'>";
                     echo "<span class='formula-option-name'>{$formula_product_name}</span>";
                     echo "<span class='formula-option-price'>+{$formula_product_price} €</span>";
                     echo "</label>";
+
+                    echo "<div class='formula-suboptions' style='display:none;'>";
+                    echo "<button class='back-button'>Retour</button>";
 
                     $nested_questions = $wpdb->get_results($wpdb->prepare(
                         "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
@@ -1856,7 +1860,6 @@ function display_custom_questions_and_options_for_formula() {
                     ), ARRAY_A);
 
                     if (!empty($nested_questions)) {
-                        echo "<div class='formula-suboptions' style='display:none;'>";
                         foreach ($nested_questions as $nested_question) {
                             $nested_question_id = esc_attr($nested_question['id']);
                             $nested_question_text = esc_html($nested_question['question_text']);
@@ -1865,6 +1868,7 @@ function display_custom_questions_and_options_for_formula() {
 
                             echo "<div class='formula-suboption' data-question-id='{$nested_question_id}' data-min='{$nested_min}' data-max='{$nested_max}'>";
                             echo "<h5>{$nested_question_text}</h5>";
+                            echo "<p class='selection-info'>Sélectionnez entre {$nested_min} et {$nested_max} options.</p>";
 
                             $nested_options = $wpdb->get_results($wpdb->prepare(
                                 "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d",
@@ -1877,10 +1881,9 @@ function display_custom_questions_and_options_for_formula() {
                                     $option_name = esc_html($option['option_name']);
                                     $option_price = esc_html($option['price']);
                                     $option_sku = esc_attr($option['sku']);
-                                    $checked = $index < $nested_min ? 'checked' : '';
 
                                     echo "<label class='formula-suboption-choice'>";
-                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' {$checked} data-price='{$option_price}'>";
+                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' data-price='{$option_price}'>";
                                     echo "<span class='formula-suboption-name'>{$option_name}</span>";
                                     echo "<span class='formula-suboption-price'>+{$option_price} €</span>";
                                     echo "</label>";
@@ -1889,8 +1892,8 @@ function display_custom_questions_and_options_for_formula() {
                             }
                             echo '</div>';
                         }
-                        echo '</div>';
                     }
+                    echo '</div>';
                     echo '</div>';
                 }
                 echo '</div>';
@@ -1898,223 +1901,293 @@ function display_custom_questions_and_options_for_formula() {
             echo '</div>';
         }
         echo '<div class="formula-total">Total : <span id="formula-total-price">' . esc_html($base_price) . ' €</span></div>';
+        echo '<div id="validation-message" style="color: red; display: none;"></div>';
         echo '</div>';
         echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
     }
 }
 
-// Ajoutez ce script JavaScript pour gérer l'interaction et le calcul du prix
 add_action('wp_footer', 'formula_builder_script');
-function formula_builder_script() { 
+function formula_builder_script() {
     ?>
     <script>
-            jQuery(document).ready(function($) {
-                $('.formula-option-label input[type="radio"]').change(function() {
-                    $(this).closest('.formula-option').find('.formula-suboptions').slideDown();
-                    $(this).closest('.formula-options').find('.formula-option').not($(this).closest('.formula-option')).find('.formula-suboptions').slideUp();
-                    updateTotal();
-                });
+        jQuery(document).ready(function($) {
+            $('.formula-option input[type="radio"]').change(function() {
+                var $option = $(this).closest('.formula-option');
+                var $section = $option.closest('.formula-section');
+                
+                $section.find('.formula-option').not($option).removeClass('selected').find('.formula-suboptions').slideUp();
+                $section.find('.formula-option').not($option).find('input[type="radio"]').prop('checked', false);
+                
+                $option.addClass('selected');
+                $option.find('.formula-suboptions').slideDown();
 
-                $('.formula-suboption-choice input[type="checkbox"]').change(function() {
-                    updateTotal();
-                });
-
-                function updateTotal() {
-                    var total = parseFloat($('#custom_total_price').val());
-                    $('.formula-option-label input[type="radio"]:checked').each(function() {
-                        total += parseFloat($(this).closest('.formula-option-label').find('.formula-option-price').text().replace('+', '').replace('€', '').trim());
-                    });
-                    $('.formula-suboption-choice input[type="checkbox"]:checked').each(function() {
-                        total += parseFloat($(this).closest('.formula-suboption-choice').find('.formula-suboption-price').text().replace('+', '').replace('€', '').trim());
-                    });
-                    $('#formula-total-price').text(total.toFixed(2) + ' €');
-                    $('#custom_total_price').val(total.toFixed(2));
+                if ($section.hasClass('pt3-section') && $option.hasClass('pt4-option')) {
+                    $section.find('.pt4-option').not($option).hide();
                 }
+
+                updateTotal();
+                validateSelections();
             });
+
+            $('.back-button').click(function(e) {
+                e.preventDefault();
+                var $option = $(this).closest('.formula-option');
+                var $section = $option.closest('.formula-section');
+                
+                $option.removeClass('selected');
+                $option.find('.formula-suboptions').slideUp();
+                $option.find('input[type="radio"]').prop('checked', false);
+                
+                $option.find('input[type="checkbox"]').prop('checked', false);
+
+                if ($section.hasClass('pt3-section')) {
+                    $section.find('.pt4-option').show();
+                }
+
+                updateTotal();
+                validateSelections();
+            });
+
+            $('.formula-suboption-choice input[type="checkbox"]').change(function() {
+                updateTotal();
+                validateSelections();
+            });
+
+            function updateTotal() {
+                var basePrice = parseFloat($('#custom_total_price').val());
+                var total = basePrice;
+
+                $('.formula-section').each(function() {
+                    var $selectedOption = $(this).find('.formula-option.selected');
+                    if ($selectedOption.length) {
+                        total += parseFloat($selectedOption.data('price'));
+                        
+                        $selectedOption.find('.formula-suboption-choice input[type="checkbox"]:checked').each(function() {
+                            total += parseFloat($(this).data('price'));
+                        });
+                    }
+                });
+                
+                $('#formula-total-price').text(total.toFixed(2) + ' €');
+                // $('#custom_total_price').val(total.toFixed(2));
+            }
+
+            function validateSelections() {
+                let isValid = true;
+                let message = "";
+
+                $('.formula-section').each(function() {
+                    const $section = $(this);
+                    const min = parseInt($section.data('min'));
+                    const max = parseInt($section.data('max'));
+                    const selected = $section.find('.formula-option.selected').length;
+
+                    if (selected < min || selected > max) {
+                        isValid = false;
+                        message += `Sélectionnez entre ${min} et ${max} options pour "${$section.find('h4').text()}". `;
+                    }
+
+                    $section.find('.formula-suboption').each(function() {
+                        const $suboption = $(this);
+                        const subMin = parseInt($suboption.data('min'));
+                        const subMax = parseInt($suboption.data('max'));
+                        const subSelected = $suboption.find('input[type="checkbox"]:checked').length;
+
+                        if (subSelected < subMin || subSelected > subMax) {
+                            isValid = false;
+                            message += `Sélectionnez entre ${subMin} et ${subMax} options pour "${$suboption.find('h5').text()}". `;
+                        }
+                    });
+                });
+
+                if (!isValid) {
+                    $('#validation-message').text(message).show();
+                    $('button.single_add_to_cart_button').prop('disabled', true);
+                } else {
+                    $('#validation-message').hide();
+                    $('button.single_add_to_cart_button').prop('disabled', false);
+                }
+            }
+
+            validateSelections();
+        });
+
     </script>
     <?php
 }
 
-// Ajoutez ce style CSS pour améliorer l'apparence
+
+
+
 add_action('wp_head', 'formula_builder_style');
 function formula_builder_style() {
     ?>
     <style>
+    .formula-builder {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 32px;
+        margin-bottom: 40px;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .formula-builder h3 {
+        font-size: 28px;
+        color: #333;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .formula-section {
+        margin-bottom: 32px;
+    }
+
+    .formula-section h4 {
+        font-size: 22px;
+        color: #2c3e50;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .formula-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+    }
+
+    .formula-option {
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s ease;
+        width: calc(33.33% - 16px);
+        min-width: 200px;
+        cursor: pointer;
+    }
+
+    .formula-option:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .formula-option.selected {
+        border-color: #3498db;
+        background-color: #ebf5fb;
+    }
+
+    .formula-option-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .formula-option input[type="radio"] {
+        display: none;
+    }
+
+    .formula-option-name {
+        font-size: 18px;
+        color: #34495e;
+        margin-bottom: 8px;
+    }
+
+    .formula-option-price {
+        color: #27ae60;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .formula-suboptions {
+        margin-top: 16px;
+        padding: 16px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .back-button {
+        background-color: #3498db;
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    .formula-suboption h5 {
+        font-size: 18px;
+        color: #7f8c8d;
+        margin-bottom: 12px;
+    }
+
+    .formula-suboption-choice {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .formula-suboption-choice input[type="checkbox"] {
+        margin-right: 8px;
+    }
+
+    .formula-suboption-name {
+        flex-grow: 1;
+        font-size: 16px;
+        color: #34495e;
+    }
+
+    .formula-suboption-price {
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .formula-total {
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 32px;
+        text-align: right;
+        color: #2c3e50;
+        padding: 16px;
+        background-color: #ecf0f1;
+        border-radius: 8px;
+    }
+
+    .selection-info {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    #validation-message {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #ffecec;
+        border: 1px solid #f5aca6;
+        border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
         .formula-builder {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 32px;
-            margin-bottom: 40px;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .formula-builder h3 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .formula-section {
-            margin-bottom: 32px;
-        }
-
-        .formula-section h4 {
-            font-size: 22px;
-            color: #2c3e50;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .formula-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
+            padding: 20px;
         }
 
         .formula-option {
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 16px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            width: calc(50% - 16px);
         }
+    }
 
-        .formula-option::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(52, 152, 219, 0.1);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+    @media (max-width: 480px) {
+        .formula-option {
+            width: 100%;
         }
-
-        .formula-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .formula-option-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
-        }
-
-        .formula-option-label input[type="radio"] {
-            display: none;
-        }
-
-        .formula-option-label input[type="radio"]:checked + .formula-option-name::before {
-            content: '✓';
-            position: absolute;
-            left: -24px;
-            color: #27ae60;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .formula-option-label input[type="radio"]:checked ~ .formula-option::before {
-            opacity: 1;
-        }
-
-        .formula-option-name {
-            flex-grow: 1;
-            font-size: 18px;
-            color: #34495e;
-            padding-left: 24px;
-            position: relative;
-        }
-
-        .formula-option-price,
-        .formula-suboption-price {
-            color: #27ae60;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .formula-suboptions {
-            margin-top: 16px;
-            padding-left: 24px;
-            border-left: 2px dashed #bdc3c7;
-        }
-
-        .formula-suboption h5 {
-            font-size: 18px;
-            color: #7f8c8d;
-            margin-bottom: 12px;
-        }
-
-        .formula-suboption-choice {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .formula-suboption-choice input[type="checkbox"] {
-            display: none;
-        }
-
-        .formula-suboption-choice input[type="checkbox"] + span {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
-            border: 2px solid #bdc3c7;
-            border-radius: 4px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .formula-suboption-choice input[type="checkbox"]:checked + span {
-            background-color: #27ae60;
-            border-color: #27ae60;
-        }
-
-        .formula-suboption-choice input[type="checkbox"]:checked + span::after {
-            content: '✔';
-            color: #ffffff;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 12px;
-        }
-
-        .formula-suboption-name {
-            flex-grow: 1;
-            font-size: 16px;
-            color: #34495e;
-        }
-
-        .formula-total {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 32px;
-            text-align: right;
-            color: #2c3e50;
-            padding: 16px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .formula-builder {
-                padding: 20px;
-            }
-
-            .formula-options {
-                grid-template-columns: 1fr;
-            }
-        }
+    }
     </style>
     <?php
 }
