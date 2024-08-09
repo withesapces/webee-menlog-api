@@ -61,7 +61,7 @@ class WooCommerce_API_Integration {
 
     private $products_PT2_PT3_PT4_created = 0;
     private $products_PT2_PT3_PT4_updated = 0;
-    private $products_PT2_PT3_PT4_kipped = 0;
+    private $products_PT2_PT3_PT4_skipped = 0;
     private $products_PT2_PT3_PT4_deleted = 0;
 
     // Tableaux pour stocker les détails des mises à jour
@@ -124,6 +124,34 @@ class WooCommerce_API_Integration {
             FOREIGN KEY (question_id) REFERENCES {$wpdb->prefix}custom_questions(id)
         ) $charset_collate;
         ";
+
+        $sql_questions_for_formulas = "
+        CREATE TABLE {$wpdb->prefix}custom_questions_for_formulas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            formula_product_id INT NOT NULL,
+            sku VARCHAR(255) NOT NULL,
+            question_text TEXT,
+            price DECIMAL(10, 2),
+            id_category VARCHAR(255),
+            description TEXT,
+            min INT,
+            max INT,
+            FOREIGN KEY (formula_product_id) REFERENCES {$wpdb->prefix}custom_formula_products(id)
+        ) $charset_collate;
+        ";
+
+        $sql_options_for_formulas = "
+        CREATE TABLE {$wpdb->prefix}custom_options_for_formulas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            formula_question_id INT NOT NULL,
+            sku VARCHAR(255) NOT NULL,
+            price DECIMAL(10, 2),
+            option_name TEXT,
+            id_category VARCHAR(255),
+            description TEXT,
+            FOREIGN KEY (formula_question_id) REFERENCES {$wpdb->prefix}custom_questions_for_formulas(id)
+        ) $charset_collate;
+        ";
     
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         
@@ -131,6 +159,8 @@ class WooCommerce_API_Integration {
         $result_questions = dbDelta($sql_questions);
         $result_options = dbDelta($sql_options);
         $result_formula_products = dbDelta($sql_formula_products);
+        $result_questions_for_formulas = dbDelta($sql_questions_for_formulas);
+        $result_options_for_formulas = dbDelta($sql_options_for_formulas);
     
         // Vérifier si les tables existent
         $tables_exist = $wpdb->get_results("SHOW TABLES LIKE '{$wpdb->prefix}custom_questions'", ARRAY_N);
@@ -140,6 +170,8 @@ class WooCommerce_API_Integration {
         $debug_message .= '<pre>' . print_r($result_questions, true) . '</pre>';
         $debug_message .= '<pre>' . print_r($result_options, true) . '</pre>';
         $debug_message .= '<pre>' . print_r($result_formula_products, true) . '</pre>';
+        $debug_message .= '<pre>' . print_r($result_questions_for_formulas, true) . '</pre>';
+        $debug_message .= '<pre>' . print_r($result_options_for_formulas, true) . '</pre>';
         $debug_message .= '<pre>Tables existantes : ' . print_r($tables_exist, true) . '</pre>';
     
         //($debug_message);
@@ -583,7 +615,7 @@ class WooCommerce_API_Integration {
                                         // Supprimer les options PT2 associées au PT3
                                         $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id_to_delete), ARRAY_A);
                                         foreach ($options_to_delete as $option_to_delete) {
-                                            if (!$this->delete_option($option_to_delete['id'])) {
+                                            if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
                                                 $this->message_erreur .= "Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                             } else {
                                                 $this->products_PT2_deleted++;
@@ -591,7 +623,7 @@ class WooCommerce_API_Integration {
                                         }
                 
                                         // Supprimer la question PT3
-                                        if (!$this->delete_question($question_id_to_delete)) {
+                                        if (!$this->delete_question_for_formula($question_id_to_delete)) {
                                             $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$existing_question_sku}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                         } else {
                                             $this->products_PT3_deleted++;
@@ -618,14 +650,15 @@ class WooCommerce_API_Integration {
                                             if (!in_array($existing_option_sku, $new_option_skus)) {
                                                 $option_to_delete = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s", $question_id_to_delete, $existing_option_sku), ARRAY_A);
                                                 if ($option_to_delete) {
-                                                    if (!$this->delete_option($option_to_delete['id'])) {
-                                                        $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$existing_option_sku}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
+                                                    if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
+                                                        $error_message = $wpdb->last_error;
+                                                        $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$existing_option_sku}' (ID: {$option_to_delete['id']}) n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' (Question ID: {$question_id_to_delete}) pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products(). Erreur SQL : {$error_message}\n";
                                                     } else {
                                                         $this->products_PT2_deleted++;
                                                     }
                                                 }
                                             }
-                                        }
+                                        }                                        
                                     }
                                 }
                             } else {
@@ -637,7 +670,7 @@ class WooCommerce_API_Integration {
                                     // Supprimer les options PT2
                                     $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id_to_delete), ARRAY_A);
                                     foreach ($options_to_delete as $option_to_delete) {
-                                        if (!$this->delete_option($option_to_delete['id'])) {
+                                        if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
                                             $this->message_erreur .= "Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$question_to_delete['sku']}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                         } else {
                                             $this->products_PT2_deleted++;
@@ -645,7 +678,7 @@ class WooCommerce_API_Integration {
                                     }
                 
                                     // Supprimer la question PT3
-                                    if (!$this->delete_question($question_id_to_delete)) {
+                                    if (!$this->delete_question_for_formula($question_id_to_delete)) {
                                         $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$question_to_delete['sku']}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                     } else {
                                         $this->products_PT3_deleted++;
@@ -805,7 +838,7 @@ class WooCommerce_API_Integration {
                                     $existing_nested_question['min'] != $pt3_menlog['min'] ||  // Comparaison non stricte pour les valeurs numériques
                                     $existing_nested_question['max'] != $pt3_menlog['max']  // Comparaison non stricte pour les valeurs numériques
                                 ) {
-                                    if (!$this->update_question($nested_question_id, $pt3_menlog)) {
+                                    if (!$this->update_question_for_formula($nested_question_id, $pt3_menlog)) {
                                        // Enregistre un message d'erreur si la mise à jour échoue
                                         $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$pt3_menlog['sku']}' n'a pas pu être mise à jour pour le PT1 dont l'ID est '{$product_id} dans la fonction process_sub_products().\n";
                                     } else {
@@ -817,7 +850,7 @@ class WooCommerce_API_Integration {
                             } else {
                                 // Si le PT3 n'existe pas, on doit l'ajouter
                                 // Ajouter une nouvelle question PT3 pour le PT4
-                                $nested_question_id = $this->insert_question($formula_product_id, $nested_question);
+                                $nested_question_id = $this->insert_question_for_formula($formula_product_id, $nested_question);
                                 if (!$nested_question_id) {
                                     $error_message = $wpdb->last_error;
                                     $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$nested_question['sku']}' n'a pas pu être ajoutée (id {$formula_product_id}) pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products(). Raison : {$error_message}\n";
@@ -845,7 +878,7 @@ class WooCommerce_API_Integration {
                                         $existing_nested_option['id_category'] !== $nested_option['idCategory']
                                     ) {
                                         // Mettre à jour l'option PT2 existante
-                                        if (!$this->update_option($existing_nested_option['id'], $nested_option)) {
+                                        if (!$this->update_options_for_formulas($existing_nested_option['id'], $nested_option)) {
                                             $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$nested_option['sku']}' n'a pas pu être mise à jour pour la question PT3 avec SKU '{$nested_question['sku']}' pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products().\n";
                                         } else {
                                             $this->products_PT2_PT3_PT4_updated++;
@@ -855,12 +888,13 @@ class WooCommerce_API_Integration {
                                     }
                                 } else {
                                     // Ajouter une nouvelle option PT2
-                                    if (!$this->insert_option($nested_question_id, $nested_option)) {
-                                        $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$nested_option['sku']}' n'a pas pu être ajoutée pour la question PT3 avec SKU '{$nested_question['sku']}' pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products().\n";
+                                    if (!$this->insert_options_for_formulas($nested_question_id, $nested_option)) {
+                                        $error_message = $wpdb->last_error;
+                                        $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$nested_option['sku']}' (Question ID: {$nested_question_id}) n'a pas pu être ajoutée pour la question PT3 avec SKU '{$nested_question['sku']}' pour le PT4 avec SKU '{$sub_product['sku']}' dans la fonction process_sub_products(). Erreur SQL : {$error_message}\n";
                                     } else {
                                         $this->products_PT2_PT3_PT4_created++;
                                     }
-                                }
+                                }                                
                             }
                         }
                     }
@@ -960,7 +994,6 @@ class WooCommerce_API_Integration {
         return $updated !== false && $updated > 0;
     }
     
-
     /**
      * Supprime un productType 3 de la BDD.
      * 
@@ -974,6 +1007,119 @@ class WooCommerce_API_Integration {
         return $deleted !== false && $deleted > 0;
     }
     
+
+    /**
+     * Insère une question PT3 dans la BDD pour un PT4
+     * @param mixed $formula_product_id
+     * @param mixed $question
+     * @return mixed
+     */
+    private function insert_question_for_formula($formula_product_id, $question) {
+        global $wpdb;
+        $wpdb->insert("{$wpdb->prefix}custom_questions_for_formulas", [
+            'formula_product_id' => $formula_product_id,
+            'sku' => $question['sku'],
+            'question_text' => $question['name'],
+            'price' => $question['price'],
+            'id_category' => $question['idCategory'],
+            'description' => $question['description'],
+            'min' => $question['min'],
+            'max' => $question['max']
+        ]);
+        return $wpdb->insert_id;
+    }
+
+        /**
+     * Met à jour un productType 3 dans la BDD associé à un PT4
+     * 
+     * @param int $question_id L'ID de la question dans la BDD.
+     * @param array $question Tout le contenu de la question Menlog (productType 3).
+     */
+    private function update_question_for_formula($question_id, $question) {
+        global $wpdb;
+        // Effectue la mise à jour et retourne le nombre de lignes affectées
+        $updated = $wpdb->update("{$wpdb->prefix}custom_questions_for_formulas", [
+            'question_text' => $question['name'],
+            'price' => $question['price'],
+            'id_category' => $question['idCategory'],
+            'description' => $question['description'],
+            'min' => $question['min'],
+            'max' => $question['max']
+        ], ['id' => $question_id]);
+    
+        // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
+        return $updated !== false && $updated > 0;
+    }
+    
+    /**
+     * Supprime un productType 3 de la BDD associé à un PT4
+     * 
+     * @param int $question_id L'ID de la question dans la BDD.
+     */
+    private function delete_question_for_formula($question_id) {
+        global $wpdb;
+        // Effectue la suppression et retourne le nombre de lignes affectées
+        $deleted = $wpdb->delete("{$wpdb->prefix}custom_questions_for_formulas", ['id' => $question_id]);
+        // Si $deleted est égal à false ou 0, cela signifie que la suppression a échoué
+        return $deleted !== false && $deleted > 0;
+    }
+    
+
+    /**
+     * Insère une option PT2 dans la BDD pour un PT3 d'une formule
+     * @param mixed $formula_question_id
+     * @param mixed $option
+     * @return bool
+     */
+    private function insert_options_for_formulas($formula_question_id, $option) {
+        global $wpdb;
+        $inserted = $wpdb->insert("{$wpdb->prefix}custom_options_for_formulas", [
+            'formula_question_id' => $formula_question_id,
+            'sku' => $option['sku'],
+            'option_name' => $option['name'],
+            'price' => $option['price'],
+            'id_category' => $option['idCategory'],
+            'description' => $option['description'],
+        ]);
+
+        // Retourne true si l'insertion a affecté au moins une ligne, false sinon
+        return $inserted !== false && $wpdb->insert_id > 0;
+    }
+
+    /**
+     * Met à jour un PT2 dans la BDD associé à un PT3 d'une formule
+     * 
+     * @param int $question_id 
+     * @param array $option 
+     */
+    private function update_options_for_formulas($question_id, $option) {
+        global $wpdb;
+        // Effectue la mise à jour et retourne le nombre de lignes affectées
+        $updated = $wpdb->update("{$wpdb->prefix}custom_options_for_formulas", [
+            'question_id' => $question_id,
+            'option_name' => $option['name'],
+            'sku' => $option['sku'],
+            'price' => $option['price'],
+            'id_category' => $option['idCategory'],
+            'description' => $option['description'],
+        ], ['id' => $question_id]);
+    
+        // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
+        return $updated !== false && $updated > 0;
+    }
+    
+    /**
+     * Supprime un PT2 de la BDD associé à un PT3 d'une formule
+     * 
+     * @param int $option_id l'ID de l'option à supprimer
+     */
+    private function delete_options_for_formulas($option_id) {
+        global $wpdb;
+        // Effectue la suppression et retourne le nombre de lignes affectées
+        $deleted = $wpdb->delete("{$wpdb->prefix}custom_options_for_formulas", ['id' => $option_id]);
+        // Si $deleted est égal à false ou 0, cela signifie que la suppression a échoué
+        return $deleted !== false && $deleted > 0;
+    }
 
     private function get_products() {
         $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
@@ -1337,6 +1483,13 @@ function activate_woocommerce_api_integration() {
 }
 register_activation_hook(__FILE__, 'activate_woocommerce_api_integration');
 
+// function create_custom_tables_on_admin_init() {
+//     $plugin = new WooCommerce_API_Integration();
+//     $plugin->create_custom_tables();
+// }
+
+// add_action('admin_init', 'create_custom_tables_on_admin_init');
+
 
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
 
@@ -1606,7 +1759,7 @@ function display_custom_questions_and_options_for_formula() {
 
                     // Récupérer les questions PT3 associées à chaque produit de formule
                     $nested_questions = $wpdb->get_results($wpdb->prepare(
-                        "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+                        "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
                         $formula_product_id
                     ), ARRAY_A);
 
@@ -1622,7 +1775,7 @@ function display_custom_questions_and_options_for_formula() {
 
                             // Récupérer les options PT2 pour chaque question PT3 associée à un produit de formule
                             $nested_options = $wpdb->get_results($wpdb->prepare(
-                                "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d",
+                                "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d",
                                 $nested_question_id
                             ), ARRAY_A);
 
@@ -1646,7 +1799,7 @@ function display_custom_questions_and_options_for_formula() {
                             echo '</div>';
                         }
                     } else {
-                        echo "<p>Pas de question de formule</p>";
+                        echo "<p>Pas de question de formule pour le PT4 dont l'ID est {$formula_product_id}</p>";
                     }
                     echo '</div>';
                 }
