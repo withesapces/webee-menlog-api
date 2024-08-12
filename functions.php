@@ -1757,21 +1757,108 @@ function product_customizer_style() {
 // Ajuster le prix du produit et ajouter les options comme méta-données au panier
 add_filter('woocommerce_add_cart_item_data', 'add_custom_options_to_cart', 10, 3);
 function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id) {
+    global $wpdb;
+    $product = wc_get_product($product_id);
+    $is_formula = strpos($product->get_name(), 'Formule') !== false;
+
     if (isset($_POST['custom_total_price'])) {
-        // Ajouter le prix personnalisé au panier
         $cart_item_data['custom_price'] = (float) sanitize_text_field($_POST['custom_total_price']);
     }
 
-    // Ajouter les options sélectionnées comme méta-données
-    foreach ($_POST as $key => $value) {
-        if (strpos($key, 'option_') === 0) {
-            foreach ($value as $option_name) {
-                $cart_item_data['custom_options'][] = sanitize_text_field($option_name);
+    if ($is_formula) {
+        $cart_item_data['is_formula'] = true;
+        $cart_item_data['formula_options'] = [];
+
+        $questions = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+            $product_id
+        ), ARRAY_A);
+
+        foreach ($questions as $question) {
+            $question_id = $question['id'];
+            $selected_formula_product_id = isset($_POST["formula_option_{$question_id}"]) ? $_POST["formula_option_{$question_id}"] : null;
+
+            if ($selected_formula_product_id) {
+                $formula_product = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d",
+                    $selected_formula_product_id
+                ), ARRAY_A);
+
+                $cart_item_data['formula_options'][$question_id] = [
+                    'question' => $question['question_text'],
+                    'product' => $formula_product['product_name'],
+                    'sku' => $formula_product['sku'],
+                    'price' => $formula_product['price'],
+                    'suboptions' => []
+                ];
+
+                $sub_questions = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
+                    $selected_formula_product_id
+                ), ARRAY_A);
+
+                foreach ($sub_questions as $sub_question) {
+                    $sub_question_id = $sub_question['id'];
+                    if (isset($_POST["option_{$sub_question_id}"])) {
+                        foreach ($_POST["option_{$sub_question_id}"] as $option_sku => $option_name) {
+                            $option = $wpdb->get_row($wpdb->prepare(
+                                "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d AND sku = %s",
+                                $sub_question_id, $option_sku
+                            ), ARRAY_A);
+
+                            $cart_item_data['formula_options'][$question_id]['suboptions'][] = [
+                                'question' => $sub_question['question_text'],
+                                'option' => $option_name,
+                                'sku' => $option_sku,
+                                'price' => $option['price']
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // Gestion des options pour les produits non-formule (inchangée)
+        foreach ($_POST as $key => $value) {
+            if (strpos($key, 'option_') === 0) {
+                foreach ($value as $option_name) {
+                    $cart_item_data['custom_options'][] = sanitize_text_field($option_name);
+                }
             }
         }
     }
 
     return $cart_item_data;
+}
+
+// Afficher les options sélectionnées dans le panier
+add_filter('woocommerce_get_item_data', 'display_custom_options_in_cart', 10, 2);
+function display_custom_options_in_cart($item_data, $cart_item) {
+    if (isset($cart_item['is_formula']) && $cart_item['is_formula']) {
+        foreach ($cart_item['formula_options'] as $question_id => $formula_option) {
+            $item_value = $formula_option['product'];
+            
+            // Ajouter la valeur des suboptions derrière le produit, si elle existe
+            if (!empty($formula_option['suboptions'])) {
+                $suboption_values = [];
+                foreach ($formula_option['suboptions'] as $suboption) {
+                    $suboption_values[] = $suboption['option'];
+                }
+                $item_value .= ' (' . implode(', ', $suboption_values) . ')';
+            }
+    
+            $item_data[] = [
+                'key'   => $formula_option['question'],
+                'value' => $item_value
+            ];
+        }
+    } elseif (isset($cart_item['custom_options'])) {
+        $item_data[] = [
+            'key'   => 'Options',
+            'value' => implode(', ', $cart_item['custom_options'])
+        ];
+    }
+    return $item_data;
 }
 
 // Modifier le prix affiché dans le panier
@@ -1782,27 +1869,15 @@ function update_cart_price($cart) {
     }
 
     // Mettre à jour le prix de chaque article dans le panier
-    foreach ($cart->get_cart() as $cart_item) {
+    foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         if (isset($cart_item['custom_price'])) {
+            // Mettre à jour le prix de l'article
             $cart_item['data']->set_price($cart_item['custom_price']);
         }
     }
 }
 
-// Afficher les options sélectionnées dans le panier
-add_filter('woocommerce_get_item_data', 'display_custom_options_in_cart', 10, 2);
-function display_custom_options_in_cart($item_data, $cart_item) {
-    if (isset($cart_item['custom_options'])) {
-        $item_data[] = [
-            'key'   => 'Options',
-            'value' => implode(', ', $cart_item['custom_options'])
-        ];
-    }
-    return $item_data;
-}
-
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options_for_formula', 15);
-
 function display_custom_questions_and_options_for_formula() {
     global $post, $wpdb;
 
@@ -1912,6 +1987,9 @@ function formula_builder_script() {
     ?>
     <script>
         jQuery(document).ready(function($) {
+            // Initialiser le prix de base au chargement de la page
+            var basePrice = parseFloat($('#custom_total_price').val());
+
             $('.formula-option input[type="radio"]').change(function() {
                 var $option = $(this).closest('.formula-option');
                 var $section = $option.closest('.formula-section');
@@ -1955,7 +2033,6 @@ function formula_builder_script() {
             });
 
             function updateTotal() {
-                var basePrice = parseFloat($('#custom_total_price').val());
                 var total = basePrice;
 
                 $('.formula-section').each(function() {
@@ -1968,9 +2045,15 @@ function formula_builder_script() {
                         });
                     }
                 });
-                
+
+                // Mettre à jour l'affichage du total
                 $('#formula-total-price').text(total.toFixed(2) + ' €');
-                // $('#custom_total_price').val(total.toFixed(2));
+
+                // Mettre à jour le prix affiché du produit WooCommerce
+                $('.woocommerce-Price-amount.amount').text(total.toFixed(2) + ' €');
+
+                // Mettre à jour le champ caché avec le nouveau total
+                $('#custom_total_price').val(total.toFixed(2));
             }
 
             function validateSelections() {
@@ -2016,7 +2099,6 @@ function formula_builder_script() {
     </script>
     <?php
 }
-
 
 
 
@@ -2172,6 +2254,21 @@ function formula_builder_style() {
         border: 1px solid #f5aca6;
         border-radius: 4px;
     }
+
+    .woocommerce-cart-form .product-name dl.variation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        .woocommerce-cart-form .product-name dl.variation dt {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .woocommerce-cart-form .product-name dl.variation dd {
+            margin-left: 10px;
+            margin-bottom: 5px;
+        }
 
     @media (max-width: 768px) {
         .formula-builder {
