@@ -1178,20 +1178,19 @@ class WooCommerce_API_Integration {
     /**
      * Met à jour un PT2 dans la BDD associé à un PT3 d'une formule
      * 
-     * @param int $question_id 
-     * @param array $option 
+     * @param int $existing_nested_option_id 
+     * @param array $option_menlog 
      */
-    private function update_options_for_formulas($question_id, $option) {
+    private function update_options_for_formulas($existing_nested_option_id, $option_menlog) {
         global $wpdb;
         // Effectue la mise à jour et retourne le nombre de lignes affectées
         $updated = $wpdb->update("{$wpdb->prefix}custom_options_for_formulas", [
-            'question_id' => $question_id,
-            'option_name' => $option['name'],
-            'sku' => $option['sku'],
-            'price' => $option['price'],
-            'id_category' => $option['idCategory'],
-            'description' => $option['description'],
-        ], ['id' => $question_id]);
+            'option_name' => $option_menlog['name'],
+            'sku' => $option_menlog['sku'],
+            'price' => $option_menlog['price'],
+            'id_category' => $option_menlog['idCategory'],
+            'description' => $option_menlog['description'],
+        ], ['id' => $existing_nested_option_id]);
     
         // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
         return $updated !== false && $updated > 0;
@@ -1412,7 +1411,6 @@ class WooCommerce_API_Integration {
         global $wpdb;
         // Effectue la mise à jour de l'option dans la base de données
         $updated = $wpdb->update("{$wpdb->prefix}custom_options", [
-            'question_id' => $question_id,
             'sku' => $option['sku'],
             'option_name' => $option['name'],
             'price' => $option['price'],
