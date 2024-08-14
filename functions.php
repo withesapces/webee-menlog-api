@@ -1660,7 +1660,6 @@ register_activation_hook(__FILE__, 'activate_woocommerce_api_integration');
 
 
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
-
 function display_custom_questions_and_options() {
     global $post, $wpdb;
 
@@ -1688,6 +1687,7 @@ function display_custom_questions_and_options() {
 
             echo "<div class='customizer-section' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
             echo "<h4>{$question_text}</h4>";
+            echo "<p class='selection-info'>Sélectionnez entre {$min} et {$max} options.</p>";
             
             $options = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d",
@@ -1715,6 +1715,7 @@ function display_custom_questions_and_options() {
             echo '</div>';
         }
         echo '<div class="product-total">Total : <span id="product-total-price">' . esc_html($base_price) . ' €</span></div>';
+        echo '<div id="validation-message" style="color: red; display: none;"></div>';
         echo '</div>';
         echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';
     }
@@ -1726,72 +1727,95 @@ function product_customizer_script() {
     ?>
     <script>
         jQuery(document).ready(function($) {
-        const basePrice = parseFloat($('#custom_total_price').val());
-        let currentPrice = basePrice;
+            const basePrice = parseFloat($('#custom_total_price').val());
+            let currentPrice = basePrice;
 
-        function updatePrice() {
-            let additionalPrice = 0;
-            $('.customizer-section').each(function() {
-                $(this).find('.option-checkbox:checked').each(function() {
-                    additionalPrice += parseFloat($(this).data('price'));
+            function updatePrice() {
+                let additionalPrice = 0;
+                $('.customizer-section').each(function() {
+                    $(this).find('.option-checkbox:checked').each(function() {
+                        additionalPrice += parseFloat($(this).data('price'));
+                    });
                 });
-            });
-            currentPrice = basePrice + additionalPrice;
-            $('#product-total-price').text(currentPrice.toFixed(2) + ' €');
-            $('#custom_total_price').val(currentPrice.toFixed(2));
-        }
-
-        function validateSelections() {
-            let valid = true;
-            $('.customizer-section').each(function() {
-                const minOptions = parseInt($(this).data('min'));
-                const selectedOptions = $(this).find('.option-checkbox:checked').length;
-                if (selectedOptions < minOptions) {
-                    valid = false;
-                }
-            });
-            return valid;
-        }
-
-        function toggleAddToCartButton() {
-            const isValid = validateSelections();
-            const addToCartButton = $('button.single_add_to_cart_button');
-            if (isValid) {
-                addToCartButton.prop('disabled', false).removeClass('disabled');
-            } else {
-                addToCartButton.prop('disabled', true).addClass('disabled');
+                currentPrice = basePrice + additionalPrice;
+                $('#product-total-price').text(currentPrice.toFixed(2) + ' €');
+                $('#custom_total_price').val(currentPrice.toFixed(2));
             }
-        }
 
-        $('.customizer-section').each(function() {
-            const section = $(this);
-            const minOptions = parseInt(section.data('min'));
-            const maxOptions = parseInt(section.data('max'));
+            function validateSelections() {
+                let valid = true;
+                let message = "";
 
-            section.find('.option-checkbox').slice(0, minOptions).prop('checked', true);
+                $('.customizer-section').each(function() {
+                    const minOptions = parseInt($(this).data('min'));
+                    const maxOptions = parseInt($(this).data('max'));
+                    const selectedOptions = $(this).find('.option-checkbox:checked').length;
 
-            section.find('.option-checkbox').change(function() {
+                    if (selectedOptions < minOptions || selectedOptions > maxOptions) {
+                        valid = false;
+                        message += `Sélectionnez entre ${minOptions} et ${maxOptions} options pour "${$(this).find('h4').text()}". `;
+                    }
+                });
+
+                if (!valid) {
+                    $('#validation-message').text(message).show();
+                } else {
+                    $('#validation-message').hide();
+                }
+
+                return valid;
+            }
+
+            function toggleAddToCartButton() {
+                const isValid = validateSelections();
+                const addToCartButton = $('button.single_add_to_cart_button');
+
+                if (isValid) {
+                    addToCartButton.show().prop('disabled', false).removeClass('disabled');
+                } else {
+                    addToCartButton.hide().prop('disabled', true).addClass('disabled');
+                }
+            }
+
+            function updateCheckboxStates(section) {
                 const selectedOptions = section.find('.option-checkbox:checked').length;
+                const maxOptions = parseInt(section.data('max'));
                 section.find('.option-checkbox').prop('disabled', selectedOptions >= maxOptions);
                 section.find('.option-checkbox:checked').prop('disabled', false);
-                updatePrice();
-                toggleAddToCartButton();
-            });
-        });
-
-        $('form.cart').on('submit', function(e) {
-            if (!validateSelections()) {
-                e.preventDefault();
-                alert('Veuillez vérifier que vous avez sélectionné les options requises pour chaque section.');
             }
-        });
 
-        updatePrice();
-        toggleAddToCartButton();
-    });
+            $('.customizer-section').each(function() {
+                const section = $(this);
+                const minOptions = parseInt(section.data('min'));
+
+                // Cocher les options par défaut (minimum requis)
+                section.find('.option-checkbox').slice(0, minOptions).prop('checked', true);
+
+                // Désactiver les options si nécessaire au chargement de la page
+                updateCheckboxStates(section);
+
+                section.find('.option-checkbox').change(function() {
+                    updateCheckboxStates(section);
+                    updatePrice();
+                    toggleAddToCartButton();
+                });
+            });
+
+            $('form.cart').on('submit', function(e) {
+                if (!validateSelections()) {
+                    e.preventDefault();
+                    alert('Veuillez vérifier que vous avez sélectionné les options requises pour chaque section.');
+                }
+            });
+
+            updatePrice();
+            toggleAddToCartButton();
+        });
     </script>
     <?php
 }
+
+
 
 add_action('wp_head', 'product_customizer_style');
 function product_customizer_style() {
