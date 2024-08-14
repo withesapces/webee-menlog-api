@@ -520,170 +520,208 @@ class WooCommerce_API_Integration {
                 }
 
                 /**
-                 * Suppression des PT2 > PT3 > PT4 si c'est un produit Formule
-                 * Suppression des PT2 si c'est un produit Simple
+                 * Suppression des PT2 > PT3 > PT4 si c'est un produit Formule qui ne sont plus dans Menlog
+                 * Suppression des PT2 si c'est un produit Simple qui ne sont plus dans Menlog
                  */
                 if ($this->isFormula($product, $all_products)) {
-                    // Dans le cas où le PT1 est une formule
-                    // On est déjà dans la configuration PT1 > PT3
+                    // Le PT1 est une formule, pour chaque PT3 en cours de visionnage on doit donc supprimer tous les : 
+                        // - PT4 qui ne sont plus sur Menlog
+                        // - PT3 qui ne sont plus sur Menlog
+                        // - PT2 qui ne sont plus sur Menlog
+                    
+                    $this->message_erreur .= "\n\nDébogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 pour le produit Menlog sku {$product['sku']}.\n";
                 
                     // Récupérer tous les produits de formule existants (PT4) dans la BDD qui sont reliés à cette combinaison PT1 > PT3 
                     $existing_formula_products = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d", $question_id), ARRAY_A);
+                    $this->message_erreur .= "- Débogage: Récupération des produits de formule PT4 pour la question ID {$question_id}. Nombre trouvé: " . count($existing_formula_products) . ".\n";
 
-                    // Récupérer le contenu de la colonne sku et id dans la BDD pour cette combinaison PT1 > PT3
-                    // utilisatation d'un tableau associatif avec clé id et valeur sku
+                    // Récupérer le contenu de la colonne sku et id dans la BDD du PT4 pour cette combinaison PT1 > PT3
+                    $this->message_erreur .= "- Débogage: Stockage des données PT4 BDD dans formula_products_by_id :\n";
                     $formula_products_by_id = [];
                     foreach ($existing_formula_products as $formula_product) {
-                        $formula_products_by_sku[$formula_product['id']] = $formula_product['sku'];
+                        $formula_products_by_id[$formula_product['id']] = $formula_product['sku'];
+                        $this->message_erreur .= "-- Débogage: Produit PT4 trouvé dans BDD avec ID {$formula_product['id']} avec SKU {$formula_product['sku']}.\n";
                     }
                 
                     // Collecter les SKUs des PT4 actuels dans Menlog pour cette combinaison PT1 > PT3
-                    // $question contient la question PT3 en cours
-                    // $question['subProducts'] contient les skus PT4 de la question PT3 en cours
+                    $this->message_erreur .= "- Débogage: Stockage des données SKU des PT4 Menlog dans new_formula_skus :\n";
                     $new_formula_skus = [];
                     foreach ($question['subProducts'] as $subProductSku) {
-                        // On récupère l'ensemble du soit-disant pt4 dans menlog
                         $subProduct = $this->get_product_by_sku($all_products, $subProductSku);
-                        // Si c'est bien un PT4, on enregistre son SKU dans $new_formula_skus[]
                         if ($subProduct && $subProduct['productType'] == 4) {
                             $new_formula_skus[] = $subProduct['sku'];
+                            $this->message_erreur .= "-- Débogage: Produit PT4 trouvé dans Menlog avec SKU {$subProduct['sku']}.\n";
+                        } else {
+                            $this->message_erreur .= "-- Débogage: Produit PT4 avec SKU {$subProductSku} introuvable ou non valide dans Menlog. Problème potentiel avec get_product_by_sku(). \n";
                         }
                     }
 
-                    // Maintenant pour la combinaison en cours PT1 > PT3
-                    // Nous avons tous les skus PT4 et tous les id PT4 de la bdd
-                    // Nous avons aussi tous les skus PT4 menlog 
-
-                    // Le prochaine étape consiste à parcourir chaque PT4 BDD pour vérifier s'ils sont encore présent en BDD
-                    // Si oui, on vérifie si PT3 associés sont encore en BDD ainsi que PT2
-                    // Si non, on supprime PT2, PT3 et PT4
-                    // Pour chaque sku PT4 BDD de cette combinaison PT1 > PT3
-                    foreach ($formula_products_by_id as $existing_formula_id => $existing_formula_sku) {
-                        // Récupérer le PT4 BDD complet via son ID pour vérifier ses sous-produits PT3 et PT2
-                        $formula_product = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d", $existing_formula_id), ARRAY_A);
+                    // A ce stade :
+                        // formula_products_by_id contient tous les ID et SKU du PT4 BDD pour ce PT3 en cours
+                        // new_formula_skus contient tous les SKU PT4 menlog pour ce PT3 en cours
                 
+                    $this->message_erreur .= "- Débogage: Comparaison des produits PT4 en BDD et dans Menlog pour la combinaison PT1 > PT3 :\n";
+                
+                    // Parcourir chaque PT4 BDD pour vérifier s'ils sont encore présents en BDD
+                    // Dans cette boucle, on va chercher à supprimer PT4 > PT3 > PT2 qui ne sont plus dans Menlog
+                    foreach ($formula_products_by_id as $existing_formula_id => $existing_formula_sku) {
+                        $this->message_erreur .= "-- Débogage: Traitement du produit PT4 avec ID {$existing_formula_id} SKU {$existing_formula_sku}\n";
+                        $formula_product = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d", $existing_formula_id), ARRAY_A);
+                        
+                        // Le PT4 a bien été retrouvé en BDD
                         if ($formula_product) {
-                            // On récupère l'ID du PT4 qu'on regarde
+                            $this->message_erreur .= "--- Débogage: On a bien récupéré le PT4 avec ID {$existing_formula_id} SKU {$existing_formula_sku} dans le BDD.\n";
                             $formula_product_id = $formula_product['id'];
                 
                             // Vérifier si le PT4 existe toujours dans Menlog
-                            // Ici si on passe, PT1 > PT3 > PT4 existe encore.
+                            // existing_formula_sku correspond au sku PT4 BDD qu'on regarde
+                            // new_formula_skus contient tous les PT4 Menlog pour ce PT3
                             if (in_array($existing_formula_sku, $new_formula_skus)) {
-                                // On doit donc vérifier ce qu'il y a après le PT4. 
-                                // Donc PT3 et PT2 puisque PT1 > PT3 > PT4 > PT3 > PT2
-
-                                // On récupère toutes les questions PT3 BDD qui sont reliés au produit PT4 BDD
-                                $existing_questions = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d", $formula_product_id), ARRAY_A);
+                                // Le PT4 existe toujours dans Menlog, on va donc le garder
+                                // En revanche, on doit vérifier si le ou les PT3 existent toujours pour ce PT4
+                                $this->message_erreur .= "---- Débogage: Le produit PT4 avec SKU {$existing_formula_sku} existe toujours dans Menlog.\n";
                 
-                                // On va chercher les nouvelles questions PT3 pour ce PT4 dans menlogs
-                                // Pour le PT4 en cours, on doit le chercher sur menlog et récupérer ses sub product
+                                // Récupérer toutes les questions PT3 BDD qui sont reliés au produit PT4 BDD
+                                $existing_questions_pt3_pt4 = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d", $formula_product_id), ARRAY_A);
+                                $this->message_erreur .= "---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID {$formula_product_id}. Nombre trouvé: " . count($existing_questions) . ".\n";
+                
+                                // Récupérer les nouvelles questions PT3 pour ce PT4 dans Menlog
                                 $new_question_skus = [];
                                 $formula_product_menlog = $this->get_product_by_sku($all_products, $existing_formula_sku);
-
-                                // Pour chaque SKU PT3 Menlog du PT4 Menlog, on récupère les SKU PT3 dans un tableau
                                 foreach ($formula_product_menlog['subProducts'] as $PT4subQuestionSku) {
-                                    // On récupère le PT3 Menlog appartennant à la combinaison PT1 > PT3 > PT4 > PT3
                                     $subQuestion = $this->get_product_by_sku($all_products, $PT4subQuestionSku);
                                     if ($subQuestion && $subQuestion['productType'] == 3) {
                                         $new_question_skus[] = $subQuestion['sku'];
                                     }
                                 }
+                                $this->message_erreur .= "---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID {$formula_product_id}. Nombre trouvé: " . count($new_question_skus) . ".\n";
                 
-                                // Nous avons à présent tous les skus des PT3 menlog (PT1 > PT3 > PT4 > PT3)
-
                                 // Supprimer les questions PT3 et leurs options PT2 qui ne sont plus présentes dans Menlog
-                                // Dans cette chaine, on doit donc supprimer l'avant dernier PT3 et/ou l'avant dernier PT2 (PT1 > PT3 > PT4 > PT3 > PT2)
-                                // Pour chaque PT1 > PT3 > PT4 > PT3 BDD...
-                                foreach ($existing_questions as $existing_question) {
-
-                                    // On récupère le SKU PT1 > PT3 > PT4 > PT3 BDD
+                                foreach ($existing_questions_pt3_pt4 as $existing_question) {
                                     $existing_question_sku = $existing_question['sku'];
-                                    // On récupère le ID PT1 > PT3 > PT4 > PT3 BDD
                                     $question_id_to_delete = $existing_question['id'];
+
+                                    $this->message_erreur .= "----- Débogage: Traitement du produit PT3 avec ID {$question_id_to_delete} SKU {$existing_question_sku}\n";
                 
-                                    // Si le PT1 > PT3 > PT4 > PT3 BDD n'est pas dans le tableau des PT1 > PT3 > PT4 > PT3 Menlog, 
-                                    // on doit supprimer le PT1 > PT3 > PT4 > PT3 BDD (donc aussi le PT2 de la fin)
+                                    // Si la question n'existe plus dans Menlog, on doit la supprimer de la BDD
                                     if (!in_array($existing_question_sku, $new_question_skus)) {
+                                        $this->message_erreur .= "------ Débogage: La question PT3 avec SKU {$existing_question_sku} n'existe plus dans Menlog. Suppression en cours.\n";
+                
                                         // Supprimer les options PT2 associées au PT3
-                                        $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id_to_delete), ARRAY_A);
+                                        $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d", $question_id_to_delete), ARRAY_A);
                                         foreach ($options_to_delete as $option_to_delete) {
+                                            $this->message_erreur .= "------- Débogage: Traitement du produit PT2 avec ID {$option_to_delete['id']} SKU {$option_to_delete['sku']}\n";
+
                                             if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
-                                                $this->message_erreur .= "Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
+                                                $this->message_erreur .= "-------- Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                             } else {
-                                                $this->products_PT2_deleted++;
+                                                $this->products_PT2_PT3_PT4_deleted++;
+                                                $this->message_erreur .= "-------- Débogage: Option PT2 avec ID '{$option_to_delete['id']}' supprimée avec succès pour la question PT3 avec SKU '{$existing_question_sku}'.\n";
                                             }
+
+                                            $this->message_erreur .= "------- Débogage: Traitement terminé du produit PT2 avec ID {$option_to_delete['id']} SKU {$option_to_delete['sku']}\n";
                                         }
+
+                                        $this->message_erreur .= "------- Débogage: Suppression du produit PT3 avec ID {$question_id_to_delete} SKU {$existing_question_sku}\n";
                 
                                         // Supprimer la question PT3
                                         if (!$this->delete_question_for_formula($question_id_to_delete)) {
-                                            $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$existing_question_sku}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
+                                            $this->message_erreur .= "------- Erreur : La question PT3 avec SKU '{$existing_question_sku}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                         } else {
-                                            $this->products_PT3_deleted++;
+                                            $this->products_PT3_PT4_deleted++;
+                                            $this->message_erreur .= "------- Débogage: La question PT3 avec SKU '{$existing_question_sku}' supprimée avec succès.\n";
                                         }
                                     } else {
-                                        // Si le PT3 existe encore, supprimer uniquement les options PT2 qui n'existent plus dans PT1 > PT3 > PT4 > PT3 > PT2
-                                        $options = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id_to_delete), ARRAY_A);
-                                        $existing_option_skus = array_column($options, 'sku');
+                                        // La question existe encore dans la BDD, il y a donc juste le PT2 à vérifier
+                                        $this->message_erreur .= "------ Débogage: La question PT3 avec SKU {$existing_question_sku} existe encore dans Menlog. Vérification des options PT2 en cours.\n";
                 
-                                        // On stock les SKUs menlog pour les PT2 dans la config actuelle PT1 > PT3 > PT4 > PT3 > PT2
+                                        // Supprimer uniquement les options PT2 qui n'existent plus dans Menlog
+                                        $options = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d", $question_id_to_delete), ARRAY_A);
+                                        $existing_option_skus = array_column($options, 'sku');
+
+                                        $this->message_erreur .= "------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: " . count($existing_option_skus) . ".\n";
+                                        $this->message_erreur .= "------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : \n";
+                
+                                        // Récupération des skus PT2 sur Menlog
                                         $new_option_skus = [];
                                         $formula_product_question_menlog = $this->get_product_by_sku($all_products, $existing_question_sku);
                                         foreach ($formula_product_question_menlog['subProducts'] as $nestedOptionSku) {
                                             $nestedOption = $this->get_product_by_sku($all_products, $nestedOptionSku);
                                             if ($nestedOption && $nestedOption['productType'] == 2) {
                                                 $new_option_skus[] = $nestedOption['sku'];
+                                                $this->message_erreur .= "------- Débogage: Option PT2 trouvée dans Menlog avec SKU {$nestedOption['sku']} pour la question PT3 avec SKU {$existing_question_sku}.\n";
                                             }
                                         }
+
+                                        $this->message_erreur .= "------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: " . count($new_option_skus) . ".\n";
+                                        $this->message_erreur .= "------ Débogage: ";
                 
-                                        // Supprimer les options PT2 qui ne sont plus présentes dans Menlog
-                                        // Pour chaque PT1 > PT3 > PT4 > PT3 > PT2 de la BDD...
                                         foreach ($existing_option_skus as $existing_option_sku) {
-                                            // Si PT1 > PT3 > PT4 > PT3 > PT2 de la BDD n'existe plus, on le supprime
+                                            $this->message_erreur .= "------- Débogage: Traitement du produit PT2 avec SKU {$existing_option_sku}\n";
+
                                             if (!in_array($existing_option_sku, $new_option_skus)) {
-                                                $option_to_delete = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s", $question_id_to_delete, $existing_option_sku), ARRAY_A);
+                                                $this->message_erreur .= "-------- Débogage: L'option PT2 avec SKU {$existing_option_sku} n'existe plus dans Menlog. Suppression en cours.\n";
+
+                                                $option_to_delete = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d AND sku = %s", $question_id_to_delete, $existing_option_sku), ARRAY_A);
                                                 if ($option_to_delete) {
                                                     if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
                                                         $error_message = $wpdb->last_error;
-                                                        $this->message_erreur .= "Erreur : L'option PT2 avec SKU '{$existing_option_sku}' (ID: {$option_to_delete['id']}) n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' (Question ID: {$question_id_to_delete}) pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products(). Erreur SQL : {$error_message}\n";
+                                                        $this->message_erreur .= "--------- Erreur : L'option PT2 avec SKU '{$existing_option_sku}' (ID: {$option_to_delete['id']}) n'a pas pu être supprimée pour la question PT3 avec SKU '{$existing_question_sku}' (Question ID: {$question_id_to_delete}) pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products(). Erreur SQL : {$error_message}\n";
                                                     } else {
-                                                        $this->products_PT2_deleted++;
+                                                        $this->products_PT2_PT3_PT4_deleted++;
+                                                        $this->message_erreur .= "--------- Débogage: Option PT2 avec SKU '{$existing_option_sku}' supprimée avec succès pour la question PT3 avec SKU '{$existing_question_sku}'.\n";
                                                     }
                                                 }
+                                            } else {
+                                                $this->message_erreur .= "-------- Débogage: L'option PT2 avec SKU {$existing_option_sku} existe encore dans Menlog.\n";
                                             }
                                         }                                        
                                     }
                                 }
                             } else {
-                                // Si le PT4 n'existe plus dans Menlog, supprimer tout ce qui est lié : PT3 et PT2
-                                $questions_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d", $formula_product_id), ARRAY_A);
+                                $this->message_erreur .= "---- Débogage: Le produit PT4 avec SKU {$existing_formula_sku} n'existe plus dans Menlog. Suppression de tous les éléments associés en cours.\n";
+                
+                                // Supprimer tout ce qui est lié : PT3 et PT2
+                                $questions_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d", $formula_product_id), ARRAY_A);
                                 foreach ($questions_to_delete as $question_to_delete) {
+                                    $this->message_erreur .= "----- Débogage: Le PT4 avec SKU {$existing_formula_sku} a dans sa BDD une question PT3 au sku {$question_to_delete['sku']} et à ID {$question_to_delete['id']}";
                                     $question_id_to_delete = $question_to_delete['id'];
                 
                                     // Supprimer les options PT2
-                                    $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d", $question_id_to_delete), ARRAY_A);
+                                    $options_to_delete = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d", $question_id_to_delete), ARRAY_A);
                                     foreach ($options_to_delete as $option_to_delete) {
+                                        $this->message_erreur .= "------ Débogage: Le PT3 au sku {$question_to_delete['sku']} et à ID {$question_to_delete['id']} a dans sa BDD une option PT2 au sku {$option_to_delete['sku']} et à ID {$option_to_delete['id']}\n";
                                         if (!$this->delete_options_for_formulas($option_to_delete['id'])) {
-                                            $this->message_erreur .= "Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$question_to_delete['sku']}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
+                                            $this->message_erreur .= "------- Erreur : L'option PT2 avec ID '{$option_to_delete['id']}' n'a pas pu être supprimée pour la question PT3 avec SKU '{$question_to_delete['sku']}' pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                         } else {
-                                            $this->products_PT2_deleted++;
+                                            $this->products_PT2_PT3_PT4_deleted++;
+                                            $this->message_erreur .= "------- Débogage: Option PT2 avec ID '{$option_to_delete['id']}' supprimée avec succès pour la question PT3 avec SKU '{$question_to_delete['sku']}'.\n";
                                         }
                                     }
+
+                                    $this->message_erreur .= "----- Débogage: Tentative de suppression du PT3 avec SKU {$question_to_delete['sku']} et à ID {$question_to_delete['id']}.\n";
                 
                                     // Supprimer la question PT3
                                     if (!$this->delete_question_for_formula($question_id_to_delete)) {
-                                        $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$question_to_delete['sku']}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
+                                        $this->message_erreur .= "------ Erreur : La question PT3 avec SKU '{$question_to_delete['sku']}' n'a pas pu être supprimée pour le PT4 avec SKU '{$existing_formula_sku}' dans la fonction process_sub_products().\n";
                                     } else {
-                                        $this->products_PT3_deleted++;
+                                        $this->products_PT3_PT4_deleted++;
+                                        $this->message_erreur .= "------ Débogage: La question PT3 avec SKU '{$question_to_delete['sku']}' supprimée avec succès.\n";
                                     }
                                 }
+
+                                $this->message_erreur .= "---- Débogage: Tentative de suppression du PT4 avec SKU {$existing_formula_sku}.\n";
                 
                                 // Supprimer le produit de formule PT4
                                 if (!$this->delete_formula_product($formula_product_id)) {
-                                    $this->message_erreur .= "Erreur : Le produit de formule PT4 avec SKU '{$existing_formula_sku}' n'a pas pu être supprimé pour le PT1 dont l'ID est '{$product_id}' dans la fonction process_sub_products().\n";
+                                    $this->message_erreur .= "----- Erreur : Le produit de formule PT4 avec SKU '{$existing_formula_sku}' n'a pas pu être supprimé pour le PT1 dont l'ID est '{$product_id}' dans la fonction process_sub_products().\n";
                                 } else {
                                     $this->products_PT4_deleted++;
+                                    $this->message_erreur .= "----- Débogage: Le produit de formule PT4 avec SKU '{$existing_formula_sku}' supprimé avec succès.\n";
                                 }
                             }
+                        } else {
+                            $this->message_erreur .= "--- Erreur : Le produit PT4 avec ID '{$existing_formula_id}' n'a pas été trouvé dans la base de données.\n";
                         }
                     }
                 } else {
@@ -1210,6 +1248,7 @@ class WooCommerce_API_Integration {
     }
 
     private function get_products() {
+        // TODO : Dans le cas d'une erreur pour récupérer les produits, que faire ? 
         $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
         
         $options = [
@@ -1273,7 +1312,6 @@ class WooCommerce_API_Integration {
      * @param array $menlogProducts Tous les produits de Menlog
      */
     private function update_product($product_id, $product_data, $menlogProducts) {
-        // TODO : Vérifier si ça fonctionne pour un PT1 Formule
         // Crée une instance de produit WooCommerce simple pour l'ID donné
         $wc_product = new WC_Product_Simple($product_id);
 
@@ -1329,7 +1367,6 @@ class WooCommerce_API_Integration {
         }
 
         if (!empty($updates)) {
-            // TODO : Pour le débogage, savoir si on met à jour un PT1 Formule ou simple
             $this->products_updated++;
             $this->product_updates[] = "Product '{$product_data['sku']}' updated: " . implode('; ', $updates);
             $wc_product->save();
@@ -1403,11 +1440,11 @@ class WooCommerce_API_Integration {
     
     /**
      * Met à jour un productType 2 dans la BDD pour un produit simple
-     * @param mixed $question_id
+     * @param mixed $option_id
      * @param mixed $option
      * @return void
      */
-    private function update_option($question_id, $option) {
+    private function update_option($option_id, $option) {
         global $wpdb;
         // Effectue la mise à jour de l'option dans la base de données
         $updated = $wpdb->update("{$wpdb->prefix}custom_options", [
@@ -1416,7 +1453,7 @@ class WooCommerce_API_Integration {
             'price' => $option['price'],
             'id_category' => $option['idCategory'],
             'description' => $option['description']
-        ], ['id' => $option['id']]);
+        ], ['id' => $option_id]);
     
         // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
         return $updated !== false && $updated > 0;
@@ -1688,7 +1725,7 @@ function display_custom_questions_and_options() {
 function product_customizer_script() {
     ?>
     <script>
-    jQuery(document).ready(function($) {
+        jQuery(document).ready(function($) {
         const basePrice = parseFloat($('#custom_total_price').val());
         let currentPrice = basePrice;
 
