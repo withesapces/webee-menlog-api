@@ -784,8 +784,6 @@ class WooCommerce_API_Integration {
 
                         // Si PT4 existe déjà
                         if ($existing_pt4) {
-                            // TODO : On va chercher à MAJ le PT4 (on met à jour le reste dans la suite
-
                             // On récupère l'ID du PT4 actuel dans la BDD
                             $formula_product_id = $existing_pt4['id'];
 
@@ -804,7 +802,7 @@ class WooCommerce_API_Integration {
                                 $existing_pt4['description'] !== $formula_product_menlog['description']
                             ) {
                                 // Met à jour le PT4 existant avec les nouvelles données fournies.
-                                if (!$this->update_formula_product($formula_product_id, $formula_product)) {
+                                if (!$this->update_formula_product($formula_product_id, $formula_product_menlog)) {
                                     // Enregistre un message d'erreur si la mise à jour échoue
                                     $this->message_erreur .= "Erreur : Le PT4 avec SKU '{$formula_product_menlog['sku']}' n'a pas pu être mis à jour pour le produit dont l'ID est '{$formula_product_id}' dans la fonction process_sub_products().\n";
                                 } else {
@@ -926,9 +924,82 @@ class WooCommerce_API_Integration {
 
         // Suppression des PT3 qui ne sont plus dans Menlog (et des PT2 associés aux PT3)
         // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
-        if($this->isFormula($product)) {
-            // Dans le cas où le produit en cours est une formule
-            // TODO : Dans le cas où le produit en cours est une formule, supprimer le PT3 puis tous les sous-prpduits (PT4, PT3, PT2)
+        if ($this->isFormula($product)) {
+            // Dans le cas où le produit en cours est une formule (PT1)
+        
+            // Pour chaque question PT3 associée au PT1 actuel...
+            foreach ($existing_questions as $existing_question) {
+                // Vérifie si le SKU de la question PT3 actuelle n'est pas présent dans la liste des SKUs des sous-produits de Menlog
+
+                // La liste $sub_products_sku contient les SKUs des questions PT3 associées au produit principal.
+                // Exemple : $sub_products_sku = ['SKU123', 'SKU456', 'SKU789'];
+                if (!in_array($existing_question['sku'], $sub_products_sku)) {
+                    $question_id = $existing_question['id'];
+                    $question_sku = $existing_question['sku'];
+            
+                    // 1. Récupère tous les PT4 associés au PT3 actuel, pour les supprimer
+                    $existing_formulas = $wpdb->get_results($wpdb->prepare(
+                        "SELECT id FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d",
+                        $question_id
+                    ), ARRAY_A);
+            
+
+                    // Pour chaque PT4 du PT3 actuel...
+                    foreach ($existing_formulas as $formula) {
+                        $formula_id = $formula['id'];
+            
+                        // 1.a. Récupère tous les PT3 associés au PT4 actuel, pour les supprimer
+                        $formula_questions = $wpdb->get_results($wpdb->prepare(
+                            "SELECT id FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
+                            $formula_id
+                        ), ARRAY_A);
+            
+                        // Pour chaque PT3 du PT4 actuel
+                        foreach ($formula_questions as $formula_question) {
+                            $formula_question_id = $formula_question['id'];
+            
+                            // 1.a.i. Supprimer les PT2 associés au PT3 de formule actuel
+                            $formula_options = $wpdb->get_results($wpdb->prepare(
+                                "SELECT id FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d",
+                                $formula_question_id
+                            ), ARRAY_A);
+            
+                            // Pour chaque PT2 du PT3 du PT4 du PT3 du PT1....
+                            foreach ($formula_options as $formula_option) {
+                                $formula_option_id = $formula_option['id'];
+            
+                                // Suppression du PT2 de formule
+                                if (!$this->delete_options_for_formulas($formula_option_id)) {
+                                    $this->message_erreur .= "Erreur : L'option PT2 (formule) avec ID '{$formula_option_id}' n'a pas pu être supprimée pour le PT3 (formule) avec ID '{$formula_question_id}' dans la fonction process_sub_products().\n";
+                                } else {
+                                    $this->products_PT2_PT3_PT4_deleted++;
+                                }
+                            }
+            
+                            // Suppression du PT3 de formule
+                            if (!$this->delete_question_for_formula($formula_question_id)) {
+                                $this->message_erreur .= "Erreur : La question PT3 (formule) avec ID '{$formula_question_id}' n'a pas pu être supprimée pour le PT4 avec ID '{$formula_id}' dans la fonction process_sub_products().\n";
+                            } else {
+                                $this->products_PT3_PT4_deleted++;
+                            }
+                        }
+            
+                        // Suppression du PT4
+                        if (!$this->delete_formula_product($formula_id)) {
+                            $this->message_erreur .= "Erreur : Le PT4 avec ID '{$formula_id}' n'a pas pu être supprimé pour la question PT3 avec ID '{$question_id}' dans la fonction process_sub_products().\n";
+                        } else {
+                            $this->products_PT4_deleted++;
+                        }
+                    }
+
+                    // Suppression du PT3
+                    if (!$this->delete_question($question_id)) {
+                        $this->message_erreur .= "Erreur : La question PT3 avec SKU '{$question_sku}' n'a pas pu être supprimée pour le PT1 (formule) avec ID '{$product_id}' dans la fonction process_sub_products().\n";
+                    } else {
+                        $this->products_PT3_deleted++;
+                    }
+                }
+            }
         } else {
             // Dans le cas où le produit en cours est un produit simple
 
@@ -1406,11 +1477,11 @@ class WooCommerce_API_Integration {
 
     /**
      * Met à jour un PT4 dans la BDD
-     * @param mixed $question_id
+     * @param mixed $formula_product_id
      * @param mixed $formula_product
      * @return bool
      */
-    private function update_formula_product($question_id, $formula_product) {
+    private function update_formula_product($formula_product_id, $formula_product) {
         global $wpdb;
         // Effectue la mise à jour de l'option dans la base de données
         $updated = $wpdb->update("{$wpdb->prefix}custom_formula_products", [
@@ -1420,7 +1491,7 @@ class WooCommerce_API_Integration {
             'product_name' => $formula_product['name'],
             'id_category' => $formula_product['idCategory'],
             'description' => $formula_product['description']
-        ]);
+        ], ['id' => $formula_product_id]);
     
         // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
         return $updated !== false && $updated > 0;
