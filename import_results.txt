@@ -20,8 +20,8 @@ Produits type 2 :
 
 Produits type 4 : 
          0 créés,
-         1 mis à jour, 
-         26 skipped, 
+         0 mis à jour, 
+         27 skipped, 
          0 supprimés
 
 Produits type 3 du 4 : 
@@ -33,7 +33,8 @@ Produits type 3 du 4 :
 Produits type 2 du 3 du 4 : 
          0 créés,
          0 mis à jour, 
-         7 skipped, 
+         6 skipped, 
          0 supprimés
 
 Détails des messages :
+Erreur : L'option PT2 avec SKU 'c_L6tQNGcwi5*c5eRNPrsOE*_30' n'a pas pu être mise à jour pour la question PT3 avec SKU 'bme6iXcwi5*c5eRNPrsOE*' pour le PT4 avec SKU 'm_Fs4Cgybli5FcOnjxHiZC20_0' dans la fonction process_sub_products().

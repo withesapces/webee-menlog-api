@@ -523,7 +523,7 @@ class WooCommerce_API_Integration {
                  * Suppression des PT2 > PT3 > PT4 si c'est un produit Formule
                  * Suppression des PT2 si c'est un produit Simple
                  */
-                if ($this->isFormula($product)) {
+                if ($this->isFormula($product, $all_products)) {
                     // Dans le cas où le PT1 est une formule
                     // On est déjà dans la configuration PT1 > PT3
                 
@@ -924,7 +924,7 @@ class WooCommerce_API_Integration {
 
         // Suppression des PT3 qui ne sont plus dans Menlog (et des PT2 associés aux PT3)
         // Dans ce contexte un PT3 peut être associé à une seul PT1. Par exemple, PT3A est associé à PT1X via un lien. PT3A peut être associé à PT1Y, mais via un autre lien. Ainsi, les PT3 sont différents.
-        if ($this->isFormula($product)) {
+        if ($this->isFormula($product, $all_products)) {
             // Dans le cas où le produit en cours est une formule (PT1)
         
             // Pour chaque question PT3 associée au PT1 actuel...
@@ -1235,11 +1235,10 @@ class WooCommerce_API_Integration {
      * Permet aussi à un produit d'avoir plusieurs catégories
      * 
      * @param int $product_id L'ID du produit WooCommerce.
-     * @param array $product Les données du produit Menlog.
+     * @param array $product Les données du produit Menlog PT1 en cours de traitement.
      * @param array $menlogProducts Tous les produits de Menlog (pour passer à la fonction update_product())
      */
     private function update_product_with_category($product_id, $product, $menlogProducts) {
-        // TODO : Vérifier si ça fonctionne pour un PT1 Formule
         // Récupérer le produit WooCommerce existant à partir de son ID
         $wc_product = wc_get_product($product_id);
 
@@ -1259,6 +1258,7 @@ class WooCommerce_API_Integration {
         }
 
         // Mettre à jour le produit existant s'il y a d'autres modifications
+        // $product contient le PT1 Menlog en cours de traitement
         $this->update_product($product_id, $product, $menlogProducts);
     }
     
@@ -1326,7 +1326,7 @@ class WooCommerce_API_Integration {
         // Vérifie et met à jour les sous-produits associés (productType 3) si le PT1 a des PT3 associés
         if (!empty($product_data['subProducts'])) {
             // Traite les sous-produits associés au produit principal PT1 en cours
-            $this->process_sub_products($product_id, $product_data['subProducts'], $menlogProducts);
+            $this->process_sub_products($product_id, $product_data['subProducts'], $menlogProducts, $product_data);
         }
 
         if (!empty($updates)) {
@@ -1572,18 +1572,31 @@ class WooCommerce_API_Integration {
 
     /**
      * Vérifie si le produit Menlog est un produit simple ou une formule
-     * @param mixed $product
+     * @param mixed $product Contient le PT1 Menlog en cours de traitement
      * @return bool
      */
-    public function isFormula($product) {
+    public function isFormula($product, $all_products) {
         // Vérifie si le produit a des sous-produits (PT3)
+        // Si le PT1 de Menlog à des sous-produits PT3, on les regarde.
         if (!empty($product['subProducts'])) {
             // Il y a des sous-produits (PT3)
-            // Pour chaque PT3, on cherche des PT4
-            foreach ($product['subProducts'] as $isFormula_subProduct) {
-                if (!empty($isFormula_subProduct['subProducts'])) {
-                    // On a un PT4, donc c'est une formule
-                    return true;
+            // Pour chaque PT3, on le récupère sur Menlog
+            foreach ($product['subProducts'] as $menlog_PT3) {
+                // On récupère le PT3 complet sur Menlog
+                $menlogè_PT3_suite = $this->get_product_by_sku($all_products, $menlog_PT3);
+
+                // On parcours chaque sous-produit du PT3, à la recherche d'un PT4 si c'est une formule
+                if (!empty($menlogè_PT3_suite['subProducts'])) {
+                    foreach ($menlogè_PT3_suite['subProducts'] as $isFormula_subProduct) {
+                        // On récupère le sous-produit du PT3 du PT1 qu'on regarde
+                        $PT2_or_PT4 = $this->get_product_by_sku($all_products, $isFormula_subProduct);
+                        if ($PT2_or_PT4['productType'] == 4) {
+                            // On a un PT4, donc c'est une formule
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
                 }
             }
         }
