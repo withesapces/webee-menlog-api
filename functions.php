@@ -3,16 +3,8 @@
 Plugin Name: WooCommerce API Integration
 Description: Plugin pour intégrer les produits d'une API externe dans WooCommerce.
 Version: 1.0
-Author: Votre Nom
+Author: Webee Digital
 */
-
-/**
- * TODO : Produits TYPE 2
- * - Ajout
- * - Modification 
- * - Suppression 
- * - Ne rien faire
- */
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
@@ -792,9 +784,36 @@ class WooCommerce_API_Integration {
 
                         // Si PT4 existe déjà
                         if ($existing_pt4) {
-                            // TODO : On va chercher à MAJ le PT4 
+                            // TODO : On va chercher à MAJ le PT4 (on met à jour le reste dans la suite
+
+                            // On récupère l'ID du PT4 actuel dans la BDD
                             $formula_product_id = $existing_pt4['id'];
-                            $this->products_PT4_skipped++; // Assume skipping as PT4 exists
+
+                            // On va chercher le PT4 complet dans Menlog
+                            // $all_products contient tous les produits de menlog
+                            // sub_product['sku'] contient le SKU du PT4 qu'on regarde
+                            $formula_product_menlog = $this->get_product_by_sku($all_products, $sub_product['sku']);
+
+                            // Vérifie si l'une des données importantes du PT4 a changé en comparant les valeurs actuelles et les nouvelles.
+                            if (
+                                $existing_pt4['sku'] !== $formula_product_menlog['sku'] ||
+                                $existing_pt4['alpha_code'] !== $formula_product_menlog['alphaCode'] ||
+                                $existing_pt4['price'] != $formula_product_menlog['price'] ||  // Comparaison non stricte pour les valeurs numériques
+                                $existing_pt4['product_name'] !== $formula_product_menlog['name'] ||
+                                $existing_pt4['id_category'] !== $formula_product_menlog['idCategory'] ||
+                                $existing_pt4['description'] !== $formula_product_menlog['description']
+                            ) {
+                                // Met à jour le PT4 existant avec les nouvelles données fournies.
+                                if (!$this->update_formula_product($formula_product_id, $formula_product)) {
+                                    // Enregistre un message d'erreur si la mise à jour échoue
+                                    $this->message_erreur .= "Erreur : Le PT4 avec SKU '{$formula_product_menlog['sku']}' n'a pas pu être mis à jour pour le produit dont l'ID est '{$formula_product_id}' dans la fonction process_sub_products().\n";
+                                } else {
+                                    $this->products_PT4_updated++;
+                                }
+                            } else {
+                                // Aucune mise à jour nécessaire car les données n'ont pas changé
+                                $this->products_PT4_skipped++; // Assume skipping as PT4 data hasn't changed
+                            }
                         } else {
                             // Sinon, PT4 n'existe pas pour la combinaison PT1 > PT3 en cours
                             // On insère le PT4 dans la BDD et on récupère son ID
@@ -1149,6 +1168,7 @@ class WooCommerce_API_Integration {
      * @param array $menlogProducts Tous les produits de Menlog (pour passer à la fonction update_product())
      */
     private function update_product_with_category($product_id, $product, $menlogProducts) {
+        // TODO : Vérifier si ça fonctionne pour un PT1 Formule
         // Récupérer le produit WooCommerce existant à partir de son ID
         $wc_product = wc_get_product($product_id);
 
@@ -1183,6 +1203,7 @@ class WooCommerce_API_Integration {
      * @param array $menlogProducts Tous les produits de Menlog
      */
     private function update_product($product_id, $product_data, $menlogProducts) {
+        // TODO : Vérifier si ça fonctionne pour un PT1 Formule
         // Crée une instance de produit WooCommerce simple pour l'ID donné
         $wc_product = new WC_Product_Simple($product_id);
 
@@ -1238,6 +1259,7 @@ class WooCommerce_API_Integration {
         }
 
         if (!empty($updates)) {
+            // TODO : Pour le débogage, savoir si on met à jour un PT1 Formule ou simple
             $this->products_updated++;
             $this->product_updates[] = "Product '{$product_data['sku']}' updated: " . implode('; ', $updates);
             $wc_product->save();
@@ -1288,7 +1310,7 @@ class WooCommerce_API_Integration {
     }
 
     /**
-     * Insère un ProductType 2 dans la BDD associé à un ProductType 3
+     * Insère un ProductType 2 dans la BDD associé à un ProductType 3 pour un produit simple
      * @param mixed $question_id l'id du productType 3
      * @param mixed $option le contenu de productType 2
      * @return void
@@ -1310,7 +1332,7 @@ class WooCommerce_API_Integration {
     }
     
     /**
-     * Met à jour un productType 2 dans la BDD
+     * Met à jour un productType 2 dans la BDD pour un produit simple
      * @param mixed $question_id
      * @param mixed $option
      * @return void
@@ -1333,7 +1355,7 @@ class WooCommerce_API_Integration {
     
 
     /**
-     * Supprime un productType 2 de la BDD
+     * Supprime un productType 2 de la BDD pour un produit simple
      * @param int $option_id l'ID de l'option à supprimer
      * @return void
      */
@@ -1361,7 +1383,12 @@ class WooCommerce_API_Integration {
         return $deleted !== false && $deleted > 0;
     }
 
-    
+    /**
+     * Insert un PT4 dans la BDD
+     * @param mixed $question_id
+     * @param mixed $formula_product
+     * @return mixed
+     */
     private function insert_formula_product($question_id, $formula_product) {
         global $wpdb;
         $wpdb->insert("{$wpdb->prefix}custom_formula_products", [
@@ -1374,6 +1401,29 @@ class WooCommerce_API_Integration {
             'description' => $formula_product['description']
         ]);
         return $wpdb->insert_id;
+    }
+
+
+    /**
+     * Met à jour un PT4 dans la BDD
+     * @param mixed $question_id
+     * @param mixed $formula_product
+     * @return bool
+     */
+    private function update_formula_product($question_id, $formula_product) {
+        global $wpdb;
+        // Effectue la mise à jour de l'option dans la base de données
+        $updated = $wpdb->update("{$wpdb->prefix}custom_formula_products", [
+            'sku' => $formula_product['sku'],
+            'alpha_code' => $formula_product['alphaCode'],
+            'price' => $formula_product['price'],
+            'product_name' => $formula_product['name'],
+            'id_category' => $formula_product['idCategory'],
+            'description' => $formula_product['description']
+        ]);
+    
+        // Retourne true si la mise à jour a affecté au moins une ligne, false sinon
+        return $updated !== false && $updated > 0;
     }
 
     /**
@@ -2289,12 +2339,4 @@ function formula_builder_style() {
     <?php
 }
 
-
-
-
-
-
-
 ?>
-
-
