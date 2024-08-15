@@ -45,16 +45,17 @@ function send_order_data_to_api() {
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         $product = $cart_item['data'];
         $product_id = $product->get_id();
+        $product_price = floatval($product->get_price());
 
         $product_type = 1; // Par défaut, 1 pour un produit simple
         $category = wp_get_post_terms($product_id, 'product_cat');
-        $id_category = !empty($category) ? $category[0]->term_id : '';
+        $id_category = !empty($category) ? $category[0]->slug : '';
 
         $item_data = array(
             "productType" => $product_type,
             "sku" => $product->get_sku(),
             "name" => $product->get_name(),
-            "price" => $cart_item['line_total'],
+            "price" => $product_price, // Prix du produit dans la BDD
             "quantity" => $cart_item['quantity'],
             "idCategory" => $id_category,
             "description" => $product->get_description(),
