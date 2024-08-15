@@ -12,6 +12,7 @@ if (!defined('ABSPATH')) {
 
 include_once plugin_dir_path(__FILE__) . 'display/formula_product_view/display_formula_product_view.php';
 include_once plugin_dir_path(__FILE__) . 'display/simple_product_view/display_product_view.php';
+include_once plugin_dir_path(__FILE__) . 'order_send/order_send.php';
 
 function enqueue_display_formula_product_view_assets() {
     wp_enqueue_style(
@@ -103,6 +104,62 @@ class WooCommerce_API_Integration {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'import_menlog_from_api'));
     }
+
+    // -----------------------------
+    // Méthodes getter pour les propriétés privées
+    // -----------------------------
+
+        public function get_server() {
+            return $this->server;
+        }
+
+        public function get_delivery() {
+            return $this->delivery;
+        }
+
+        public function get_uuidclient() {
+            return $this->uuidclient;
+        }
+
+        public function get_uuidmagasin() {
+            return $this->uuidmagasin;
+        }
+
+        /**
+         * Récupération du Token menlog
+         * @return mixed
+         */
+        public function get_token() {
+            $url = "https://{$this->server}/jwt/authenticate";
+        
+            $body = array(
+                'username' => $this->username,
+                'password' => $this->password,
+            );
+        
+            $args = array(
+                'body'    => json_encode($body),
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'method'  => 'POST',
+            );
+        
+            $response = wp_remote_post($url, $args);
+        
+            if (is_wp_error($response)) {
+                wp_die('Erreur lors de la récupération du token: ' . $response->get_error_message());
+            }
+        
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body);
+        
+            if (isset($data->token)) {
+                return $data->token;
+            } else {
+                wp_die('Le token n\'a pas pu être récupéré.');
+            }
+        }
 
 
     // -----------------------------
@@ -306,41 +363,7 @@ class WooCommerce_API_Integration {
     // -----------------------------
 
 
-        /**
-         * Récupération du Token menlog
-         * @return mixed
-         */
-        private function get_token() {
-            $url = "https://{$this->server}/jwt/authenticate";
-        
-            $body = array(
-                'username' => $this->username,
-                'password' => $this->password,
-            );
-        
-            $args = array(
-                'body'    => json_encode($body),
-                'headers' => array(
-                    'Content-Type' => 'application/json',
-                ),
-                'method'  => 'POST',
-            );
-        
-            $response = wp_remote_post($url, $args);
-        
-            if (is_wp_error($response)) {
-                wp_die('Erreur lors de la récupération du token: ' . $response->get_error_message());
-            }
-        
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body);
-        
-            if (isset($data->token)) {
-                return $data->token;
-            } else {
-                wp_die('Le token n\'a pas pu être récupéré.');
-            }
-        }  
+
 
         /**
          * Récupération de tous les produits menlog pour les envoyer à import_menlog_from_api()
@@ -1748,6 +1771,7 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
         $cart_item_data['is_formula'] = true;
         $cart_item_data['formula_options'] = [];
 
+        // Récupération des questions pour les formules
         $questions = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
             $product_id
@@ -1758,6 +1782,7 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
             $selected_formula_product_id = isset($_POST["formula_option_{$question_id}"]) ? $_POST["formula_option_{$question_id}"] : null;
 
             if ($selected_formula_product_id) {
+                // Récupération du produit formule sélectionné
                 $formula_product = $wpdb->get_row($wpdb->prepare(
                     "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d",
                     $selected_formula_product_id
@@ -1768,9 +1793,12 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
                     'product' => $formula_product['product_name'],
                     'sku' => $formula_product['sku'],
                     'price' => $formula_product['price'],
+                    'id_category' => $formula_product['id_category'],
+                    'description' => $formula_product['description'],
                     'suboptions' => []
                 ];
 
+                // Récupération des sous-questions pour le produit formule sélectionné
                 $sub_questions = $wpdb->get_results($wpdb->prepare(
                     "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
                     $selected_formula_product_id
@@ -1789,7 +1817,10 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
                                 'question' => $sub_question['question_text'],
                                 'option' => $option_name,
                                 'sku' => $option_sku,
-                                'price' => $option['price']
+                                'price' => $option['price'],
+                                'idCategory' => $option['id_category'],
+                                'description' => $option['description'],
+                                'productType' => 4, // Sous-item de formule
                             ];
                         }
                     }
@@ -1797,11 +1828,31 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
             }
         }
     } else {
-        // Gestion des options pour les produits non-formule (inchangée)
-        foreach ($_POST as $key => $value) {
-            if (strpos($key, 'option_') === 0) {
-                foreach ($value as $option_name) {
-                    $cart_item_data['custom_options'][] = sanitize_text_field($option_name);
+        // Gestion des options pour les produits non-formule
+        $cart_item_data['custom_options'] = [];
+        $questions = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
+            $product_id
+        ), ARRAY_A);
+
+        foreach ($questions as $question) {
+            $question_id = $question['id'];
+            if (isset($_POST["option_{$question_id}"])) {
+                foreach ($_POST["option_{$question_id}"] as $option_sku => $option_name) {
+                    $option = $wpdb->get_row($wpdb->prepare(
+                        "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s",
+                        $question_id, $option_sku
+                    ), ARRAY_A);
+
+                    $cart_item_data['custom_options'][] = [
+                        'question' => $question['question_text'],
+                        'option' => $option_name,
+                        'sku' => $option_sku,
+                        'price' => $option['price'],
+                        'idCategory' => $option['id_category'],
+                        'description' => $option['description'],
+                        'productType' => 2, // Sous-item de produit simple
+                    ];
                 }
             }
         }
@@ -1810,6 +1861,8 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
     return $cart_item_data;
 }
 
+
+
 // Afficher les options sélectionnées dans le panier
 add_filter('woocommerce_get_item_data', 'display_custom_options_in_cart', 10, 2);
 function display_custom_options_in_cart($item_data, $cart_item) {
@@ -1817,12 +1870,12 @@ function display_custom_options_in_cart($item_data, $cart_item) {
         foreach ($cart_item['formula_options'] as $question_id => $formula_option) {
             $item_value = $formula_option['product'];
             
-            // Ajouter la valeur des suboptions derrière le produit, si elle existe
             if (!empty($formula_option['suboptions'])) {
                 $suboption_values = [];
                 foreach ($formula_option['suboptions'] as $suboption) {
                     $suboption_values[] = $suboption['option'];
                 }
+                // Convertir les sous-options en une chaîne de texte
                 $item_value .= ' (' . implode(', ', $suboption_values) . ')';
             }
     
@@ -1832,13 +1885,23 @@ function display_custom_options_in_cart($item_data, $cart_item) {
             ];
         }
     } elseif (isset($cart_item['custom_options'])) {
+        // Convertir les options en chaîne de texte si elles sont dans un tableau
+        $option_values = [];
+        foreach ($cart_item['custom_options'] as $custom_option) {
+            if (is_array($custom_option)) {
+                $option_values[] = $custom_option['option'];
+            } else {
+                $option_values[] = $custom_option;
+            }
+        }
         $item_data[] = [
             'key'   => 'Options',
-            'value' => implode(', ', $cart_item['custom_options'])
+            'value' => implode(', ', $option_values)
         ];
     }
     return $item_data;
 }
+
 
 // Modifier le prix affiché dans le panier
 add_action('woocommerce_before_calculate_totals', 'update_cart_price');
