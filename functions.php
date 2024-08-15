@@ -443,11 +443,27 @@ class WooCommerce_API_Integration {
          */
         private function import_categories($categories) {
             foreach ($categories as $category) {
-                $existing_category = get_term_by('slug', $category['idCategory'], 'product_cat');
+                $menlog_id_category = $category['idCategory'];
                 
-                if ($existing_category) {
-                    // Correction de l'espace blanc potentiellement problématique
-                    $new_category_name = trim($category['name']);
+                // Rechercher la catégorie existante par l'ID Menlog stocké en tant que méta-donnée
+                $existing_category = get_terms(array(
+                    'taxonomy' => 'product_cat',
+                    'meta_query' => array(
+                        array(
+                            'key' => 'menlog_id_category',
+                            'value' => $menlog_id_category,
+                            'compare' => '='
+                        )
+                    ),
+                    'hide_empty' => false,
+                    'number' => 1
+                ));
+        
+                $new_category_name = trim($category['name']);
+                
+                if (!empty($existing_category) && !is_wp_error($existing_category)) {
+                    $existing_category = $existing_category[0]; // Obtenir le premier résultat
+        
                     if ($existing_category->name !== $new_category_name) {
                         wp_update_term($existing_category->term_id, 'product_cat', array('name' => $new_category_name));
                         $this->categories_updated++;
@@ -455,12 +471,40 @@ class WooCommerce_API_Integration {
                     } else {
                         $this->categories_skipped++;
                     }
+        
+                    // Mettre à jour ou ajouter l'ID Menlog en tant que méta-donnée, si nécessaire
+                    update_term_meta($existing_category->term_id, 'menlog_id_category', $menlog_id_category);
+                
                 } else {
-                    wp_insert_term($new_category_name, 'product_cat', array('slug' => $category['idCategory']));
-                    $this->categories_created++;
+                    // Rechercher par slug s'il n'y a pas de correspondance avec le méta
+                    $existing_category_by_slug = get_term_by('slug', $menlog_id_category, 'product_cat');
+        
+                    if ($existing_category_by_slug) {
+                        // Mettre à jour le nom si nécessaire
+                        if ($existing_category_by_slug->name !== $new_category_name) {
+                            wp_update_term($existing_category_by_slug->term_id, 'product_cat', array('name' => $new_category_name));
+                            $this->categories_updated++;
+                            $this->category_updates[] = "Category '{$existing_category_by_slug->name}' updated to '{$new_category_name}'";
+                        } else {
+                            $this->categories_skipped++;
+                        }
+        
+                        // Ajouter l'ID Menlog en tant que méta-donnée
+                        update_term_meta($existing_category_by_slug->term_id, 'menlog_id_category', $menlog_id_category);
+        
+                    } else {
+                        // Créer une nouvelle catégorie si aucune correspondance n'est trouvée
+                        $new_category = wp_insert_term($new_category_name, 'product_cat', array('slug' => $menlog_id_category));
+                        if (!is_wp_error($new_category)) {
+                            $this->categories_created++;
+                            // Ajouter l'ID Menlog en tant que méta-donnée
+                            update_term_meta($new_category['term_id'], 'menlog_id_category', $menlog_id_category);
+                        }
+                    }
                 }
             }
         }
+        
     
         /**
          * Importe les produits WooCommerce (productType 1) en ajoutant de nouveaux produits ou en mettant à jour les produits existants.

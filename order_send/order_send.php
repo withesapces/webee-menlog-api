@@ -49,7 +49,11 @@ function send_order_data_to_api() {
 
         $product_type = 1; // Par défaut, 1 pour un produit simple
         $category = wp_get_post_terms($product_id, 'product_cat');
-        $id_category = !empty($category) ? $category[0]->slug : '';
+
+        if (!empty($category)) {
+            $term_id = $category[0]->term_id; // Récupère l'identifiant de la catégorie
+            $id_category = get_term_meta($term_id, 'menlog_id_category', true); // Récupère l'idCategory de Menlog
+        }
 
         $item_data = array(
             "productType" => $product_type,
