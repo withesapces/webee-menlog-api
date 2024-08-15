@@ -507,6 +507,7 @@ class WooCommerce_API_Integration {
         private function insert_product($product) {
             $category_id = get_term_by('slug', $product['idCategory'], 'product_cat')->term_id;
 
+            // Création d'un nouveau produit WooCommerce simple
             $wc_product = new WC_Product_Simple();
             $wc_product->set_name($product['name']);
             $wc_product->set_sku($product['sku']);
@@ -515,10 +516,22 @@ class WooCommerce_API_Integration {
             $wc_product->set_category_ids(array($category_id));
             $wc_product->save();
 
+            // Ajouter les métadonnées par défaut pour la disponibilité
+            update_post_meta($wc_product->get_id(), 'is_ephemeral', 'no'); // Le produit n'est pas éphémère par défaut
+            update_post_meta($wc_product->get_id(), 'daily_quota', '50'); // Production quotidienne par défaut : 50 unités
+
+            // Définir la disponibilité pour chaque jour de la semaine
+            $days_of_week = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+            foreach ($days_of_week as $day) {
+                update_post_meta($wc_product->get_id(), 'availability_' . $day, 'yes'); // Disponible chaque jour
+            }
+
+            // Incrémenter le compteur de produits créés
             $this->products_created++;
             
             return $wc_product->get_id();
         }
+
 
         /**
          * Met à jour un produit WooCommerce existant
