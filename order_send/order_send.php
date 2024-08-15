@@ -9,6 +9,9 @@ function send_order_data_to_api() {
     $cart = WC()->cart;
     $customer = WC()->customer;
 
+    $pickup_date = WC()->session->get('pickup_date');
+    $pickup_time = WC()->session->get('pickup_time');
+
     $data = array(
         "account" => "{{refclient}}",
         "location" => "Plateforme Ecommerce",
@@ -16,24 +19,24 @@ function send_order_data_to_api() {
         "status" => "PENDING", // Nous utilisons PENDING car la commande n'est pas encore confirmée
         "orderType" => "PICKUP",
         "created_at" => current_time('mysql'),
-        "pickupTime" => isset($_POST['pickup_time']) ? sanitize_text_field($_POST['pickup_time']) : '',
-        "deliveryTime" => isset($_POST['delivery_time']) ? sanitize_text_field($_POST['delivery_time']) : '',
+        "pickupTime" => null, // Date de retrait de la commande par un livreur.
+        "deliveryTime" => isset($pickup_time) && isset($pickup_date) ? $pickup_date . $pickup_time : '', // Date de livraison/retrait en magasin de la commande.
         "customer" => array(
             "name" => $customer->get_first_name() . ' ' . $customer->get_last_name(),
             "phone" => $customer->get_billing_phone(),
             "email" => $customer->get_billing_email(),
         ),
         "orderTotal" => array(
-            "subtotal" => $cart->get_subtotal(),
-            "discount" => $cart->get_discount_total(),
-            "tax" => $cart->get_total_tax(),
-            "deliveryFee" => $cart->get_shipping_total(),
-            "total" => $cart->get_total(),
+            "subtotal" => floatval($cart->get_subtotal()),
+            "discount" => floatval($cart->get_discount_total()),
+            "tax" => floatval($cart->get_total_tax()),
+            "deliveryFee" => floatval($cart->get_shipping_total()),
+            "montant" => floatval(WC()->cart->get_total('')),
         ),
         "payments" => array(
             array(
                 "typereg" => "5",
-                "montant" => $cart->get_total(),
+                "montant" => floatval(WC()->cart->get_total('')),
             )
         ),
         "items" => array(),
@@ -64,7 +67,7 @@ function send_order_data_to_api() {
                     "productType" => 4,
                     "sku" => $formula_option['sku'],
                     "name" => $formula_option['product'],
-                    "price" => $formula_option['price'],
+                    "price" => floatval($formula_option['price']),
                     "quantity" => 1,
                     "id_category" => isset($formula_option['id_category']) ? $formula_option['id_category'] : '',
                     "description" => isset($formula_option['description']) ? $formula_option['description'] : '',
@@ -77,7 +80,7 @@ function send_order_data_to_api() {
                             "productType" => 2,
                             "sku" => $suboption['sku'],
                             "name" => $suboption['option'],
-                            "price" => $suboption['price'],
+                            "price" => floatval($suboption['price']),
                             "quantity" => 1,
                             "idCategory" => isset($suboption['idCategory']) ? $suboption['idCategory'] : '',
                             "description" => isset($suboption['description']) ? $suboption['description'] : '',
@@ -92,7 +95,7 @@ function send_order_data_to_api() {
                     "productType" => 2,
                     "sku" => $custom_option['sku'],
                     "name" => $custom_option['option'],
-                    "price" => $custom_option['price'],
+                    "price" => floatval($custom_option['price']),
                     "quantity" => 1,
                     "idCategory" => isset($custom_option['idCategory']) ? $custom_option['idCategory'] : '',
                     "description" => isset($custom_option['description']) ? $custom_option['description'] : '',
