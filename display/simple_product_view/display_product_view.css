@@ -1,0 +1,122 @@
+.product-customizer {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    margin-bottom: 40px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.product-customizer h3 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.customizer-section {
+    margin-bottom: 32px;
+}
+
+.customizer-section h4 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.customizer-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.customizer-option {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.customizer-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.customizer-option-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+.customizer-option-label input[type="checkbox"] {
+    display: none;
+}
+
+.customizer-option-label input[type="checkbox"] + .customizer-option-name::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.customizer-option-label input[type="checkbox"]:checked + .customizer-option-name::before {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
+
+.customizer-option-label input[type="checkbox"]:checked + .customizer-option-name::after {
+    content: '✔';
+    color: #ffffff;
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+}
+
+.customizer-option-name {
+    flex-grow: 1;
+    font-size: 16px;
+    color: #34495e;
+    padding-left: 30px;
+    position: relative;
+}
+
+.customizer-option-price {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.product-total {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 32px;
+    text-align: right;
+    color: #2c3e50;
+    padding: 16px;
+    background-color: #ecf0f1;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .product-customizer {
+        padding: 20px;
+    }
+
+    .customizer-options {
+        grid-template-columns: 1fr;
+    }
+}

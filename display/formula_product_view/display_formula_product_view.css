@@ -1,0 +1,179 @@
+.formula-builder {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    margin-bottom: 40px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.formula-builder h3 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.formula-section {
+    margin-bottom: 32px;
+}
+
+.formula-section h4 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.formula-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.formula-option {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    width: calc(33.33% - 16px);
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.formula-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.formula-option.selected {
+    border-color: #3498db;
+    background-color: #ebf5fb;
+}
+
+.formula-option-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.formula-option input[type="radio"] {
+    display: none;
+}
+
+.formula-option-name {
+    font-size: 18px;
+    color: #34495e;
+    margin-bottom: 8px;
+}
+
+.formula-option-price {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.formula-suboptions {
+    margin-top: 16px;
+    padding: 16px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    background-color: #3498db;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.formula-suboption h5 {
+    font-size: 18px;
+    color: #7f8c8d;
+    margin-bottom: 12px;
+}
+
+.formula-suboption-choice {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.formula-suboption-choice input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.formula-suboption-name {
+    flex-grow: 1;
+    font-size: 16px;
+    color: #34495e;
+}
+
+.formula-suboption-price {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.formula-total {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 32px;
+    text-align: right;
+    color: #2c3e50;
+    padding: 16px;
+    background-color: #ecf0f1;
+    border-radius: 8px;
+}
+
+.selection-info {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+#validation-message {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #ffecec;
+    border: 1px solid #f5aca6;
+    border-radius: 4px;
+}
+
+.woocommerce-cart-form .product-name dl.variation {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f8f8;
+        border-radius: 4px;
+    }
+    .woocommerce-cart-form .product-name dl.variation dt {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+    .woocommerce-cart-form .product-name dl.variation dd {
+        margin-left: 10px;
+        margin-bottom: 5px;
+    }
+
+@media (max-width: 768px) {
+    .formula-builder {
+        padding: 20px;
+    }
+
+    .formula-option {
+        width: calc(50% - 16px);
+    }
+}
+
+@media (max-width: 480px) {
+    .formula-option {
+        width: 100%;
+    }
+}
