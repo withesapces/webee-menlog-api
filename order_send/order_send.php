@@ -1,13 +1,30 @@
 <?php
+// Ce code permet d'envoyer une commande sur Menlog
+// TODO : Que doit-on faire si la commande ne peut pas être envoyée ? Ca doit dépendre des codes d'erreur.
 
 add_action('woocommerce_checkout_process', 'send_order_data_to_api');
 
 function send_order_data_to_api() {
     // Vérifier le nonce pour la sécurité
     check_ajax_referer('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+    $api_integration = new WooCommerce_API_Integration();
+
+    $customer = WC()->customer;
+
+    // Test d'envoie du client
+    $add_client_result = $api_integration->add_client($customer);
+    if ($add_client_result['error']) {
+        wc_add_notice($add_client_result['message'], 'error');
+        
+        // Log des informations de débogage
+        if (isset($add_client_result['debug_info'])) {
+            error_log("Débug add_client: " . print_r($add_client_result['debug_info'], true));
+        }
+        
+        return;
+    }
 
     $cart = WC()->cart;
-    $customer = WC()->customer;
 
     $pickup_date = WC()->session->get('pickup_date');
     $pickup_time = WC()->session->get('pickup_time');

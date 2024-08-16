@@ -1786,6 +1786,102 @@ class WooCommerce_API_Integration {
             // Sinon, c'est un produit simple
             return false;
         }
+
+        /**
+         * Permet de tenter d'ajouter un client dans Menlog
+         * @param mixed $customer
+         * @return array
+         */
+        public function add_client($customer) {
+            $token = $this->get_token();
+        
+            $client_data = array(
+                "refmenlog" => "",
+                "uidclient" => $customer->get_id(),
+                "username" => $customer->get_username(),
+                "prenom" => $customer->get_first_name(),
+                "nom" => $customer->get_last_name(),
+                "email" => $customer->get_email(),
+                "tel" => $customer->get_billing_phone(),
+                "mob" => $customer->get_billing_phone(),
+                "addr1" => $customer->get_billing_address_1(),
+                "addr2" => $customer->get_billing_address_2(),
+                "codepostal" => $customer->get_billing_postcode(),
+                "ville" => $customer->get_billing_city(),
+                "pays" => $customer->get_billing_country(),
+                "dateanniv" => "", // À remplir si disponible
+                "typeimport" => 1
+            );
+        
+            $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/add_client?token={$token}&nocache=true";
+            $args = array(
+                'body' => json_encode($client_data),
+                'headers' => array('Content-Type' => 'application/json'),
+                'method' => 'POST',
+            );
+        
+            $response = wp_remote_post($url, $args);
+        
+            if (is_wp_error($response)) {
+                return array('error' => true, 'message' => 'Erreur de connexion lors de l\'ajout du client: ' . $response->get_error_message());
+            }
+        
+            $status_code = wp_remote_retrieve_response_code($response);
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+
+            error_log("Réponse de l'API add_client - Status: $status_code, Body: " . print_r($body, true));
+        
+            switch ($status_code) {
+                case 200:
+                    if (isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
+                        return array('error' => false, 'message' => 'Client ajouté avec succès');
+                    } elseif (isset($data['error']) && $data['error'] == 1) {
+                        if (isset($data['status']) && $data['status'] == 'Invalid body') {
+                            return array('error' => true, 'message' => 'Erreur: Données du client invalides ou incomplètes. Veuillez vérifier tous les champs obligatoires.');
+                        } elseif (isset($data['status']) && strpos($data['status'], 'FAILED - GDSError') !== false) {
+                            return array('error' => true, 'message' => 'Erreur: Format des données incorrect. ' . $data['status']);
+                        }
+                    }
+                    break;
+                case 400:
+                    if ($body === 'BAD REPOS') {
+                        return array('error' => true, 'message' => 'Erreur: La requête est mal construite. Veuillez vérifier les données envoyées.');
+                    } elseif (isset($data['code']) && $data['code'] == 'InvalidContent') {
+                        return array('error' => true, 'message' => 'Erreur: Format JSON invalide. ' . $data['message']);
+                    }
+                    break;
+                case 401:
+                    if (isset($data['message'])) {
+                        if ($data['message'] == 'InvalidCredentials') {
+                            return array('error' => true, 'message' => 'Erreur d\'authentification: Identifiants invalides.');
+                        } elseif (strpos($data['message'], 'Failed to authenticate token') !== false) {
+                            return array('error' => true, 'message' => 'Erreur d\'authentification: ' . $data['message']);
+                        } elseif ($data['message'] == 'No token provided') {
+                            return array('error' => true, 'message' => 'Erreur d\'authentification: Aucun token fourni.');
+                        }
+                    }
+                    break;
+                case 500:
+                    if (isset($data['code']) && $data['code'] == 'InternalServer' && isset($data['message']) && $data['message'] == 'TIMEOUT') {
+                        return array('error' => true, 'message' => 'Erreur serveur: Le serveur Magasin n\'est pas disponible. Votre demande sera traitée ultérieurement.');
+                    }
+                    break;
+                default:
+                    return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code: ' . $status_code);
+            }
+        
+            // Si aucune condition précédente n'a été satisfaite
+            return array(
+                'error' => true, 
+                'message' => 'Erreur non spécifiée lors de l\'ajout du client. Veuillez contacter le support technique.',
+                'debug_info' => array(
+                    'status_code' => $status_code,
+                    'response_body' => $body,
+                    'parsed_data' => $data
+                )
+            );
+        }
 }
 
 // Instanciation de la classe
