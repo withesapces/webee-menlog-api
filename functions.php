@@ -58,6 +58,7 @@ class WooCommerce_API_Integration {
 
         private $token;
         private $server = 'k8s.zybbo.com';
+        private $rlog = 'rlog-staging';
         private $delivery = 'delivery-staging';
         private $uuidclient = 'U9mDG4tia5lfatO*wd5lA!';
         private $uuidmagasin = 'MfSBUAdui5Vg!tO*wd5lA!';
@@ -1793,95 +1794,98 @@ class WooCommerce_API_Integration {
          * @return array
          */
         public function add_client($customer) {
+            // TODO : Mieux gérer les erreurs
             $token = $this->get_token();
         
+            // Préparer les données du client
             $client_data = array(
                 "refmenlog" => "",
-                "uidclient" => $customer->get_id(),
-                "username" => $customer->get_username(),
-                "prenom" => $customer->get_first_name(),
-                "nom" => $customer->get_last_name(),
-                "email" => $customer->get_email(),
-                "tel" => $customer->get_billing_phone(),
-                "mob" => $customer->get_billing_phone(),
-                "addr1" => $customer->get_billing_address_1(),
-                "addr2" => $customer->get_billing_address_2(),
-                "codepostal" => $customer->get_billing_postcode(),
-                "ville" => $customer->get_billing_city(),
-                "pays" => $customer->get_billing_country(),
-                "dateanniv" => "", // À remplir si disponible
+                "uidclient" => substr($customer->get_id(), 0, 22),
+                "username" => substr($customer->get_username(), 0, 100),
+                "prenom" => substr($customer->get_first_name(), 0, 20),
+                "nom" => substr($customer->get_last_name(), 0, 29),
+                "email" => substr($customer->get_email(), 0, 100),
+                "tel" => substr($customer->get_billing_phone(), 0, 20),
+                "mob" => substr($customer->get_billing_phone(), 0, 20),
+                "addr1" => substr($customer->get_billing_address_1(), 0, 100),
+                "addr2" => substr($customer->get_billing_address_2(), 0, 100),
+                "codepostal" => substr($customer->get_billing_postcode(), 0, 10),
+                "ville" => substr($customer->get_billing_city(), 0, 100),
+                "pays" => substr($customer->get_billing_country(), 0, 50),
+                "dateanniv" => "",  // Si la date d'anniversaire est disponible, mettez-la ici au format 'DD.MM.YYYY'
                 "typeimport" => 1
             );
         
-            $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/add_client?token={$token}&nocache=true";
-            $args = array(
-                'body' => json_encode($client_data),
-                'headers' => array('Content-Type' => 'application/json'),
-                'method' => 'POST',
-            );
-        
-            $response = wp_remote_post($url, $args);
-        
-            if (is_wp_error($response)) {
-                return array('error' => true, 'message' => 'Erreur de connexion lors de l\'ajout du client: ' . $response->get_error_message());
+            // Convertir les données en JSON
+            $json_client_data = json_encode($client_data);
+            if ($json_client_data === false) {
+                error_log('Erreur de formatage JSON: ' . json_last_error_msg());
+                return array('error' => true, 'message' => 'Erreur de formatage JSON. Données non valides.');
             }
         
-            $status_code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-
-            error_log("Réponse de l'API add_client - Status: $status_code, Body: " . print_r($body, true));
+            $url = 'https://' . $this->server . '/' . $this->rlog . '/' . $this->uuidclient . '/' . $this->uuidmagasin . '/add_client?token=' . $token;
         
-            switch ($status_code) {
-                case 200:
-                    if (isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
-                        return array('error' => false, 'message' => 'Client ajouté avec succès');
-                    } elseif (isset($data['error']) && $data['error'] == 1) {
-                        if (isset($data['status']) && $data['status'] == 'Invalid body') {
-                            return array('error' => true, 'message' => 'Erreur: Données du client invalides ou incomplètes. Veuillez vérifier tous les champs obligatoires.');
-                        } elseif (isset($data['status']) && strpos($data['status'], 'FAILED - GDSError') !== false) {
-                            return array('error' => true, 'message' => 'Erreur: Format des données incorrect. ' . $data['status']);
-                        }
-                    }
-                    break;
-                case 400:
-                    if ($body === 'BAD REPOS') {
-                        return array('error' => true, 'message' => 'Erreur: La requête est mal construite. Veuillez vérifier les données envoyées.');
-                    } elseif (isset($data['code']) && $data['code'] == 'InvalidContent') {
-                        return array('error' => true, 'message' => 'Erreur: Format JSON invalide. ' . $data['message']);
-                    }
-                    break;
-                case 401:
-                    if (isset($data['message'])) {
-                        if ($data['message'] == 'InvalidCredentials') {
-                            return array('error' => true, 'message' => 'Erreur d\'authentification: Identifiants invalides.');
-                        } elseif (strpos($data['message'], 'Failed to authenticate token') !== false) {
-                            return array('error' => true, 'message' => 'Erreur d\'authentification: ' . $data['message']);
-                        } elseif ($data['message'] == 'No token provided') {
-                            return array('error' => true, 'message' => 'Erreur d\'authentification: Aucun token fourni.');
-                        }
-                    }
-                    break;
-                case 500:
-                    if (isset($data['code']) && $data['code'] == 'InternalServer' && isset($data['message']) && $data['message'] == 'TIMEOUT') {
-                        return array('error' => true, 'message' => 'Erreur serveur: Le serveur Magasin n\'est pas disponible. Votre demande sera traitée ultérieurement.');
-                    }
-                    break;
-                default:
-                    return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code: ' . $status_code);
+            // Log pour déboguer
+            error_log("URL de la requête: " . $url);
+            error_log("Données envoyées: " . $json_client_data);
+        
+            $curl = curl_init();
+        
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $json_client_data,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/json'
+                ),
+            ));
+        
+            $response = curl_exec($curl);
+            $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $curl_error = curl_error($curl);
+        
+            curl_close($curl);
+        
+            // Log pour déboguer la réponse
+            if ($response === false) {
+                error_log("Erreur cURL: " . $curl_error);
+                return array('error' => true, 'message' => 'Erreur de communication avec le serveur: ' . $curl_error);
             }
         
-            // Si aucune condition précédente n'a été satisfaite
-            return array(
-                'error' => true, 
-                'message' => 'Erreur non spécifiée lors de l\'ajout du client. Veuillez contacter le support technique.',
-                'debug_info' => array(
-                    'status_code' => $status_code,
-                    'response_body' => $body,
-                    'parsed_data' => $data
-                )
-            );
+            error_log("Réponse de l'API: " . $response);
+            error_log("Code HTTP de la réponse: " . $http_code);
+        
+            // Analyser la réponse JSON
+            $data = json_decode($response, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log('Erreur de décodage JSON: ' . json_last_error_msg());
+                return array('error' => true, 'message' => 'Erreur: Réponse inattendue du serveur. Body: ' . $response);
+            }
+        
+            // Traiter le résultat en fonction du code HTTP
+            if ($http_code == 200 && isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
+                return array('error' => false, 'message' => 'Client ajouté avec succès');
+            } elseif ($http_code == 400) {
+                if (isset($data['message']) && $data['message'] === 'BAD REPOS') {
+                    return array('error' => true, 'message' => 'Erreur: La requête est mal construite. Veuillez vérifier les données envoyées.');
+                }
+            }
+        
+            // Autres codes de retour
+            return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code);
         }
+        
+        
+        
+        
+                
+        
 }
 
 // Instanciation de la classe
