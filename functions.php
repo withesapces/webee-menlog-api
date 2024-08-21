@@ -2038,10 +2038,13 @@ function display_custom_options_in_cart($item_data, $cart_item) {
                 $option_values[] = $custom_option;
             }
         }
-        $item_data[] = [
-            'key'   => 'Options',
-            'value' => implode(', ', $option_values)
-        ];
+        // Ajouter les options seulement si le tableau $option_values n'est pas vide
+        if (!empty($option_values)) {
+            $item_data[] = [
+                'key'   => 'Options',
+                'value' => implode(', ', $option_values)
+            ];
+        }
     }
     return $item_data;
 }
