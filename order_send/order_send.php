@@ -18,13 +18,18 @@ function send_order_data_to_api() {
     if ($add_client_result['error']) {
         wc_add_notice($add_client_result['message'], 'error');
         
-        // Log des informations de débogage
         if (isset($add_client_result['debug_info'])) {
             error_log("Débug add_client: " . print_r($add_client_result['debug_info'], true));
         }
         
         return;
     }
+
+    // Récupérer les informations du client
+    $customer_id = $add_client_result['uidclient'];
+    $customer_name = $add_client_result['first_name'] . ' ' . $add_client_result['last_name'];
+    $customer_phone = $add_client_result['phone'];
+    $customer_email = $add_client_result['email'];
 
     $cart = WC()->cart;
 
@@ -134,17 +139,17 @@ function send_order_data_to_api() {
         "deliveryTime" => "", // Laisser vide si non applicable
         "note" => "", // Ajouter une note si nécessaire
         "customer" => array(
-            "id" => substr($customer->get_id(), 0, 12),
-            "name" => $customer->get_first_name() . ' ' . $customer->get_last_name(),
-            "phone" => $customer->get_billing_phone(),
+            "id" => $customer_id,
+            "name" => $customer_name,
+            "phone" => $customer_phone,
             "phoneCode" => "", // Ajouter un code téléphonique si nécessaire
-            "email" => $customer->get_billing_email(),
+            "email" => $customer_email,
         ),
         "orderTotal" => array(
             "subtotal" => floatval(WC()->cart->get_total('')),
-            "discount" => floatval($cart->get_discount_total()),
+            "discount" => floatval(WC()->cart->get_discount_total()),
             "tax" => null,
-            "deliveryFee" => floatval($cart->get_shipping_total()),
+            "deliveryFee" => floatval(WC()->cart->get_shipping_total()),
             "total" => floatval(WC()->cart->get_total('')),
         ),
         "payments" => array(
@@ -155,6 +160,7 @@ function send_order_data_to_api() {
         ),
         "items" => $order_items,
     );
+
 
     // Convertir les données en JSON
     $json_order_data = json_encode($order_data, JSON_UNESCAPED_UNICODE);
@@ -219,11 +225,5 @@ function send_order_data_to_api() {
     } else {
         wc_add_notice(__('Erreur lors de l\'envoi de la commande. Veuillez réessayer.'), 'error');
     }
-
-    // Ajoutez un script JavaScript pour afficher les données dans la console du navigateur
-    echo "
-    <script type='text/javascript'>
-        console.log('Order Data: ', " . $json_order_data . ");
-    </script>";
 }
 

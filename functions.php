@@ -1797,21 +1797,51 @@ class WooCommerce_API_Integration {
             // TODO : Mieux gérer les erreurs
             $token = $this->get_token();
         
+            // Vérifier si le client est connecté
+            if (is_user_logged_in()) {
+                $uidclient = substr($customer->get_id(), 0, 22);
+                $username = substr($customer->get_username(), 0, 100);
+                $first_name = substr($customer->get_first_name(), 0, 20);
+                $last_name = substr($customer->get_last_name(), 0, 29);
+                $email = substr($customer->get_email(), 0, 100);
+            } else {
+                // Gérer les clients non connectés en utilisant les données du formulaire de paiement
+                $order = WC()->checkout->get_checkout_fields();
+                
+                $email = isset($_POST['billing_email']) ? sanitize_email($_POST['billing_email']) : '';
+                if (!empty($email)) {
+                    $guest_id = substr(md5($email), 0, 22);
+                }
+                $uidclient = $guest_id;
+        
+                $username = $uidclient; // Vous pouvez personnaliser cela selon vos besoins
+                $first_name = isset($_POST['billing_first_name']) ? sanitize_text_field($_POST['billing_first_name']) : '';
+                $last_name = isset($_POST['billing_last_name']) ? sanitize_text_field($_POST['billing_last_name']) : '';
+            }
+        
+            // Récupérer les autres informations de facturation
+            $billing_phone = isset($_POST['billing_phone']) ? sanitize_text_field($_POST['billing_phone']) : '';
+            $billing_address_1 = isset($_POST['billing_address_1']) ? sanitize_text_field($_POST['billing_address_1']) : '';
+            $billing_address_2 = isset($_POST['billing_address_2']) ? sanitize_text_field($_POST['billing_address_2']) : '';
+            $billing_postcode = isset($_POST['billing_postcode']) ? sanitize_text_field($_POST['billing_postcode']) : '';
+            $billing_city = isset($_POST['billing_city']) ? sanitize_text_field($_POST['billing_city']) : '';
+            $billing_country = isset($_POST['billing_country']) ? sanitize_text_field($_POST['billing_country']) : '';
+        
             // Préparer les données du client
             $client_data = array(
                 "refmenlog" => "",
-                "uidclient" => substr($customer->get_id(), 0, 22),
-                "username" => substr($customer->get_username(), 0, 100),
-                "prenom" => substr($customer->get_first_name(), 0, 20),
-                "nom" => substr($customer->get_last_name(), 0, 29),
-                "email" => substr($customer->get_email(), 0, 100),
-                "tel" => substr($customer->get_billing_phone(), 0, 20),
-                "mob" => substr($customer->get_billing_phone(), 0, 20),
-                "addr1" => substr($customer->get_billing_address_1(), 0, 100),
-                "addr2" => substr($customer->get_billing_address_2(), 0, 100),
-                "codepostal" => substr($customer->get_billing_postcode(), 0, 10),
-                "ville" => substr($customer->get_billing_city(), 0, 100),
-                "pays" => substr($customer->get_billing_country(), 0, 50),
+                "uidclient" => $uidclient,
+                "username" => $username,
+                "prenom" => $first_name,
+                "nom" => $last_name,
+                "email" => $email,
+                "tel" => substr($billing_phone, 0, 20),
+                "mob" => "",
+                "addr1" => substr($billing_address_1, 0, 100),
+                "addr2" => substr($billing_address_2, 0, 100),
+                "codepostal" => substr($billing_postcode, 0, 10),
+                "ville" => substr($billing_city, 0, 100),
+                "pays" => substr($billing_country, 0, 50),
                 "dateanniv" => "",  // Si la date d'anniversaire est disponible, mettez-la ici au format 'DD.MM.YYYY'
                 "typeimport" => 1
             );
@@ -1870,7 +1900,25 @@ class WooCommerce_API_Integration {
         
             // Traiter le résultat en fonction du code HTTP
             if ($http_code == 200 && isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
-                return array('error' => false, 'message' => 'Client ajouté avec succès');
+                return array(
+                    'error' => false,
+                    'message' => 'Client ajouté avec succès',
+                    'uidclient' => $uidclient,
+                    'username' => $username,
+                    'first_name' => $first_name,
+                    'last_name' => $last_name,
+                    'email' => $email,
+                    'phone' => substr($billing_phone, 0, 20),
+                    'billing_address_1' => substr($billing_address_1, 0, 100),
+                    'billing_address_2' => substr($billing_address_2, 0, 100),
+                    'billing_postcode' => substr($billing_postcode, 0, 10),
+                    'billing_city' => substr($billing_city, 0, 100),
+                    'billing_country' => substr($billing_country, 0, 50),
+                    'debug_info' => array( // Optionnel, pour le débogage
+                        'http_code' => $http_code,
+                        'response' => $response,
+                    ),
+                );
             } elseif ($http_code == 400) {
                 if (isset($data['message']) && $data['message'] === 'BAD REPOS') {
                     return array('error' => true, 'message' => 'Erreur: La requête est mal construite. Veuillez vérifier les données envoyées.');
@@ -1880,6 +1928,7 @@ class WooCommerce_API_Integration {
             // Autres codes de retour
             return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code);
         }
+        
         
         
         
