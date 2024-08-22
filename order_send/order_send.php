@@ -64,16 +64,15 @@ function send_order_data_to_api() {
                     "price" => floatval($formula_option['price']),
                     "quantity" => 1,
                     "idCategory" => $formula_option['id_category'],
-                    "description" => $formula_option['description']
+                    "description" => $formula_option['description'],
+                    "subItems" => []
                 );
-                $item_data['subItems'][] = $sub_item_data;
-                $prix_total += floatval($formula_option['price']);
-    
+
                 // Ajouter les sous-options, s'il y en a
                 if (!empty($formula_option['suboptions'])) {
                     foreach ($formula_option['suboptions'] as $suboption) {
                         $sub_sub_item_data = array(
-                            "productType" => 4,
+                            "productType" => 2, // Type pour les sous-options
                             "sku" => $suboption['sku'],
                             "name" => $suboption['option'],
                             "price" => floatval($suboption['price']),
@@ -81,13 +80,18 @@ function send_order_data_to_api() {
                             "idCategory" => $suboption['idCategory'],
                             "description" => $suboption['description']
                         );
-                        $item_data['subItems'][] = $sub_sub_item_data;
+                        // Ajoute la sous-option dans les subItems de l'option principale
+                        $sub_item_data['subItems'][] = $sub_sub_item_data;
                         $prix_total += floatval($suboption['price']);
                     }
                 }
+
+                // Ajoute l'option principale dans les subItems de l'élément principal
+                $item_data['subItems'][] = $sub_item_data;
+                $prix_total += floatval($formula_option['price']);
             }
         }
-    
+
         // Gestion des options pour les produits non-formule
         if (isset($cart_item['custom_options'])) {
             foreach ($cart_item['custom_options'] as $custom_option) {
@@ -169,7 +173,7 @@ function send_order_data_to_api() {
 
     // Log pour déboguer
     error_log("URL de la requête: " . $url);
-    error_log("Données de la commande envoyées: " . $json_order_data);
+    error_log("Données de la commande envoyées: " . json_encode($order_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
     $curl = curl_init();
 

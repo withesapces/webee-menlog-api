@@ -1827,7 +1827,7 @@ class WooCommerce_API_Integration {
         
             // Log pour déboguer
             error_log("URL de la requête: " . $url);
-            error_log("Données envoyées: " . $json_client_data);
+            error_log("Données envoyées: " . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         
             $curl = curl_init();
         
