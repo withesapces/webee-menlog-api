@@ -1,7 +1,4 @@
-Catégories : 0 créées, 1 mises à jour, 12 skipped.
-Détails des mises à jour des catégories:
-Category '"Noëlle"' updated to '"Noël"'
-
+Catégories : 0 créées, 0 mises à jour, 13 skipped, 1 deleted.
 Produits type 1 : 
             0 créés,
             0 mis à jour, 

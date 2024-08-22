@@ -68,6 +68,7 @@ class WooCommerce_API_Integration {
         private $categories_created = 0;
         private $categories_updated = 0;
         private $categories_skipped = 0;
+        private $categories_deleted = 0;
         private $products_created = 0;
         private $products_updated = 0;
         private $products_skipped = 0;
@@ -443,6 +444,33 @@ class WooCommerce_API_Integration {
          *   - string 'idCategory' : Le slug de la catégorie.
          */
         private function import_categories($categories) {
+            // Étape 1 : Créer un tableau des ID de catégories de Menlog à partir de la liste fournie par l'API
+            $menlog_category_ids = array_column($categories, 'idCategory');
+
+            // Étape 2 : Récupérer toutes les catégories WooCommerce avec un 'menlog_id_category'
+            $existing_categories = get_terms(array(
+                'taxonomy' => 'product_cat',
+                'meta_query' => array(
+                    array(
+                        'key' => 'menlog_id_category',
+                        'compare' => 'EXISTS'
+                    )
+                ),
+                'hide_empty' => false
+            ));
+
+            // Étape 3 : Supprimer les catégories qui n'existent plus dans l'API Menlog
+            foreach ($existing_categories as $existing_category) {
+                $existing_menlog_id = get_term_meta($existing_category->term_id, 'menlog_id_category', true);
+                if (!in_array($existing_menlog_id, $menlog_category_ids)) {
+                    // Supprimer la catégorie (sans supprimer les produits)
+                    wp_delete_term($existing_category->term_id, 'product_cat');
+                    $this->categories_deleted++;
+                    $this->category_deletions[] = "Category '{$existing_category->name}' deleted because it no longer exists in Menlog.";
+                }
+            }
+
+            // Étape 4 : Importer ou mettre à jour les catégories existantes
             foreach ($categories as $category) {
                 $menlog_id_category = $category['idCategory'];
                 
@@ -459,12 +487,12 @@ class WooCommerce_API_Integration {
                     'hide_empty' => false,
                     'number' => 1
                 ));
-        
+
                 $new_category_name = trim($category['name']);
                 
                 if (!empty($existing_category) && !is_wp_error($existing_category)) {
                     $existing_category = $existing_category[0]; // Obtenir le premier résultat
-        
+
                     if ($existing_category->name !== $new_category_name) {
                         wp_update_term($existing_category->term_id, 'product_cat', array('name' => $new_category_name));
                         $this->categories_updated++;
@@ -472,14 +500,14 @@ class WooCommerce_API_Integration {
                     } else {
                         $this->categories_skipped++;
                     }
-        
+
                     // Mettre à jour ou ajouter l'ID Menlog en tant que méta-donnée, si nécessaire
                     update_term_meta($existing_category->term_id, 'menlog_id_category', $menlog_id_category);
                 
                 } else {
                     // Rechercher par slug s'il n'y a pas de correspondance avec le méta
                     $existing_category_by_slug = get_term_by('slug', $menlog_id_category, 'product_cat');
-        
+
                     if ($existing_category_by_slug) {
                         // Mettre à jour le nom si nécessaire
                         if ($existing_category_by_slug->name !== $new_category_name) {
@@ -489,10 +517,10 @@ class WooCommerce_API_Integration {
                         } else {
                             $this->categories_skipped++;
                         }
-        
+
                         // Ajouter l'ID Menlog en tant que méta-donnée
                         update_term_meta($existing_category_by_slug->term_id, 'menlog_id_category', $menlog_id_category);
-        
+
                     } else {
                         // Créer une nouvelle catégorie si aucune correspondance n'est trouvée
                         $new_category = wp_insert_term($new_category_name, 'product_cat', array('slug' => $menlog_id_category));
@@ -505,6 +533,7 @@ class WooCommerce_API_Integration {
                 }
             }
         }
+
         
     
         /**
@@ -1703,7 +1732,7 @@ class WooCommerce_API_Integration {
          */
         private function write_import_results() {
             $file_path = plugin_dir_path(__FILE__) . 'import_results.txt';
-            $content = "Catégories : {$this->categories_created} créées, {$this->categories_updated} mises à jour, {$this->categories_skipped} skipped.\n";
+            $content = "Catégories : {$this->categories_created} créées, {$this->categories_updated} mises à jour, {$this->categories_skipped} skipped, {$this->categories_deleted} deleted.\n";
             if (!empty($this->category_updates)) {
                 $content .= "Détails des mises à jour des catégories:\n" . implode("\n", $this->category_updates) . "\n\n";
             }
@@ -2114,5 +2143,7 @@ function update_cart_price($cart) {
         }
     }
 }
+
+// TODO : Quand on séléectionne une plaquette anniversaire PT2, il faut obligatoirement rendre obligatoire les notes sur la page de paiement
 
 ?>
