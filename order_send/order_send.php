@@ -3,13 +3,16 @@
 // TODO : Que doit-on faire si la commande ne peut pas être envoyée ? Ca doit dépendre des codes d'erreur.
 // TODO : Faire la gestion des erreurs
 
-add_action('woocommerce_checkout_process', 'send_order_data_to_api');
+add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
 function send_order_data_to_api() {
     // Vérifier le nonce pour la sécurité
     check_ajax_referer('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
     $api_integration = new WooCommerce_API_Integration();
     $prix_total = 0;
     $order_items = [];
+    $count = 0;
+    $note_anniversaire = '';
+    global $wpdb;
 
     $customer = WC()->customer;
 
@@ -36,8 +39,7 @@ function send_order_data_to_api() {
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         $product = $cart_item['data'];
         $product_id = $product->get_id();
-        $product_price = floatval($product->get_price());
-        $prix_total += $product_price;
+        $product_price = 0;
     
         $product_type = 1; // Par défaut, 1 pour un produit simple
         $category = wp_get_post_terms($product_id, 'product_cat');
@@ -47,6 +49,38 @@ function send_order_data_to_api() {
             $term_id = $category[0]->term_id; // Récupère l'identifiant de la catégorie
             $id_category = get_term_meta($term_id, 'menlog_id_category', true); // Récupère l'idCategory de Menlog
         }
+
+        // Récupérer le prix du produit depuis la base de données en utilisant le SKU et la catégorie
+        $product_sku = $product->get_sku();
+        $product_id_query = $wpdb->get_var($wpdb->prepare(
+            "SELECT p.ID FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+            WHERE p.post_type = 'product'
+            AND pm.meta_key = '_sku'
+            AND pm.meta_value = %s
+            AND p.ID IN (
+                SELECT object_id FROM {$wpdb->term_relationships} tr
+                INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                WHERE tt.taxonomy = 'product_cat'
+                AND tt.term_id = %d
+            )
+            LIMIT 1",
+            $product_sku, $term_id
+        ));
+
+        // Si un produit est trouvé, récupérer son prix
+        if ($product_id_query) {
+            $product_price = $wpdb->get_var($wpdb->prepare(
+                "SELECT meta_value FROM {$wpdb->postmeta}
+                WHERE post_id = %d
+                AND meta_key = '_price'
+                LIMIT 1",
+                $product_id_query
+            ));
+        }
+
+        // Assurez-vous que le prix est un nombre flottant
+        $product_price = floatval($product_price);
     
         $item_data = array(
             "productType" => $product_type,
@@ -58,6 +92,8 @@ function send_order_data_to_api() {
             "description" => $product->get_description(),
             "subItems" => array(), // Placeholder for subitems, if any
         );
+
+        $prix_total += floatval($item_data['price']);
     
         // Gestion des options pour les formules
         if (isset($cart_item['formula_options'])) {
@@ -113,9 +149,27 @@ function send_order_data_to_api() {
                 $prix_total += floatval($custom_option['price']);
             }
         }
-    
+
+        // Ajouter les messages des plaques anniversaire aux notes
+        for ($i = 1; $i <= $cart_item['quantity']; $i++) {
+            $count++;
+            $plaque_note = sanitize_text_field($_POST["anniversary_plaque_note_{$count}"] ?? '');
+            if (!empty($plaque_note)) {
+                $note_anniversaire .= "Produit: {$product->get_name()} - Plaque #{$i} : {$plaque_note}\n";
+            }
+        }
+
         $order_items[] = $item_data;
     }
+
+    // Ajouter les notes de la commande si disponibles
+    $order_notes = sanitize_text_field($_POST['order_comments'] ?? '');
+
+    // Combiner les notes de commande et les notes des plaques anniversaire
+    $notes_combined = trim($order_notes) . "\n" . trim($note_anniversaire);
+
+    // Limiter à 2000 caractères
+    $notes_combined = mb_substr($notes_combined, 0, 2000);
     
 
     $pickup_date = WC()->session->get('pickup_date');
@@ -137,7 +191,7 @@ function send_order_data_to_api() {
         "created_at" => current_time('mysql'),
         "pickupTime" => isset($pickup_date) && isset($pickup_time) ? $pickup_date . ' ' . $pickup_time : '',
         "deliveryTime" => "", // Laisser vide si non applicable
-        "note" => "", // Ajouter une note si nécessaire
+        "note" => $notes_combined, // Ajouter une note si nécessaire
         "customer" => array(
             "id" => $customer_id,
             "name" => $customer_name,

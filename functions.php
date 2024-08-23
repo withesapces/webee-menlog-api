@@ -2049,9 +2049,11 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
                 }
             }
         }
-    } else {
+    }  else {
         // Gestion des options pour les produits non-formule
         $cart_item_data['custom_options'] = [];
+        $cart_item_data['has_anniversary_plaque'] = false; // Initialisation par défaut
+
         $questions = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
             $product_id
@@ -2065,6 +2067,13 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
                         "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s",
                         $question_id, $option_sku
                     ), ARRAY_A);
+
+                    // Vérifier si l'option contient "plaquette anniversaire"
+                    if (preg_match('/plaque anniversaire/i', $option_name)) {
+                        $cart_item_data['has_anniversary_plaque'] = true;
+                        // Debugging to verify when this condition is met
+                        error_log("Plaquette anniversaire détectée: " . $option_name);
+                    }
 
                     $cart_item_data['custom_options'][] = [
                         'question' => $question['question_text'],
@@ -2144,6 +2153,86 @@ function update_cart_price($cart) {
     }
 }
 
-// TODO : Quand on séléectionne une plaquette anniversaire PT2, il faut obligatoirement rendre obligatoire les notes sur la page de paiement
+// Ajouter les champs de texte pour chaque plaquette anniversaire sur la page de paiement
+add_action('woocommerce_after_order_notes', 'add_anniversary_plaque_fields');
+function add_anniversary_plaque_fields($checkout) {
+    $count = 0;
+
+    // Titre général pour inviter l'utilisateur à saisir le texte
+    echo "<h4>Saisissez le texte à insérer sur les plaques anniversaire :</h4>";
+
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        // Récupérer le nom du produit
+        $product_name = $cart_item['data']->get_name();
+
+        if (isset($cart_item['has_anniversary_plaque']) && $cart_item['has_anniversary_plaque']) {
+            // Afficher le nom du produit
+            echo "<strong>" . esc_html($product_name) . "</strong>";
+
+            // Pour chaque quantité de ce produit, ajouter un champ
+            for ($i = 1; $i <= $cart_item['quantity']; $i++) {
+                $count++;
+                woocommerce_form_field("anniversary_plaque_note_{$count}", array(
+                    'type'        => 'text',
+                    'class'       => array('form-row-wide'),
+                    'label'       => __("Message pour la plaque anniversaire #{$i}"),
+                    'placeholder' => __("Entrez le message pour la plaque anniversaire #{$i}"),
+                    'required'    => true,  // Champ obligatoire
+                ), $checkout->get_value("anniversary_plaque_note_{$count}"));
+            }
+
+            echo "<br>"; // Ajouter un espace entre les produits
+        } 
+    }
+}
+
+
+
+// Valider que les champs de texte pour les plaques anniversaire sont remplis
+add_action('woocommerce_checkout_process', 'validate_anniversary_plaque_fields');
+function validate_anniversary_plaque_fields() {
+    $count = 0;
+
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        // Récupérer le nom du produit
+        $product_name = $cart_item['data']->get_name();
+
+        if (isset($cart_item['has_anniversary_plaque']) && $cart_item['has_anniversary_plaque']) {
+            // Pour chaque quantité de ce produit, valider le champ
+            for ($i = 1; $i <= $cart_item['quantity']; $i++) {
+                $count++;
+                if (empty($_POST["anniversary_plaque_note_{$count}"])) {
+                    wc_add_notice(__("Veuillez fournir un message pour la plaque anniversaire #{$i} du produit: {$product_name}."), 'error');
+                }
+            }
+        }
+    }
+}
+
+
+
+
+// Sauvegarder les valeurs des champs de texte
+add_action('woocommerce_checkout_update_order_meta', 'save_anniversary_plaque_fields');
+function save_anniversary_plaque_fields($order_id) {
+    $count = 0;
+
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        // Récupérer le nom du produit
+        $product_name = $cart_item['data']->get_name();
+
+        if (isset($cart_item['has_anniversary_plaque']) && $cart_item['has_anniversary_plaque']) {
+            // Pour chaque quantité de ce produit, sauvegarder le champ
+            for ($i = 1; $i <= $cart_item['quantity']; $i++) {
+                $count++;
+                if (!empty($_POST["anniversary_plaque_note_{$count}"])) {
+                    update_post_meta($order_id, "anniversary_plaque_note_{$count}", sanitize_text_field($_POST["anniversary_plaque_note_{$count}"]));
+                    update_post_meta($order_id, "anniversary_plaque_product_{$count}", $product_name);
+                }
+            }
+        }
+    }
+}
+
 
 ?>
