@@ -318,12 +318,12 @@ function send_order_data_to_api() {
             error_log($log_message);
             envoyer_email_debug('Catégorie comptable non définie', $log_message);
             wc_add_notice(__('Erreur: La catégorie comptable du produit ou du tiers n\'est pas définie. Veuillez corriger et réessayer.'), 'error');
-        } elseif (strpos($data['message'], 'Le total des lignes ne correspond pas au total de la vente') !== false) {
+        } elseif (strpos($data['message'], 'Erreur : Diff px ttc/total') !== false) {
             $log_message = "Total des lignes incorrect: " . $data['message'] . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Total des lignes incorrect', $log_message);
             wc_add_notice(__('Erreur: Le total des lignes ne correspond pas au total de la vente. Veuillez vérifier les montants et réessayer.'), 'error');
-        } elseif (strpos($data['message'], 'Erreur de conversion de données en string/numeric') !== false) {
+        } elseif (strpos($data['message'], 'conversion error from string') !== false) {
             $log_message = "Erreur de conversion de données: " . $data['message'] . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Erreur de conversion de données', $log_message);

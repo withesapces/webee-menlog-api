@@ -1823,7 +1823,6 @@ class WooCommerce_API_Integration {
          * @return array
          */
         public function add_client($customer) {
-            // TODO : Mieux gérer les erreurs
             $token = $this->get_token();
         
             // Vérifier si le client est connecté
@@ -1878,7 +1877,9 @@ class WooCommerce_API_Integration {
             // Convertir les données en JSON
             $json_client_data = json_encode($client_data);
             if ($json_client_data === false) {
-                error_log('Erreur de formatage JSON: ' . json_last_error_msg());
+                $log_message = 'Erreur de formatage JSON: ' . json_last_error_msg();
+                error_log($log_message);
+                $this->envoyer_email_debug('Erreur de formatage JSON lors de l\'ajout d\'un client', $log_message);
                 return array('error' => true, 'message' => 'Erreur de formatage JSON. Données non valides.');
             }
         
@@ -1913,7 +1914,9 @@ class WooCommerce_API_Integration {
         
             // Log pour déboguer la réponse
             if ($response === false) {
-                error_log("Erreur cURL: " . $curl_error);
+                $log_message = "Erreur cURL: " . $curl_error;
+                error_log($log_message);
+                $this->envoyer_email_debug('Erreur cURL lors de l\'ajout d\'un client', $log_message);
                 return array('error' => true, 'message' => 'Erreur de communication avec le serveur: ' . $curl_error);
             }
         
@@ -1923,43 +1926,87 @@ class WooCommerce_API_Integration {
             // Analyser la réponse JSON
             $data = json_decode($response, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                error_log('Erreur de décodage JSON: ' . json_last_error_msg());
+                $log_message = 'Erreur de décodage JSON: ' . json_last_error_msg() . ". Réponse brute: " . $response;
+                error_log($log_message);
+                $this->envoyer_email_debug('Erreur de décodage JSON lors de l\'ajout d\'un client', $log_message);
                 return array('error' => true, 'message' => 'Erreur: Réponse inattendue du serveur. Body: ' . $response);
             }
         
-            // Traiter le résultat en fonction du code HTTP
-            if ($http_code == 200 && isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
-                return array(
-                    'error' => false,
-                    'message' => 'Client ajouté avec succès',
-                    'uidclient' => $uidclient,
-                    'username' => $username,
-                    'first_name' => $first_name,
-                    'last_name' => $last_name,
-                    'email' => $email,
-                    'phone' => substr($billing_phone, 0, 20),
-                    'billing_address_1' => substr($billing_address_1, 0, 100),
-                    'billing_address_2' => substr($billing_address_2, 0, 100),
-                    'billing_postcode' => substr($billing_postcode, 0, 10),
-                    'billing_city' => substr($billing_city, 0, 100),
-                    'billing_country' => substr($billing_country, 0, 50),
-                    'debug_info' => array( // Optionnel, pour le débogage
-                        'http_code' => $http_code,
-                        'response' => $response,
-                    ),
-                );
+            // Gestion des erreurs spécifiques en fonction du code HTTP et du contenu de la réponse
+            if ($http_code == 200) {
+                if (isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
+                    return array(
+                        'error' => false,
+                        'message' => 'Client ajouté avec succès',
+                        'uidclient' => $uidclient,
+                        'username' => $username,
+                        'first_name' => $first_name,
+                        'last_name' => $last_name,
+                        'email' => $email,
+                        'phone' => substr($billing_phone, 0, 20),
+                        'billing_address_1' => substr($billing_address_1, 0, 100),
+                        'billing_address_2' => substr($billing_address_2, 0, 100),
+                        'billing_postcode' => substr($billing_postcode, 0, 10),
+                        'billing_city' => substr($billing_city, 0, 100),
+                        'billing_country' => substr($billing_country, 0, 50),
+                        'debug_info' => array( // Optionnel, pour le débogage
+                            'http_code' => $http_code,
+                            'response' => $response,
+                        ),
+                    );
+                } elseif (isset($data['error']) && $data['error'] == 1) {
+                    if (strpos($data['status'], 'Invalid body') !== false) {
+                        $log_message = 'Erreur: Contenu du body invalide. ' . $data['status'];
+                        error_log($log_message);
+                        $this->envoyer_email_debug('Erreur de contenu du body lors de l\'ajout d\'un client', $log_message);
+                        return array('error' => true, 'message' => 'Erreur dans le contenu du body : ' . $data['status']);
+                    } elseif (strpos($data['status'], 'FAILED - GDSError') !== false) {
+                        $log_message = 'Erreur: Données non conformes. ' . $data['status'];
+                        error_log($log_message);
+                        $this->envoyer_email_debug('Erreur de données non conformes lors de l\'ajout d\'un client', $log_message);
+                        return array('error' => true, 'message' => 'Erreur: ' . $data['status']);
+                    }
+                }
             } elseif ($http_code == 400) {
-                if (isset($data['message']) && $data['message'] === 'BAD REPOS') {
-                    return array('error' => true, 'message' => 'Erreur: La requête est mal construite. Veuillez vérifier les données envoyées.');
+                if (isset($data['message']) && strpos($data['message'], 'Invalid JSON') !== false) {
+                    $log_message = 'Erreur: JSON invalide. ' . $data['message'];
+                    error_log($log_message);
+                    $this->envoyer_email_debug('Erreur JSON invalide lors de l\'ajout d\'un client', $log_message);
+                    return array('error' => true, 'message' => 'Erreur dans le format du JSON : ' . $data['message']);
+                }
+            } elseif ($http_code == 401) {
+                $log_message = 'Erreur d\'authentification: ' . $data['message'];
+                error_log($log_message);
+                $this->envoyer_email_debug('Erreur d\'authentification lors de l\'ajout d\'un client', $log_message);
+                return array('error' => true, 'message' => 'Erreur d\'authentification : ' . $data['message']);
+            } elseif ($http_code == 500) {
+                if (isset($data['message']) && strpos($data['message'], 'TIMEOUT') !== false) {
+                    $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'];
+                    error_log($log_message);
+                    $this->envoyer_email_debug('Erreur TIMEOUT lors de l\'ajout d\'un client', $log_message);
+                    return array('error' => true, 'message' => 'Serveur magasin non disponible. Le client sera importé lorsque le serveur sera à nouveau disponible.');
+                    // TODO : Comprendre ce qu'il faut faire ici
+                } else {
+                    $log_message = 'Erreur interne du serveur: ' . $data['message'];
+                    error_log($log_message);
+                    $this->envoyer_email_debug('Erreur interne du serveur lors de l\'ajout d\'un client', $log_message);
+                    return array('error' => true, 'message' => 'Erreur interne du serveur : ' . $data['message']);
                 }
             }
         
-            // Autres codes de retour
+            // Autres codes de retour non gérés
+            $log_message = 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code . '. Réponse: ' . json_encode($data);
+            error_log($log_message);
+            $this->envoyer_email_debug('Erreur inattendue lors de l\'ajout d\'un client', $log_message);
             return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code);
         }
         
-        
-        
+        // Fonction pour envoyer un email de débogage
+        private function envoyer_email_debug($sujet, $message) {
+            $to = 'bauduffegabriel@gmail.com';
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            wp_mail($to, $sujet, $message, $headers);
+        }        
         
         
                 
