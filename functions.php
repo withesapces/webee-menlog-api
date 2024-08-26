@@ -372,7 +372,6 @@ class WooCommerce_API_Integration {
          * @return mixed
          */
         private function get_products() {
-            // TODO : Dans le cas d'une erreur pour récupérer les produits, que faire ? 
             $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
             
             $options = [
@@ -383,13 +382,42 @@ class WooCommerce_API_Integration {
             ];
             
             $context = stream_context_create($options);
-            $result = file_get_contents($url, false, $context);
-            
-            if ($result === FALSE) {
-                die('Error obtaining products');
+        
+            try {
+                $result = file_get_contents($url, false, $context);
+                
+                if ($result === FALSE) {
+                    throw new Exception('Error obtaining products: failed to retrieve data from API.');
+                }
+        
+                $data = json_decode($result, true);
+                
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new Exception('Error decoding JSON: ' . json_last_error_msg());
+                }
+        
+                // Vérifier la réponse pour voir si l'authentification a échoué
+                if (isset($data['message']) && strpos($data['message'], 'InvalidCredentials') !== false) {
+                    throw new Exception('Error: Invalid credentials. Please check your token.');
+                }
+        
+                // Vérifier si le code de retour est 401 (Unauthorized)
+                if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
+                    throw new Exception('Error 401: Unauthorized. Please check your token.');
+                }
+        
+                return $data;
+        
+            } catch (Exception $e) {
+                // Log l'erreur
+                error_log("Erreur lors de la récupération des produits : " . $e->getMessage());
+                
+                // Envoyer un email avec les détails de l'erreur
+                $this->envoyer_email_debug('Erreur lors de la récupération des produits', $e->getMessage());
+        
+                // Gérer l'erreur comme vous le souhaitez (par exemple, renvoyer une réponse vide ou une erreur)
+                return array('error' => true, 'message' => $e->getMessage());
             }
-
-            return json_decode($result, true);
         }
 
         /**
