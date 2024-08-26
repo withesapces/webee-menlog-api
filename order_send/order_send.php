@@ -1,8 +1,5 @@
 <?php
 // Ce code permet d'envoyer une commande sur Menlog
-// TODO : Que doit-on faire si la commande ne peut pas être envoyée ? Ca doit dépendre des codes d'erreur.
-// TODO : Faire la gestion des erreurs
-
 add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
 function send_order_data_to_api() {
     // Vérifier le nonce pour la sécurité
@@ -33,6 +30,9 @@ function send_order_data_to_api() {
     $customer_name = $add_client_result['first_name'] . ' ' . $add_client_result['last_name'];
     $customer_phone = $add_client_result['phone'];
     $customer_email = $add_client_result['email'];
+
+    // Récupérer l'heure de la commande
+    $order_time = current_time('mysql');
 
     $cart = WC()->cart;
 
@@ -188,7 +188,7 @@ function send_order_data_to_api() {
         "source" => "ecommerce",
         "status" => "CONFIRMED",
         "orderType" => "PICKUP",
-        "created_at" => current_time('mysql'),
+        "created_at" => $order_time,
         "pickupTime" => isset($pickup_date) && isset($pickup_time) ? $pickup_date . ' ' . $pickup_time : '',
         "deliveryTime" => "", // Laisser vide si non applicable
         "note" => $notes_combined, // Ajouter une note si nécessaire
@@ -258,8 +258,13 @@ function send_order_data_to_api() {
 
     curl_close($curl);
 
+    // Collecte des informations pour le log et l'email
+    $log_info = "Client: {$customer_name}, Email: {$customer_email}, Téléphone: {$customer_phone}, Date de commande: {$order_time}";
+
     if ($response === false) {
-        error_log("Erreur cURL: " . $curl_error);
+        $log_message = "Erreur cURL: {$curl_error}. {$log_info}";
+        error_log($log_message);
+        envoyer_email_debug('Erreur cURL', $log_message);
         wc_add_notice(__('Erreur lors de la communication avec l\'API. Veuillez réessayer.'), 'error');
         return;
     }
@@ -269,15 +274,77 @@ function send_order_data_to_api() {
 
     $data = json_decode($response, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log('Erreur de décodage JSON: ' . json_last_error_msg());
+        $log_message = "Erreur de décodage JSON: " . json_last_error_msg() . ". {$log_info}";
+        error_log($log_message);
+        envoyer_email_debug('Erreur de décodage JSON', $log_message);
         wc_add_notice(__('Erreur inattendue lors de la réception des données. Veuillez réessayer.'), 'error');
         return;
     }
 
     if ($http_code == 200) {
-        wc_add_notice(__('Commande envoyée avec succès.'), 'success');
+        if ($data['success']) {
+            wc_add_notice(__('Commande envoyée avec succès.'), 'success');
+        } else {
+            $log_message = "Erreur avec code 200: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Erreur lors de l\'envoi de la commande', $log_message);
+            wc_add_notice(__('Erreur lors de l\'envoi de la commande: ') . $data['message'], 'error');
+        }
+    } elseif ($http_code == 400) {
+        if (strpos($data['error'], 'Bad ticket format') !== false) {
+            $log_message = "Erreur de format de ticket: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Erreur de format de ticket', $log_message);
+            wc_add_notice(__('Erreur de format de ticket. Veuillez corriger le format et réessayer.'), 'error');
+        } elseif (strpos($data['error'], 'Bad Request') !== false) {
+            $log_message = "Erreur de donnée essentielle manquante ou erronée: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Erreur de donnée essentielle', $log_message);
+            wc_add_notice(__('Une donnée essentielle est manquante ou erronée: ') . $data['message'], 'error');
+        }
+    } elseif ($http_code == 500) {
+        if (strpos($data['message'], 'Timeout') !== false) {
+            $log_message = "Timeout - Le serveur du magasin est indisponible: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Timeout serveur magasin', $log_message);
+            wc_add_notice(__('Le serveur du magasin est indisponible. La commande sera traitée dès que possible.'), 'error');
+        } elseif (strpos($data['message'], 'Commande déjà importée') !== false) {
+            $log_message = "Commande déjà importée: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Commande déjà importée', $log_message);
+            wc_add_notice(__('Cette commande a déjà été importée.'), 'error');
+        } elseif (strpos($data['message'], 'La catégorie comptable du tiers ou du produit n\'est pas définie') !== false) {
+            $log_message = "Catégorie comptable non définie: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Catégorie comptable non définie', $log_message);
+            wc_add_notice(__('Erreur: La catégorie comptable du produit ou du tiers n\'est pas définie. Veuillez corriger et réessayer.'), 'error');
+        } elseif (strpos($data['message'], 'Le total des lignes ne correspond pas au total de la vente') !== false) {
+            $log_message = "Total des lignes incorrect: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Total des lignes incorrect', $log_message);
+            wc_add_notice(__('Erreur: Le total des lignes ne correspond pas au total de la vente. Veuillez vérifier les montants et réessayer.'), 'error');
+        } elseif (strpos($data['message'], 'Erreur de conversion de données en string/numeric') !== false) {
+            $log_message = "Erreur de conversion de données: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Erreur de conversion de données', $log_message);
+            wc_add_notice(__('Erreur de conversion des données. Veuillez vérifier les formats et réessayer.'), 'error');
+        } else {
+            $log_message = "Erreur interne du serveur non spécifiée: " . $data['message'] . ". {$log_info}";
+            error_log($log_message);
+            envoyer_email_debug('Erreur interne du serveur', $log_message);
+            wc_add_notice(__('Erreur interne du serveur: ') . $data['message'], 'error');
+        }
     } else {
-        wc_add_notice(__('Erreur lors de l\'envoi de la commande. Veuillez réessayer.'), 'error');
+        $log_message = "Erreur inattendue avec code HTTP " . $http_code . ": " . $data['message'] . ". {$log_info}";
+        error_log($log_message);
+        envoyer_email_debug('Erreur inattendue', $log_message);
+        wc_add_notice(__('Erreur inattendue. Veuillez réessayer.'), 'error');
     }
 }
 
+// Fonction pour envoyer un email de débogage
+function envoyer_email_debug($sujet, $message) {
+    $to = 'bauduffegabriel@gmail.com';
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+    wp_mail($to, $sujet, $message, $headers);
+}
