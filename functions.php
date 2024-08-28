@@ -102,9 +102,11 @@ class WooCommerce_API_Integration {
      * Constructeur
      */
     public function __construct() {
-        register_activation_hook(__FILE__, array($this, 'create_custom_tables'));
+        register_activation_hook(__FILE__, array($this, 'plugin_activation'));
+        register_deactivation_hook(__FILE__, array($this, 'plugin_deactivation'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'import_menlog_from_api'));
+        add_action('wc_api_daily_import', array($this, 'daily_import_products'));
     }
 
     // -----------------------------
@@ -292,12 +294,18 @@ class WooCommerce_API_Integration {
             echo '<input type="hidden" name="action" value="delete_products">';
             submit_button('Supprimer tous les produits WooCommerce');
             echo '</form>';
-
+            echo '<form method="post" action="">';
+            echo '<input type="hidden" name="action" value="check_cron">';
+            submit_button('Vérifier le statut du Cron');
+            echo '</form>';
+    
+            $this->display_cron_status();
+    
             // Afficher les produits ayant plusieurs catégories
             echo '<h2>Produits dans plusieurs catégories</h2>';
             $this->display_products_in_multiple_categories();
             echo '</div>';
-        }   
+        } 
         
         private function display_products_in_multiple_categories() {
             $args = array(
@@ -452,8 +460,70 @@ class WooCommerce_API_Integration {
                 } elseif ($_POST['action'] == 'delete_products') {
                     $this->delete_all_products();
                     echo '<div class="updated"><p>Tous les produits WooCommerce ont été supprimés.</p></div>';
+                } elseif ($_POST['action'] == 'check_cron') {
+                    $this->check_cron_status();
                 }
             }
+        }
+
+        private function check_cron_status() {
+            $timestamp = wp_next_scheduled('wc_api_daily_import');
+            if ($timestamp) {
+                echo '<div class="updated"><p>Le cron est planifié pour s\'exécuter le ' . date('Y-m-d H:i:s', $timestamp) . '</p></div>';
+            } else {
+                echo '<div class="error"><p>Le cron n\'est pas planifié. Tentative de replanification...</p></div>';
+                $this->schedule_daily_import();
+                $new_timestamp = wp_next_scheduled('wc_api_daily_import');
+                if ($new_timestamp) {
+                    echo '<div class="updated"><p>Cron replanifié pour s\'exécuter le ' . date('Y-m-d H:i:s', $new_timestamp) . '</p></div>';
+                } else {
+                    echo '<div class="error"><p>Échec de la replanification du cron. Veuillez vérifier les erreurs dans les logs.</p></div>';
+                }
+            }
+        }
+
+        private function display_cron_status() {
+            $timestamp = wp_next_scheduled('wc_api_daily_import');
+            if ($timestamp) {
+                echo '<p>Statut du Cron: Planifié pour s\'exécuter le ' . date('Y-m-d H:i:s', $timestamp) . '</p>';
+            } else {
+                echo '<p>Statut du Cron: Non planifié</p>';
+            }
+        }
+
+        public function plugin_activation() {
+            $this->create_custom_tables();
+            $this->schedule_daily_import();
+        }
+    
+        public function plugin_deactivation() {
+            $this->unschedule_daily_import();
+        }
+    
+        public function schedule_daily_import() {
+            if (!wp_next_scheduled('wc_api_daily_import')) {
+                wp_schedule_event(time(), 'daily', 'wc_api_daily_import');
+            }
+        }
+    
+        public function unschedule_daily_import() {
+            $timestamp = wp_next_scheduled('wc_api_daily_import');
+            if ($timestamp) {
+                wp_unschedule_event($timestamp, 'wc_api_daily_import');
+            }
+        }
+    
+        public function daily_import_products() {
+            $this->token = $this->get_token();
+            $products_data = $this->get_products();
+    
+            if (!empty($products_data)) {
+                $this->import_categories($products_data['menu']['categories']);
+                $this->import_products($products_data['menu']['products']);
+                $this->write_import_results();
+            }
+    
+            error_log('Importation quotidienne des produits terminée le ' . date('Y-m-d H:i:s'));
         }
     
 

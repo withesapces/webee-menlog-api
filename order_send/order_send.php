@@ -15,7 +15,8 @@ function send_order_data_to_api() {
 
     // Test d'envoi du client
     $add_client_result = $api_integration->add_client($customer);
-    if ($add_client_result['error']) {        
+    if ($add_client_result['error']) {
+        
         if (isset($add_client_result['debug_info'])) {
             error_log("Débug add_client: " . print_r($add_client_result['debug_info'], true));
         }
@@ -203,11 +204,11 @@ function send_order_data_to_api() {
             "email" => $customer_email,
         ),
         "orderTotal" => array(
-            "subtotal" => floatval(WC()->cart->get_total('')),
-            "discount" => floatval(WC()->cart->get_discount_total()),
+            "subtotal" => custom_round($prix_total),
+            "discount" => custom_round(WC()->cart->get_discount_total()),
             "tax" => null,
-            "deliveryFee" => floatval(WC()->cart->get_shipping_total()),
-            "total" => floatval(WC()->cart->get_total('')),
+            "deliveryFee" => custom_round(WC()->cart->get_shipping_total()),
+            "total" => custom_round(WC()->cart->get_total('')),
         ),
         "payments" => array(
             array(
@@ -220,7 +221,7 @@ function send_order_data_to_api() {
 
 
     // Convertir les données en JSON
-    $json_order_data = json_encode($order_data, JSON_UNESCAPED_UNICODE);
+    $json_order_data = json_encode($order_data, JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     if ($json_order_data === false) {
         error_log('Erreur de formatage JSON: ' . json_last_error_msg());
 
@@ -452,4 +453,8 @@ function envoyer_email_debug($sujet, $message) {
     $to = 'bauduffegabriel@gmail.com';
     $headers = array('Content-Type: text/html; charset=UTF-8');
     wp_mail($to, $sujet, $message, $headers);
+}
+
+function custom_round($value) {
+    return round((float)$value, 2);
 }
