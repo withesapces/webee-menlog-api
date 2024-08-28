@@ -1962,6 +1962,7 @@ class WooCommerce_API_Integration {
         
             // Gestion des erreurs spécifiques en fonction du code HTTP et du contenu de la réponse
             if ($http_code == 200) {
+                // Le client passe en 200, tout va bien
                 if (isset($data['error']) && $data['error'] == 0 && isset($data['status']) && $data['status'] == 'SUCCESS') {
                     return array(
                         'error' => false,
@@ -1982,51 +1983,105 @@ class WooCommerce_API_Integration {
                             'response' => $response,
                         ),
                     );
-                } elseif (isset($data['error']) && $data['error'] == 1) {
+                } 
+                
+                // Le client passe en code 200, mais est refusé par Menlog
+                elseif (isset($data['error']) && $data['error'] == 1) {
+                    // Dans le cas de l'erreur "Invalid body"
                     if (strpos($data['status'], 'Invalid body') !== false) {
                         $log_message = 'Erreur: Contenu du body invalide. ' . $data['status'];
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de contenu du body lors de l\'ajout d\'un client', $log_message);
-                        return array('error' => true, 'message' => 'Erreur dans le contenu du body : ' . $data['status']);
-                    } elseif (strpos($data['status'], 'FAILED - GDSError') !== false) {
+                        return array(
+                            'error' => true,
+                            'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                        );
+                    } 
+                    
+                    // Dans le cas de l'erreur "FAILED - GDSError"
+                    elseif (strpos($data['status'], 'FAILED - GDSError') !== false) {
                         $log_message = 'Erreur: Données non conformes. ' . $data['status'];
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de données non conformes lors de l\'ajout d\'un client', $log_message);
-                        return array('error' => true, 'message' => 'Erreur: ' . $data['status']);
+                        return array(
+                            'error' => true,
+                            'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                        );
                     }
                 }
-            } elseif ($http_code == 400) {
+            } 
+            
+            // Le client ne passe pas en code 400
+            elseif ($http_code == 400) {
+                // Le JSON envoyé à Menlog est mal formaté (manquement d'une virgule, accolade, etc)
                 if (isset($data['message']) && strpos($data['message'], 'Invalid JSON') !== false) {
                     $log_message = 'Erreur: JSON invalide. ' . $data['message'];
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur JSON invalide lors de l\'ajout d\'un client', $log_message);
-                    return array('error' => true, 'message' => 'Erreur dans le format du JSON : ' . $data['message']);
+                    return array(
+                        'error' => true,
+                        'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                    );
                 }
-            } elseif ($http_code == 401) {
+            } 
+            
+            // Le client ne passe pas en code 401
+            // Mise en place d'une récursion pour corriger le token et essayer une fois de plus
+            elseif ($http_code == 401) {
+                static $retry_count = 0;
+                $max_retries = 1; // Limiter à une tentative de régénération du token
+
                 $log_message = 'Erreur d\'authentification: ' . $data['message'];
                 error_log($log_message);
                 $this->envoyer_email_debug('Erreur d\'authentification lors de l\'ajout d\'un client', $log_message);
-                return array('error' => true, 'message' => 'Erreur d\'authentification : ' . $data['message']);
-            } elseif ($http_code == 500) {
+
+                // Nouvelle tentative
+                if ($retry_count < $max_retries) {
+                    $retry_count++;
+                    // Tenter de régénérer un nouveau token
+                    $new_token = $this->get_token();
+                    if ($new_token) {
+                        $this->token = $new_token; // Mise à jour du token
+                        // Nouvelle tentative (récursion)
+                        return $this->add_client($customer);
+                    }
+                }
+
+
+                // Si l'erreur persiste après la tentative de correction
+                return array(
+                    'error' => true,
+                    'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                );
+
+            } 
+            
+            // Le client ne passe pas en code 500
+            elseif ($http_code == 500) {
                 if (isset($data['message']) && strpos($data['message'], 'TIMEOUT') !== false) {
                     $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'];
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur TIMEOUT lors de l\'ajout d\'un client', $log_message);
-                    return array('error' => true, 'message' => 'Serveur magasin non disponible. Le client sera importé lorsque le serveur sera à nouveau disponible.');
+
                     // TODO : Comprendre ce qu'il faut faire ici
-                } else {
-                    $log_message = 'Erreur interne du serveur: ' . $data['message'];
-                    error_log($log_message);
-                    $this->envoyer_email_debug('Erreur interne du serveur lors de l\'ajout d\'un client', $log_message);
-                    return array('error' => true, 'message' => 'Erreur interne du serveur : ' . $data['message']);
+                    // Actuellement, le client ne passe pas donc la commande n'est pas validée
+                    return array(
+                        'error' => true,
+                        'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                    );
                 }
             }
         
             // Autres codes de retour non gérés
+            // Dans ce cas, on ne peut pas apporter de modification. 
+            // Le client doit recommencer
             $log_message = 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code . '. Réponse: ' . json_encode($data);
             error_log($log_message);
             $this->envoyer_email_debug('Erreur inattendue lors de l\'ajout d\'un client', $log_message);
-            return array('error' => true, 'message' => 'Erreur inattendue lors de l\'ajout du client. Code HTTP: ' . $http_code);
+            return array(
+                'error' => true,
+                'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+            );
         }
         
         // Fonction pour envoyer un email de débogage
