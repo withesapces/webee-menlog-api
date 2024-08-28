@@ -1988,8 +1988,8 @@ class WooCommerce_API_Integration {
                 // Le client passe en code 200, mais est refusé par Menlog
                 elseif (isset($data['error']) && $data['error'] == 1) {
                     // Dans le cas de l'erreur "Invalid body"
-                    if (strpos($data['status'], 'Invalid body') !== false) {
-                        $log_message = 'Erreur: Contenu du body invalide. ' . $data['status'];
+                    if (strpos($data['msg'], 'Invalid body') !== false) {
+                        $log_message = 'Erreur: Contenu du body invalide. ' . $data['msg'];
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de contenu du body lors de l\'ajout d\'un client', $log_message);
                         return array(
@@ -1999,8 +1999,8 @@ class WooCommerce_API_Integration {
                     } 
                     
                     // Dans le cas de l'erreur "FAILED - GDSError"
-                    elseif (strpos($data['status'], 'FAILED - GDSError') !== false) {
-                        $log_message = 'Erreur: Données non conformes. ' . $data['status'];
+                    elseif (strpos($data['msg'], 'FAILED - GDSError') !== false) {
+                        $log_message = 'Erreur: Données non conformes. ' . $data['msg'];
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de données non conformes lors de l\'ajout d\'un client', $log_message);
                         return array(

@@ -15,14 +15,15 @@ function send_order_data_to_api() {
 
     // Test d'envoi du client
     $add_client_result = $api_integration->add_client($customer);
-    if ($add_client_result['error']) {
-        wc_add_notice($add_client_result['message'], 'error');
-        
+    if ($add_client_result['error']) {        
         if (isset($add_client_result['debug_info'])) {
             error_log("Débug add_client: " . print_r($add_client_result['debug_info'], true));
         }
-        
-        return;
+
+        $error_message = $add_client_result['message'];
+
+        // Afficher le message d'erreur à l'utilisateur
+        throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
 
     // Récupérer les informations du client
@@ -177,11 +178,8 @@ function send_order_data_to_api() {
     $pickup_time = WC()->session->get('pickup_time');
 
     // Limitez les IDs générés à 12 caractères
-    // $order_id = substr("id_" . time(), 0, 12);
-    // $channel_order_display_id = substr("TK_" . time(), 0, 12);
-
-    $order_id = 'id_172483538'; // Utiliser cet ID pour forcer l'erreur
-    $channel_order_display_id = 'TK_172483538'; // Utiliser cet ID pour forcer l'erreur
+    $order_id = substr("id_" . time(), 0, 12);
+    $channel_order_display_id = substr("TK_" . time(), 0, 12);
 
     // Génératoin de la requête
     $order_data = array(
