@@ -36,6 +36,7 @@ function send_order_data_to_api() {
 
     $cart = WC()->cart;
 
+    // Récupération de chaque produit et options (idem pour formule) du panier
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         $product = $cart_item['data'];
         $product_id = $product->get_id();
@@ -176,9 +177,13 @@ function send_order_data_to_api() {
     $pickup_time = WC()->session->get('pickup_time');
 
     // Limitez les IDs générés à 12 caractères
-    $order_id = substr("id_" . time(), 0, 12);
-    $channel_order_display_id = substr("TK_" . time(), 0, 12);
+    // $order_id = substr("id_" . time(), 0, 12);
+    // $channel_order_display_id = substr("TK_" . time(), 0, 12);
 
+    $order_id = 'id_172483538'; // Utiliser cet ID pour forcer l'erreur
+    $channel_order_display_id = 'TK_172483538'; // Utiliser cet ID pour forcer l'erreur
+
+    // Génératoin de la requête
     $order_data = array(
         "account" => $api_integration->get_uuidclient(),
         "location" => "Sandbox",
@@ -220,13 +225,16 @@ function send_order_data_to_api() {
     $json_order_data = json_encode($order_data, JSON_UNESCAPED_UNICODE);
     if ($json_order_data === false) {
         error_log('Erreur de formatage JSON: ' . json_last_error_msg());
-        wc_add_notice(__('Erreur lors de la préparation des données de commande. Veuillez réessayer.'), 'error');
-        return;
+
+        $error_message = 'Erreur lors de la préparation des données de commande. Veuillez réessayer.';
+
+        // Afficher le message d'erreur à l'utilisateur
+        throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
 
-    // Transmettre les données JSON à JavaScript via wp_localize_script
-    wp_register_script('send_order_data_to_api', '');
-    wp_localize_script('send_order_data_to_api', 'orderData', $json_order_data);
+    // Transmettre les données JSON à JavaScript via wp_add_inline_script
+    wp_register_script('send_order_data_to_api', ''); // Enregistrez un script vide ou existant
+    wp_add_inline_script('send_order_data_to_api', 'const orderData = ' . $json_order_data . ';', 'before');
     wp_enqueue_script('send_order_data_to_api');
 
     $url = 'https://' . $api_integration->get_server() . '/' . $api_integration->get_delivery() . '/menlog/' . $api_integration->get_uuidclient() . '/' . $api_integration->get_uuidmagasin() . '?token=' . $api_integration->get_token();
@@ -265,8 +273,11 @@ function send_order_data_to_api() {
         $log_message = "Erreur cURL: {$curl_error}. {$log_info}";
         error_log($log_message);
         envoyer_email_debug('Erreur cURL', $log_message);
-        wc_add_notice(__('Erreur lors de la communication avec l\'API. Veuillez réessayer.'), 'error');
-        return;
+
+        $error_message = 'Erreur lors de la communication avec l\'API. Veuillez réessayer.';
+
+        // Afficher le message d'erreur à l'utilisateur
+        throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
 
     error_log("Réponse de l'API: " . $response);
@@ -277,68 +288,164 @@ function send_order_data_to_api() {
         $log_message = "Erreur de décodage JSON: " . json_last_error_msg() . ". {$log_info}";
         error_log($log_message);
         envoyer_email_debug('Erreur de décodage JSON', $log_message);
-        wc_add_notice(__('Erreur inattendue lors de la réception des données. Veuillez réessayer.'), 'error');
-        return;
+
+        $error_message = 'Erreur inattendue lors de la réception des données. Veuillez réessayer.';
+
+        // Afficher le message d'erreur à l'utilisateur
+        throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
 
+    // Dans le cas où nous avons un code de retour 200, tout est ok, ou presque
     if ($http_code == 200) {
         if ($data['success']) {
             wc_add_notice(__('Commande envoyée avec succès.'), 'success');
-        } else {
-            $log_message = "Erreur avec code 200: " . $data['message'] . ". {$log_info}";
-            error_log($log_message);
-            envoyer_email_debug('Erreur lors de l\'envoi de la commande', $log_message);
-            wc_add_notice(__('Erreur lors de l\'envoi de la commande: ') . $data['message'], 'error');
-        }
-    } elseif ($http_code == 400) {
-        if (strpos($data['error'], 'Bad ticket format') !== false) {
+        } 
+    } 
+    
+    // Dans le cas d'un code 400, 2 solution
+    elseif ($http_code == 400) {
+        // Ajout d'un log pour vérifier le contenu de l'erreur
+        error_log('Debug - Contenu de $data[\'error\']: ' . print_r($data['error'], true));
+
+        // Code 400 avec Bad ticket format
+        if (isset($data['error']) && is_string($data['error']) && strpos($data['error'], 'Bad ticket format') !== false) {
             $log_message = "Erreur de format de ticket: " . $data['message'] . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Erreur de format de ticket', $log_message);
-            wc_add_notice(__('Erreur de format de ticket. Veuillez corriger le format et réessayer.'), 'error');
-        } elseif (strpos($data['error'], 'Bad Request') !== false) {
-            $log_message = "Erreur de donnée essentielle manquante ou erronée: " . $data['message'] . ". {$log_info}";
+        
+            $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.';
+
+            // Afficher le message d'erreur à l'utilisateur
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        }    
+        
+        // Code 400 avec BadRequest
+        elseif (isset($data['error']['code']) && $data['error']['code'] === 'BadRequest') {
+            // Extraire le message d'erreur à partir de $data['error']['message']
+            $log_message = "Erreur de donnée essentielle manquante ou erronée: " . print_r($data['error']['message'], true) . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Erreur de donnée essentielle', $log_message);
-            wc_add_notice(__('Une donnée essentielle est manquante ou erronée: ') . $data['message'], 'error');
+        
+            // Vérifier si 'message' est une chaîne ou un tableau et gérer les erreurs
+            if (is_array($data['error']['message'])) {
+                $missing_info = $data['error']['message'];
+            } else {
+                $missing_info = [$data['error']['message']]; // Assurez-vous que c'est un tableau
+            }
+        
+            // Construire un message d'erreur pour WooCommerce
+            $error_message = __('Une erreur s\'est produite lors de la validation de votre commande. Nous avons détecté un problème technique avec un ou plusieurs articles dans votre panier.', 'textdomain');
+            $error_message .= '<br>' . __('Veuillez essayer les solutions suivantes :', 'textdomain');
+            $error_message .= '<br>- ' . __('Vider votre panier et ajouter à nouveau les articles.', 'textdomain');
+            $error_message .= '<br>- ' . __('Si le problème persiste, veuillez contacter notre support client.', 'textdomain');
+            $error_message .= '<br><br>' . __('Le paiement n\'a pas été effectué. Nous vous prions de nous excuser pour la gêne occasionnée.', 'textdomain');
+
+            // Afficher le message d'erreur à l'utilisateur
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
         }
-    } elseif ($http_code == 500) {
-        if (strpos($data['message'], 'Timeout') !== false) {
-            $log_message = "Timeout - Le serveur du magasin est indisponible: " . $data['message'] . ". {$log_info}";
+    } 
+    
+    // Dans le cas d'un code 500, 6 cas possibles
+    elseif ($http_code == 500) {
+        // Ajout d'un log pour vérifier le contenu de l'erreur
+        error_log('Debug - Contenu de $data[\'error\']: ' . print_r($data['error'], true));
+
+        // Vérifier si 'message' est défini et est une chaîne avant d'utiliser strpos
+        $message = isset($data['error']['message']) && is_string($data['error']['message']) ? trim($data['error']['message']) : '';
+        
+        // Ajout d'un log pour voir le contenu exact de $message
+        error_log('Debug - Contenu exact de $message: ' . $message);
+
+        // Dans le cas d'un Timeout
+        // TODO : Comprendre ce qu'il faut faire ici
+        // Actuellement, la commande ne passe pas donc la commande n'est pas validée
+        if (strpos($message, 'Timeout') !== false) {
+            $log_message = "Timeout - Le serveur du magasin est indisponible: " . $message . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Timeout serveur magasin', $log_message);
-            wc_add_notice(__('Le serveur du magasin est indisponible. La commande sera traitée dès que possible.'), 'error');
-        } elseif (strpos($data['message'], 'Commande déjà importée') !== false) {
-            $log_message = "Commande déjà importée: " . $data['message'] . ". {$log_info}";
+            
+            $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.';
+    
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        } 
+        
+        // Dans le cas d'une commande déjà importée
+        elseif (stripos($message, 'Commande déjà importée') !== false) {
+            $log_message = "Ce numéro de commande existe déjà: " . $message . ". {$log_info}";
             error_log($log_message);
-            envoyer_email_debug('Commande déjà importée', $log_message);
-            wc_add_notice(__('Cette commande a déjà été importée.'), 'error');
-        } elseif (strpos($data['message'], 'La catégorie comptable du tiers ou du produit n\'est pas définie') !== false) {
-            $log_message = "Catégorie comptable non définie: " . $data['message'] . ". {$log_info}";
+            envoyer_email_debug('Ce numéro de commande existe déjà.', $log_message);
+
+            $error_message = 'Ce numéro de commande existe déjà. Le paiement n\'a pas été effectué. Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contactez la boulangerie.';
+    
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        } 
+        
+        // Dans le cas d'un produit qui n'existe plus sur menlog, mais encore sur BDD
+        // (possible si produit modifié dans Menlog, mais maj pas encore passée)
+        elseif (stripos($message, 'La catégorie comptable du tiers ou du produit') !== false) {
+            $log_message = "La référence produit n'existe pas dans la caisse : " . $message . ". {$log_info}";
             error_log($log_message);
-            envoyer_email_debug('Catégorie comptable non définie', $log_message);
-            wc_add_notice(__('Erreur: La catégorie comptable du produit ou du tiers n\'est pas définie. Veuillez corriger et réessayer.'), 'error');
-        } elseif (strpos($data['message'], 'Erreur : Diff px ttc/total') !== false) {
-            $log_message = "Total des lignes incorrect: " . $data['message'] . ". {$log_info}";
+            envoyer_email_debug('La référence produit n\'existe pas dans la caisse', $log_message);
+            
+            $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Il semble qu\'un des produits ne puisse pas être traité. Veuillez essayer de retirer les produits du panier un par un pour identifier celui qui pose problème, ou contactez notre support pour assistance. Le paiement n\'a pas été effectué.';
+    
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        }
+        
+        // Dans le cas d'un problème de prix
+        elseif (stripos($message, 'Diff px ttc/total') !== false) {
+            $log_message = "Le total des lignes ne correspond pas au total de la vente: " . $message . ". {$log_info}";
             error_log($log_message);
-            envoyer_email_debug('Total des lignes incorrect', $log_message);
-            wc_add_notice(__('Erreur: Le total des lignes ne correspond pas au total de la vente. Veuillez vérifier les montants et réessayer.'), 'error');
-        } elseif (strpos($data['message'], 'conversion error from string') !== false) {
-            $log_message = "Erreur de conversion de données: " . $data['message'] . ". {$log_info}";
+            envoyer_email_debug('Le total des lignes ne correspond pas au total de la vente', $log_message);
+
+            $error_message = 'Une erreur technique est survenue lors de la validation de votre commande en raison d\'informations incorrectes sur un ou plusieurs articles dans votre panier.';
+            $error_message .= '<br>' . __('Pour résoudre ce problème, veuillez essayer les actions suivantes :', 'textdomain');
+            $error_message .= '<br>- ' . __('Retirez les articles récemment ajoutés à votre panier et réessayez.', 'textdomain');
+            $error_message .= '<br>- ' . __('Si le problème persiste, veuillez vider votre panier, puis ajouter les articles à nouveau un par un.', 'textdomain');
+            $error_message .= '<br><br>' . __('Le paiement n\'a pas été effectué. Nous vous prions de nous excuser pour la gêne occasionnée.', 'textdomain');
+            
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        } 
+        
+        // Dans le cas d'un problème de conversion
+        elseif (stripos($message, 'conversion error from string') !== false) {
+            $log_message = "Erreur de conversion de données en string/numeric. Ne pas utiliser de caractères spéciaux dans les libellés: " . $message . ". {$log_info}";
             error_log($log_message);
-            envoyer_email_debug('Erreur de conversion de données', $log_message);
-            wc_add_notice(__('Erreur de conversion des données. Veuillez vérifier les formats et réessayer.'), 'error');
-        } else {
-            $log_message = "Erreur interne du serveur non spécifiée: " . $data['message'] . ". {$log_info}";
+            envoyer_email_debug('Erreur de conversion de données en string/numeric. Ne pas utiliser de caractères spéciaux dans les libellés.', $log_message);
+
+            // Message d'erreur pour le client avec des actions concrètes
+            $error_message = 'Une erreur technique est survenue lors de la validation de votre commande en raison d\'informations incorrectes sur un ou plusieurs articles dans votre panier.';
+            $error_message .= '<br>' . __('Pour résoudre ce problème, veuillez essayer les actions suivantes :', 'textdomain');
+            $error_message .= '<br>- ' . __('Retirez les articles récemment ajoutés à votre panier et réessayez.', 'textdomain');
+            $error_message .= '<br>- ' . __('Vérifiez que vous n\'avez pas utilisé de caractères spéciaux (comme des accents ou symboles) dans les champs de texte (notes, messages personnalisés, etc.) des produits.', 'textdomain');
+            $error_message .= '<br>- ' . __('Si le problème persiste, veuillez vider votre panier, puis ajouter les articles à nouveau un par un.', 'textdomain');
+            $error_message .= '<br><br>' . __('Le paiement n\'a pas été effectué. Nous vous prions de nous excuser pour la gêne occasionnée.', 'textdomain');
+            
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
+        } 
+        
+        // Dans le cas où une erreur interne n'est pas référencée, on ne passe pas la commande
+        else {
+            $log_message = "Erreur interne du serveur non spécifiée: " . $message . ". {$log_info}";
             error_log($log_message);
             envoyer_email_debug('Erreur interne du serveur', $log_message);
-            wc_add_notice(__('Erreur interne du serveur: ') . $data['message'], 'error');
+    
+            $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.';
+    
+            throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
         }
-    } else {
+    } 
+    
+    // Dans le cas où l'erreur n'est pas référencée, on dit au client de recommencer et on ne passe pas la commande
+    else {
         $log_message = "Erreur inattendue avec code HTTP " . $http_code . ": " . $data['message'] . ". {$log_info}";
         error_log($log_message);
         envoyer_email_debug('Erreur inattendue', $log_message);
-        wc_add_notice(__('Erreur inattendue. Veuillez réessayer.'), 'error');
+
+        $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.';
+
+        // Afficher le message d'erreur à l'utilisateur
+        throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
 }
 
