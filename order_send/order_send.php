@@ -83,7 +83,7 @@ function send_order_data_to_api() {
         }
 
         // Assurez-vous que le prix est un nombre flottant
-        $product_price = floatval($product_price);
+        $product_price = custom_round($product_price);
     
         $item_data = array(
             "productType" => $product_type,
@@ -96,7 +96,8 @@ function send_order_data_to_api() {
             "subItems" => array(), // Placeholder for subitems, if any
         );
 
-        $prix_total += floatval($item_data['price']);
+        $prix_total += custom_round($item_data['price']*$cart_item['quantity']);
+        error_log("prix_total = " . $prix_total . " pour le produit " . $product->get_name() . "\n\n");
     
         // Gestion des options pour les formules
         if (isset($cart_item['formula_options'])) {
@@ -105,7 +106,7 @@ function send_order_data_to_api() {
                     "productType" => 4, // Type pour les options de formule
                     "sku" => $formula_option['sku'],
                     "name" => $formula_option['product'],
-                    "price" => floatval($formula_option['price']),
+                    "price" => custom_round($formula_option['price']),
                     "quantity" => 1,
                     "idCategory" => $formula_option['id_category'],
                     "description" => $formula_option['description'],
@@ -119,20 +120,20 @@ function send_order_data_to_api() {
                             "productType" => 2, // Type pour les sous-options
                             "sku" => $suboption['sku'],
                             "name" => $suboption['option'],
-                            "price" => floatval($suboption['price']),
+                            "price" => custom_round($suboption['price']),
                             "quantity" => 1,
                             "idCategory" => $suboption['idCategory'],
                             "description" => $suboption['description']
                         );
                         // Ajoute la sous-option dans les subItems de l'option principale
                         $sub_item_data['subItems'][] = $sub_sub_item_data;
-                        $prix_total += floatval($suboption['price']);
+                        $prix_total += custom_round($suboption['price']);
                     }
                 }
 
                 // Ajoute l'option principale dans les subItems de l'élément principal
                 $item_data['subItems'][] = $sub_item_data;
-                $prix_total += floatval($formula_option['price']);
+                $prix_total += custom_round($formula_option['price']);
             }
         }
 
@@ -143,13 +144,14 @@ function send_order_data_to_api() {
                     "productType" => 2, // Type pour les sous-options non-formule
                     "sku" => $custom_option['sku'],
                     "name" => $custom_option['option'],
-                    "price" => floatval($custom_option['price']),
+                    "price" => custom_round($custom_option['price']),
                     "quantity" => 1,
                     "idCategory" => $custom_option['idCategory'],
                     "description" => $custom_option['description']
                 );
                 $item_data['subItems'][] = $sub_item_data;
-                $prix_total += floatval($custom_option['price']);
+                $prix_total += custom_round($custom_option['price']*$cart_item['quantity']);
+                error_log("prix_total = " . $prix_total . " pour l'option " . $custom_option['option'] . "\n\n");
             }
         }
 
@@ -182,6 +184,61 @@ function send_order_data_to_api() {
     $order_id = substr("id_" . time(), 0, 12);
     $channel_order_display_id = substr("TK_" . time(), 0, 12);
 
+    error_log("Prix total avant construction de order_data: " . print_r($prix_total, true));
+
+    $applied_coupons = WC()->cart->get_applied_coupons();
+    $discount_total = 0;
+
+    foreach ($applied_coupons as $coupon_code) {
+        $coupon = new WC_Coupon($coupon_code);
+        $discount_type = $coupon->get_discount_type();
+        $coupon_amount = $coupon->get_amount();
+        $product_ids = $coupon->get_product_ids();  // Produits spécifiques auxquels le coupon s'applique
+        $excluded_product_ids = $coupon->get_excluded_product_ids();  // Produits exclus du coupon
+    
+        error_log("Coupon appliqué: " . $coupon_code);
+        error_log("Type de coupon: " . $discount_type);
+        error_log("Montant du coupon: " . $coupon_amount);
+        error_log("Produits ciblés par le coupon: " . print_r($product_ids, true));
+        error_log("Produits exclus par le coupon: " . print_r($excluded_product_ids, true));
+    
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            $product_id = $cart_item['data']->get_id();
+            $product_price = $cart_item['data']->get_price(); // Prix original du produit
+            error_log("Produit dans le panier: " . $product_id);
+            error_log("Prix du produit sans réduction : " . $product_price);
+    
+            // Si le produit est exclu du coupon, on saute l'itération
+            if (in_array($product_id, $excluded_product_ids)) {
+                error_log("Produit exclu du coupon: " . $product_id);
+                continue;
+            }
+    
+            // Si le coupon est un pourcentage et s'applique à un produit spécifique
+            if ($discount_type == 'percent' && (empty($product_ids) || in_array($product_id, $product_ids))) {
+                $product_discount = $product_price * ($coupon_amount / 100) * $cart_item['quantity'];
+                $discount_total += $product_discount;
+                error_log("Réduction appliquée (pourcentage) pour le produit " . $product_id . " coutant " . $product_price . ": " . $product_discount);
+            }
+            // Si le coupon est un montant fixe sur un produit spécifique
+            elseif ($discount_type == 'fixed_product' && in_array($product_id, $product_ids)) {
+                $product_discount = $coupon_amount * $cart_item['quantity'];
+                $discount_total += $product_discount;
+                error_log("Réduction appliquée (montant fixe) pour le produit " . $product_id . ": " . $product_discount);
+            }
+        }
+    
+        // Si le coupon est un montant fixe sur tout le panier
+        if ($discount_type == 'fixed_cart') {
+            $discount_total += $coupon_amount;
+            error_log("Réduction appliquée (montant fixe sur tout le panier): " . $coupon_amount);
+        }
+    }
+    
+    $discount_total = round($discount_total, 2);
+    error_log("Réduction totale calculée manuellement : " . $discount_total . "\n\n");
+    
+
     // Génératoin de la requête
     $order_data = array(
         "account" => $api_integration->get_uuidclient(),
@@ -204,24 +261,24 @@ function send_order_data_to_api() {
             "email" => $customer_email,
         ),
         "orderTotal" => array(
-            "subtotal" => custom_round($prix_total),
-            "discount" => custom_round(WC()->cart->get_discount_total()),
+            "subtotal" => (float)number_format(custom_round($prix_total), 2, '.', ''),
+            "discount" => $discount_total,
             "tax" => null,
-            "deliveryFee" => custom_round(WC()->cart->get_shipping_total()),
-            "total" => custom_round(WC()->cart->get_total('')),
+            "deliveryFee" => (float)number_format(custom_round(WC()->cart->get_shipping_total()), 2, '.', ''),
+            "total" => (float)number_format(custom_round(WC()->cart->get_total('')), 2, '.', ''),
         ),
         "payments" => array(
             array(
                 "typereg" => "5",
-                "montant" => floatval(WC()->cart->get_total('')),
+                "montant" => custom_round(WC()->cart->get_total('')),
             )
         ),
         "items" => $order_items,
     );
 
-
     // Convertir les données en JSON
     $json_order_data = json_encode($order_data, JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+
     if ($json_order_data === false) {
         error_log('Erreur de formatage JSON: ' . json_last_error_msg());
 

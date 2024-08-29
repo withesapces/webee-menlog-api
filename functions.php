@@ -134,6 +134,8 @@ class WooCommerce_API_Integration {
          * @return mixed
          */
         public function get_token() {
+            // TODO : Gérer le cas où on ne récupère pas le token
+            // WP_die en cron, ça donne quoi ? 
             $url = "https://{$this->server}/jwt/authenticate";
         
             $body = array(
@@ -380,6 +382,8 @@ class WooCommerce_API_Integration {
          * @return mixed
          */
         private function get_products() {
+            // TODO : Gérer le cas où on ne reçoit pas les produits ; solution de rententer une fois
+            // WP_die, ça donne quoi en CRON ? 
             $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
             
             $options = [
@@ -514,17 +518,40 @@ class WooCommerce_API_Integration {
         }
     
         public function daily_import_products() {
+            // Démarre la mesure du temps d'exécution
+            $start_time = microtime(true);
+            
+            // Mesure l'utilisation de la mémoire avant l'exécution
+            $start_memory = memory_get_usage();
+        
+            // Obtenir le token et les données des produits
             $this->token = $this->get_token();
             $products_data = $this->get_products();
-    
+        
             if (!empty($products_data)) {
+                // Importer les catégories et les produits
                 $this->import_categories($products_data['menu']['categories']);
                 $this->import_products($products_data['menu']['products']);
                 $this->write_import_results();
             }
-    
+        
+            // Calculer le temps d'exécution total
+            $execution_time = microtime(true) - $start_time;
+        
+            // Calculer l'utilisation totale de la mémoire
+            $end_memory = memory_get_usage();
+            $memory_used = $end_memory - $start_memory;
+        
+            // Formater les résultats pour l'affichage
+            $memory_used_mb = round($memory_used / 1024 / 1024, 2); // Convertir en MB
+            $execution_time_seconds = round($execution_time, 2); // Temps en secondes
+        
+            // Log des ressources utilisées
             error_log('Importation quotidienne des produits terminée le ' . date('Y-m-d H:i:s'));
+            error_log('Temps d\'exécution: ' . $execution_time_seconds . ' secondes');
+            error_log('Mémoire utilisée: ' . $memory_used_mb . ' MB');
         }
+        
     
 
 
@@ -542,6 +569,7 @@ class WooCommerce_API_Integration {
          *   - string 'idCategory' : Le slug de la catégorie.
          */
         private function import_categories($categories) {
+            // TODO : Gérer les erreurs
             // Étape 1 : Créer un tableau des ID de catégories de Menlog à partir de la liste fournie par l'API
             $menlog_category_ids = array_column($categories, 'idCategory');
 
@@ -652,6 +680,7 @@ class WooCommerce_API_Integration {
          *   - array 'subProducts' : Les sous-produits associés au produit.
          */
         private function import_products($products) {
+            // TODO : Gérer les erreurs
             $menlog_skus_product_type_1 = [];
         
             // Parcourir les produits Menlog et traiter les productType 1
