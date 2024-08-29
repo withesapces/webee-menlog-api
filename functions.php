@@ -2386,15 +2386,26 @@ function update_cart_price($cart) {
 add_action('woocommerce_after_order_notes', 'add_anniversary_plaque_fields');
 function add_anniversary_plaque_fields($checkout) {
     $count = 0;
+    $has_anniversary_plaque = false;
 
-    // Titre général pour inviter l'utilisateur à saisir le texte
-    echo "<h4>Saisissez le texte à insérer sur les plaques anniversaire :</h4>";
-
+    // Vérifier s'il y a des produits avec des plaques anniversaire dans le panier
     foreach (WC()->cart->get_cart() as $cart_item) {
-        // Récupérer le nom du produit
-        $product_name = $cart_item['data']->get_name();
-
         if (isset($cart_item['has_anniversary_plaque']) && $cart_item['has_anniversary_plaque']) {
+            $has_anniversary_plaque = true;
+            break; // On peut arrêter la boucle dès qu'on trouve un produit avec plaque anniversaire
+        }
+    }
+
+    // Afficher le titre général uniquement s'il y a des plaques anniversaire
+    if ($has_anniversary_plaque) {
+        echo "<h4>Saisissez le texte à insérer sur les plaques anniversaire :</h4>";
+    }
+
+    // Afficher les champs pour chaque produit avec plaque anniversaire
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        if (isset($cart_item['has_anniversary_plaque']) && $cart_item['has_anniversary_plaque']) {
+            $product_name = $cart_item['data']->get_name();
+
             // Afficher le nom du produit
             echo "<strong>" . esc_html($product_name) . "</strong>";
 
@@ -2411,9 +2422,10 @@ function add_anniversary_plaque_fields($checkout) {
             }
 
             echo "<br>"; // Ajouter un espace entre les produits
-        } 
+        }
     }
 }
+
 
 
 
