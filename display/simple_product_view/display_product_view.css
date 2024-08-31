@@ -40,6 +40,9 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .customizer-option:hover {
@@ -51,8 +54,7 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    position: relative;
-    z-index: 1;
+    flex-grow: 1;
 }
 
 .customizer-option-label input[type="checkbox"] {
@@ -84,6 +86,26 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 12px;
+}
+
+.option-qty-container {
+    display: flex;
+    align-items: center;
+}
+
+.option-qty-label {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #34495e;
+}
+
+.option-qty {
+    width: 60px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    padding: 4px;
+    text-align: center;
+    font-size: 14px;
 }
 
 .customizer-option-name {
