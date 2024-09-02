@@ -1,5 +1,4 @@
 jQuery(document).ready(function($) {
-    // Initialiser le prix de base au chargement de la page
     var basePrice = parseFloat($('#custom_total_price').val());
 
     $('.formula-option input[type="radio"]').change(function() {
@@ -40,9 +39,42 @@ jQuery(document).ready(function($) {
     });
 
     $('.formula-suboption-choice input[type="checkbox"]').change(function() {
+        const $checkbox = $(this);
+        const $qtyContainer = $checkbox.closest('.formula-suboption-choice').find('.option-qty-container');
+        
+        if ($checkbox.is(':checked')) {
+            $qtyContainer.show();
+            const $qtyInput = $qtyContainer.find('.option-qty');
+            $qtyInput.prop('disabled', false);
+            if ($qtyInput.val() === "0" || $qtyInput.val() === "") {
+                $qtyInput.val(1);
+            }
+        } else {
+            $qtyContainer.hide();
+            $qtyContainer.find('.option-qty').val(0).prop('disabled', true);
+        }
+
         updateTotal();
         validateSelections();
     });
+
+    // Ajoutez cet événement pour surveiller les modifications de quantité
+    $('.formula-suboption-choice .option-qty').on('input', function() {
+        const $input = $(this);
+        const maxQty = parseInt($input.attr('max')) || 1;  // Utilisez l'attribut 'max' si disponible, sinon par défaut 1
+        const currentQty = parseInt($input.val());
+
+        // Limiter la quantité à la valeur maximale autorisée pour cette option
+        if (currentQty > maxQty) {
+            $input.val(maxQty); // Restreindre la quantité au maximum autorisé
+        } else if (currentQty < 1) {
+            $input.val(1); // S'assurer que la quantité minimale est 1
+        }
+
+        updateTotal();
+        validateSelections();
+    });
+
 
     function updateTotal() {
         var total = basePrice;
@@ -53,18 +85,13 @@ jQuery(document).ready(function($) {
                 total += parseFloat($selectedOption.data('price'));
                 
                 $selectedOption.find('.formula-suboption-choice input[type="checkbox"]:checked').each(function() {
-                    total += parseFloat($(this).data('price'));
+                    const qty = parseInt($(this).closest('.formula-suboption-choice').find('.option-qty').val());
+                    total += parseFloat($(this).data('price')) * qty;
                 });
             }
         });
 
-        // Mettre à jour l'affichage du total
         $('#formula-total-price').text(total.toFixed(2) + ' €');
-
-        // Mettre à jour le prix affiché du produit WooCommerce
-        $('.woocommerce-Price-amount.amount').text(total.toFixed(2) + ' €');
-
-        // Mettre à jour le champ caché avec le nouveau total
         $('#custom_total_price').val(total.toFixed(2));
     }
 
@@ -106,4 +133,5 @@ jQuery(document).ready(function($) {
     }
 
     validateSelections();
+    updateTotal();
 });

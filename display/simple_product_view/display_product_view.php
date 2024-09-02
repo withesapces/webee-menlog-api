@@ -1,5 +1,5 @@
 <?php
-// TODO : Ajouter de quoi pouvoir prendre plusieurs QTE d'une même option, dans la limite du possible
+
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options', 15);
 function display_custom_questions_and_options() {
     global $post, $wpdb;

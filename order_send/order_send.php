@@ -3,8 +3,6 @@
 add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
 function send_order_data_to_api() {
     // TODO : Peut-être ne pas envoyé tant que la carte n'a pas été validée. Mais il ne faut pas que la carte soit prélevée tant que Menlog n'a pas envoyé un code 200 pour l'ajout du client et l'envoi de la commande
-    // TODO : Pouvoir envoyer un produit simple avec une option qui a plusieurs QTE
-    
     // Vérifier le nonce pour la sécurité
     check_ajax_referer('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
     $api_integration = new WooCommerce_API_Integration();
@@ -124,7 +122,7 @@ function send_order_data_to_api() {
                             "sku" => $suboption['sku'],
                             "name" => $suboption['option'],
                             "price" => custom_round($suboption['price']),
-                            "quantity" => 1,
+                            "quantity" => $suboption['quantity'],
                             "idCategory" => $suboption['idCategory'],
                             "description" => $suboption['description']
                         );

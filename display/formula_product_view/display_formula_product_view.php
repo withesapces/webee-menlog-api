@@ -1,5 +1,4 @@
 <?php
-
 add_action('woocommerce_before_add_to_cart_button', 'display_custom_questions_and_options_for_formula', 15);
 function display_custom_questions_and_options_for_formula() {
     global $post, $wpdb;
@@ -79,12 +78,20 @@ function display_custom_questions_and_options_for_formula() {
                                     $option_name = esc_html($option['option_name']);
                                     $option_price = esc_html($option['price']);
                                     $option_sku = esc_attr($option['sku']);
+                                    $default_qty = 1;  // Initialiser à 1 si l'option est cochée
+                                    $qty_visibility = ' style="display: none;"';
 
-                                    echo "<label class='formula-suboption-choice'>";
-                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}]' value='{$option_name}' data-price='{$option_price}'>";
+                                    echo "<div class='formula-suboption-choice'>";
+                                    echo "<label class='formula-suboption-choice-label'>";
+                                    echo "<input type='checkbox' name='option_{$nested_question_id}[{$option_sku}][checked]' value='1' data-price='{$option_price}'>";
                                     echo "<span class='formula-suboption-name'>{$option_name}</span>";
                                     echo "<span class='formula-suboption-price'>+{$option_price} €</span>";
                                     echo "</label>";
+                                    echo "<div class='option-qty-container' {$qty_visibility}>";
+                                    echo "<label for='option_qty_{$option_sku}' class='option-qty-label'>Qte :</label>";
+                                    echo "<input id='option_qty_{$option_sku}' type='number' name='option_{$nested_question_id}[{$option_sku}][qty]' value='{$default_qty}' min='1' max='{$nested_max}' class='option-qty' data-sku='{$option_sku}' data-price='{$option_price}'>";
+                                    echo "</div>";
+                                    echo "</div>";
                                 }
                                 echo '</div>';
                             }
@@ -98,7 +105,7 @@ function display_custom_questions_and_options_for_formula() {
             }
             echo '</div>';
         }
-        echo '<div class="formula-total">Total : <span id="formula-total-price">' . esc_html($base_price) . ' €</span></div>';
+        echo '<div class="formula-total">Total : <span id="formula-total-price">" . esc_html($base_price) . " €</span></div>';
         echo '<div id="validation-message" style="color: red; display: none;"></div>';
         echo '</div>';
         echo '<input type="hidden" id="custom_total_price" name="custom_total_price" value="' . esc_attr($base_price) . '">';

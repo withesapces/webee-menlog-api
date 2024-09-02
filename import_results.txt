@@ -7,15 +7,15 @@ Produits type 1 :
             0 produits type 1 on un ou plusieurs PT3
 
 Produits type 3 : 
-            18 créés,
+            0 créés,
             0 mis à jour, 
-            15 skipped, 
-            5 supprimés
+            33 skipped, 
+            0 supprimés
 
 Produits type 2 : 
-            18 créés,
+            0 créés,
             0 mis à jour, 
-            15 skipped, 
+            33 skipped, 
             0 supprimés
 
 Produits type 4 : 

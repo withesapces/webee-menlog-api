@@ -2222,7 +2222,6 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
         $cart_item_data['is_formula'] = true;
         $cart_item_data['formula_options'] = [];
 
-        // Récupération des questions pour les formules
         $questions = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
             $product_id
@@ -2233,7 +2232,6 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
             $selected_formula_product_id = isset($_POST["formula_option_{$question_id}"]) ? $_POST["formula_option_{$question_id}"] : null;
 
             if ($selected_formula_product_id) {
-                // Récupération du produit formule sélectionné
                 $formula_product = $wpdb->get_row($wpdb->prepare(
                     "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d",
                     $selected_formula_product_id
@@ -2249,7 +2247,6 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
                     'suboptions' => []
                 ];
 
-                // Récupération des sous-questions pour le produit formule sélectionné
                 $sub_questions = $wpdb->get_results($wpdb->prepare(
                     "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
                     $selected_formula_product_id
@@ -2266,12 +2263,13 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
 
                             $cart_item_data['formula_options'][$question_id]['suboptions'][] = [
                                 'question' => $sub_question['question_text'],
-                                'option' => $option['option_name'], // Ici on utilise le nom de l'option
+                                'option' => $option['option_name'],
                                 'sku' => $option_sku,
                                 'price' => $option['price'],
+                                'quantity' => isset($option_data['qty']) ? (int) $option_data['qty'] : 1,
                                 'idCategory' => $option['id_category'],
                                 'description' => $option['description'],
-                                'productType' => 4, // Sous-item de formule
+                                'productType' => 4,
                             ];
                         }
                     }
@@ -2279,9 +2277,8 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
             }
         }
     } else {
-        // Gestion des options pour les produits non-formule
         $cart_item_data['custom_options'] = [];
-        $cart_item_data['has_anniversary_plaque'] = false; // Initialisation par défaut
+        $cart_item_data['has_anniversary_plaque'] = false;
 
         $questions = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
@@ -2292,29 +2289,26 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
             $question_id = $question['id'];
             if (isset($_POST["option_{$question_id}"])) {
                 foreach ($_POST["option_{$question_id}"] as $option_sku => $option_data) {
-                    // Vérifier si l'option est cochée (vérification du champ 'checked')
                     if (isset($option_data['checked'])) {
                         $option = $wpdb->get_row($wpdb->prepare(
                             "SELECT * FROM {$wpdb->prefix}custom_options WHERE question_id = %d AND sku = %s",
                             $question_id, $option_sku
                         ), ARRAY_A);
 
-                        // Vérifier si l'option contient "plaquette anniversaire"
                         if (preg_match('/plaque anniversaire/i', $option['option_name'])) {
                             $cart_item_data['has_anniversary_plaque'] = true;
-                            // Debugging to verify when this condition is met
                             error_log("Plaquette anniversaire détectée: " . $option['option_name']);
                         }
 
                         $cart_item_data['custom_options'][] = [
                             'question' => $question['question_text'],
-                            'option' => $option['option_name'], // Ici on utilise le nom de l'option
+                            'option' => $option['option_name'],
                             'sku' => $option_sku,
                             'price' => $option['price'],
-                            'quantity' => isset($option_data['qty']) ? (int) $option_data['qty'] : 1, // Quantité de l'option
+                            'quantity' => isset($option_data['qty']) ? (int) $option_data['qty'] : 1,
                             'idCategory' => $option['id_category'],
                             'description' => $option['description'],
-                            'productType' => 2, // Sous-item de produit simple
+                            'productType' => 2,
                         ];
                     }
                 }
@@ -2335,9 +2329,15 @@ function display_custom_options_in_cart($item_data, $cart_item) {
             if (!empty($formula_option['suboptions'])) {
                 $suboption_values = [];
                 foreach ($formula_option['suboptions'] as $suboption) {
-                    $suboption_values[] = $suboption['option'];
+                    $suboption_text = $suboption['option'];
+                    $suboption_qty = isset($suboption['quantity']) ? $suboption['quantity'] : 1;
+
+                    if ($suboption_qty > 1) {
+                        $suboption_text .= ' x' . $suboption_qty;
+                    }
+
+                    $suboption_values[] = $suboption_text;
                 }
-                // Convertir les sous-options en une chaîne de texte
                 $item_value .= ' (' . implode(', ', $suboption_values) . ')';
             }
     
@@ -2351,7 +2351,6 @@ function display_custom_options_in_cart($item_data, $cart_item) {
             $option_text = $custom_option['option'];
             $option_qty = isset($custom_option['quantity']) ? $custom_option['quantity'] : 1;
             
-            // Inclure la quantité si elle est supérieure à 1
             if ($option_qty > 1) {
                 $option_text .= ' x' . $option_qty;
             }
@@ -2373,10 +2372,8 @@ function update_cart_price($cart) {
         return;
     }
 
-    // Mettre à jour le prix de chaque article dans le panier
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         if (isset($cart_item['custom_price'])) {
-            // Mettre à jour le prix de l'article
             $cart_item['data']->set_price($cart_item['custom_price']);
         }
     }
