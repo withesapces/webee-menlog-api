@@ -731,8 +731,6 @@ class WooCommerce_API_Integration {
                 $this->envoyer_email_debug('Erreur lors de l\'importation des catégories', $e->getMessage());
             }
         }
-
-        
     
         /**
          * Importe les produits WooCommerce (productType 1) en ajoutant de nouveaux produits ou en mettant à jour les produits existants.
@@ -752,49 +750,56 @@ class WooCommerce_API_Integration {
          *   - array 'subProducts' : Les sous-produits associés au produit.
          */
         private function import_products($products) {
-            // TODO : Gérer les erreurs
-            $menlog_skus_product_type_1 = [];
+            try {
+                $menlog_skus_product_type_1 = [];
         
-            // Parcourir les produits Menlog et traiter les productType 1
-            foreach ($products as $product) {
-                // Si le produit est un PT1, on continue, 
-                // Sinon, on passe au produit menlog suivant
-                if ($product['productType'] == 1) {
-                    $menlog_skus_product_type_1[] = $product['sku'];
+                // Parcourir les produits Menlog et traiter les productType 1
+                foreach ($products as $product) {
+                    // Si le produit est un PT1, on continue, sinon, on passe au produit menlog suivant
+                    if ($product['productType'] == 1) {
+                        $menlog_skus_product_type_1[] = $product['sku'];
         
-                    // Vérifier si le produit existe déjà par son SKU sur WooCommerce
-                    $existing_product_id = wc_get_product_id_by_sku($product['sku']);
+                        // Vérifier si le produit existe déjà par son SKU sur WooCommerce
+                        $existing_product_id = wc_get_product_id_by_sku($product['sku']);
         
-                    // Le produit n'existe pas sur WooCommerce, on peut le créer
-                    if (!$existing_product_id) {
-                        // Création du produit et récupération de son ID
-                        $product_id = $this->insert_product($product);
+                        // Le produit n'existe pas sur WooCommerce, on peut le créer
+                        if (!$existing_product_id) {
+                            // Création du produit et récupération de son ID
+                            $product_id = $this->insert_product($product);
         
-                        // Vérifier si le produit a bien été créé et que l'ID est valide
-                        if ($product_id) {
-                            // Vérifier si le produit a des sous-produits
-                            if (!empty($product['subProducts'])) {
-                                // Il a des sous-prpduits, donc pour ce nouveau productType 1, on va lui ajouter ses sous-produits
-                                // Pour ça, on envoit $product['subProducts'] qui contient à ce stade, les productType 3
-                                // Dans le cas d'un produit simple : 3, 2
-                                // Dans le cas d'un produit Formule Ecommerce : 3, 4, 3, 2
-                                $this->process_sub_products($product_id, $product['subProducts'], $products, $product);
-                                $this->products_with_PT3++;
+                            // Vérifier si le produit a bien été créé et que l'ID est valide
+                            if ($product_id) {
+                                // Vérifier si le produit a des sous-produits
+                                if (!empty($product['subProducts'])) {
+                                    // Il a des sous-produits, donc pour ce nouveau productType 1, on va lui ajouter ses sous-produits
+                                    $this->process_sub_products($product_id, $product['subProducts'], $products, $product);
+                                    $this->products_with_PT3++;
+                                }
+                            } else {
+                                // Gérer le cas où le produit n'a pas pu être créé
+                                throw new Exception('Erreur: Le produit avec le SKU ' . $product['sku'] . ' n\'a pas pu être créé.');
                             }
                         } else {
-                            // Gérer le cas où le produit n'a pas pu être créé
-                            $this->message_erreur .= 'Erreur: Le produit dont le SKU doit être' . $product['sku'] .' n\'a pas pu être créé dans la fonction import_products().';
+                            // Vérifier si la catégorie est différente et mettre à jour le produit existant si nécessaire
+                            $this->update_product_with_category($existing_product_id, $product, $products);
                         }
-                    } else {
-                        // Vérifier si la catégorie est différente et mettre à jour le produit existant si nécessaire
-                        $this->update_product_with_category($existing_product_id, $product, $products);
                     }
                 }
-            }
         
-            // Mettre en brouillon les produits qui ne sont plus présents sur Menlog
-            $this->set_missing_products_to_draft($menlog_skus_product_type_1);
-        }    
+                // Mettre en brouillon les produits qui ne sont plus présents sur Menlog
+                $this->set_missing_products_to_draft($menlog_skus_product_type_1);
+        
+            } catch (Exception $e) {
+                // Log de l'erreur
+                error_log('Erreur lors de l\'importation des produits : ' . $e->getMessage());
+        
+                // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
+                $this->envoyer_email_debug('Erreur lors de l\'importation des produits', $e->getMessage());
+        
+                // Ajouter le message d'erreur pour un affichage ultérieur
+                $this->message_erreur .= $e->getMessage() . "\n";
+            }
+        }            
 
         /**
          * Le produit n'existe pas, donc on insère un produit
