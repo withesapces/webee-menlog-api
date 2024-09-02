@@ -447,39 +447,54 @@ class WooCommerce_API_Integration {
          * @return void
          */
         public function import_menlog_from_api() {
-            if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
-                if ($_POST['action'] == 'import_products') {
-                    $this->token = $this->get_token();
-                    if ($this->token === false) {
-                        error_log('Échec de l\'importation : impossible de récupérer le token.');
-                        return;
-                    }
+            try {
+                if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
+                    if ($_POST['action'] == 'import_products') {
+                        // Obtenir le token
+                        $this->token = $this->get_token();
+                        if ($this->token === false) {
+                            throw new Exception('Impossible de récupérer le token.');
+                        }
         
-                    // Récupère tous les produits de Menlog (productType 1, 2, 3 et 4)
-                    $products_data = $this->get_products();
+                        // Récupérer tous les produits de Menlog (productType 1, 2, 3 et 4)
+                        $products_data = $this->get_products();
+                        if (isset($products_data['error']) && $products_data['error'] === true) {
+                            throw new Exception('Erreur lors de la récupération des données des produits : ' . $products_data['message']);
+                        }
         
-                    // Si on a des produits, on commence les imports
-                    if (!empty($products_data)) {
-                        // On commence par importer les catégories
+                        // Vérifier si les données des produits sont disponibles
+                        if (!isset($products_data['menu']['categories']) || !isset($products_data['menu']['products'])) {
+                            throw new Exception('Les données des produits ou des catégories sont manquantes dans la réponse de l\'API.');
+                        }
+        
+                        // Importer les catégories
                         $this->import_categories($products_data['menu']['categories']);
-                        // On importe ensuite les produits
+        
+                        // Importer les produits
                         $this->import_products($products_data['menu']['products']);
         
                         // Écrire les résultats dans un fichier texte
                         $this->write_import_results();
         
                         echo '<div class="updated"><p>Produits importés avec succès.</p></div>';
-                    } else {
-                        echo '<div class="updated"><p>Products_data est vide.</p></div>';
+                    } elseif ($_POST['action'] == 'delete_products') {
+                        $this->delete_all_products();
+                        echo '<div class="updated"><p>Tous les produits WooCommerce ont été supprimés.</p></div>';
+                    } elseif ($_POST['action'] == 'check_cron') {
+                        $this->check_cron_status();
                     }
-                } elseif ($_POST['action'] == 'delete_products') {
-                    $this->delete_all_products();
-                    echo '<div class="updated"><p>Tous les produits WooCommerce ont été supprimés.</p></div>';
-                } elseif ($_POST['action'] == 'check_cron') {
-                    $this->check_cron_status();
                 }
+            } catch (Exception $e) {
+                // Log de l'erreur
+                error_log('Erreur lors de l\'importation des produits via l\'API Menlog : ' . $e->getMessage());
+        
+                // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
+                $this->envoyer_email_debug('Erreur lors de l\'importation des produits via l\'API Menlog', $e->getMessage());
+        
+                // Afficher un message d'erreur à l'utilisateur
+                echo '<div class="error"><p>Erreur lors de l\'importation des produits : ' . $e->getMessage() . '</p></div>';
             }
-        }
+        }        
 
         private function check_cron_status() {
             $timestamp = wp_next_scheduled('wc_api_daily_import');
@@ -529,43 +544,64 @@ class WooCommerce_API_Integration {
         }
     
         public function daily_import_products() {
-            // Démarre la mesure du temps d'exécution
-            $start_time = microtime(true);
-            
-            // Mesure l'utilisation de la mémoire avant l'exécution
-            $start_memory = memory_get_usage();
+            try {
+                // Démarre la mesure du temps d'exécution
+                $start_time = microtime(true);
+                
+                // Mesure l'utilisation de la mémoire avant l'exécution
+                $start_memory = memory_get_usage();
         
-            // Obtenir le token et les données des produits
-            $this->token = $this->get_token();
-            if ($this->token === false) {
-                error_log('Échec de l\'importation dans daily_import_products : impossible de récupérer le token.');
-                return;
-            }
-            $products_data = $this->get_products();
+                // Obtenir le token
+                $this->token = $this->get_token();
+                if ($this->token === false) {
+                    throw new Exception('Impossible de récupérer le token.');
+                }
         
-            if (!empty($products_data)) {
-                // Importer les catégories et les produits
+                // Obtenir les données des produits
+                $products_data = $this->get_products();
+                if (isset($products_data['error']) && $products_data['error'] === true) {
+                    throw new Exception('Erreur lors de la récupération des données des produits : ' . $products_data['message']);
+                }
+        
+                // Vérifier si les données des produits sont disponibles
+                if (!isset($products_data['menu']['categories']) || !isset($products_data['menu']['products'])) {
+                    throw new Exception('Les données des produits ou des catégories sont manquantes dans la réponse de l\'API.');
+                }
+        
+                // Importer les catégories
                 $this->import_categories($products_data['menu']['categories']);
+        
+                // Importer les produits
                 $this->import_products($products_data['menu']['products']);
+        
+                // Écrire les résultats de l'importation
                 $this->write_import_results();
+        
+                // Calculer le temps d'exécution total
+                $execution_time = microtime(true) - $start_time;
+        
+                // Calculer l'utilisation totale de la mémoire
+                $end_memory = memory_get_usage();
+                $memory_used = $end_memory - $start_memory;
+        
+                // Formater les résultats pour l'affichage
+                $memory_used_mb = round($memory_used / 1024 / 1024, 2); // Convertir en MB
+                $execution_time_seconds = round($execution_time, 2); // Temps en secondes
+        
+                // Log des ressources utilisées
+                error_log('Importation quotidienne des produits terminée le ' . date('Y-m-d H:i:s'));
+                error_log('Temps d\'exécution: ' . $execution_time_seconds . ' secondes');
+                error_log('Mémoire utilisée: ' . $memory_used_mb . ' MB');
+        
+            } catch (Exception $e) {
+                // Log de l'erreur
+                error_log('Erreur lors de l\'importation quotidienne des produits : ' . $e->getMessage());
+        
+                // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
+                $this->envoyer_email_debug('Erreur lors de l\'importation quotidienne des produits', $e->getMessage());
             }
-        
-            // Calculer le temps d'exécution total
-            $execution_time = microtime(true) - $start_time;
-        
-            // Calculer l'utilisation totale de la mémoire
-            $end_memory = memory_get_usage();
-            $memory_used = $end_memory - $start_memory;
-        
-            // Formater les résultats pour l'affichage
-            $memory_used_mb = round($memory_used / 1024 / 1024, 2); // Convertir en MB
-            $execution_time_seconds = round($execution_time, 2); // Temps en secondes
-        
-            // Log des ressources utilisées
-            error_log('Importation quotidienne des produits terminée le ' . date('Y-m-d H:i:s'));
-            error_log('Temps d\'exécution: ' . $execution_time_seconds . ' secondes');
-            error_log('Mémoire utilisée: ' . $memory_used_mb . ' MB');
         }
+        
         
     
 
