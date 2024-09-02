@@ -584,94 +584,115 @@ class WooCommerce_API_Integration {
          *   - string 'idCategory' : Le slug de la catégorie.
          */
         private function import_categories($categories) {
-            // TODO : Gérer les erreurs
-            // Étape 1 : Créer un tableau des ID de catégories de Menlog à partir de la liste fournie par l'API
-            $menlog_category_ids = array_column($categories, 'idCategory');
-
-            // Étape 2 : Récupérer toutes les catégories WooCommerce avec un 'menlog_id_category'
-            $existing_categories = get_terms(array(
-                'taxonomy' => 'product_cat',
-                'meta_query' => array(
-                    array(
-                        'key' => 'menlog_id_category',
-                        'compare' => 'EXISTS'
-                    )
-                ),
-                'hide_empty' => false
-            ));
-
-            // Étape 3 : Supprimer les catégories qui n'existent plus dans l'API Menlog
-            foreach ($existing_categories as $existing_category) {
-                $existing_menlog_id = get_term_meta($existing_category->term_id, 'menlog_id_category', true);
-                if (!in_array($existing_menlog_id, $menlog_category_ids)) {
-                    // Supprimer la catégorie (sans supprimer les produits)
-                    wp_delete_term($existing_category->term_id, 'product_cat');
-                    $this->categories_deleted++;
-                    $this->category_deletions[] = "Category '{$existing_category->name}' deleted because it no longer exists in Menlog.";
+            try {
+                // Étape 1 : Créer un tableau des ID de catégories de Menlog à partir de la liste fournie par l'API
+                if (empty($categories)) {
+                    throw new Exception('La liste des catégories est vide ou non valide.');
                 }
-            }
+                $menlog_category_ids = array_column($categories, 'idCategory');
 
-            // Étape 4 : Importer ou mettre à jour les catégories existantes
-            foreach ($categories as $category) {
-                $menlog_id_category = $category['idCategory'];
-                
-                // Rechercher la catégorie existante par l'ID Menlog stocké en tant que méta-donnée
-                $existing_category = get_terms(array(
+                // Étape 2 : Récupérer toutes les catégories WooCommerce avec un 'menlog_id_category'
+                $existing_categories = get_terms(array(
                     'taxonomy' => 'product_cat',
                     'meta_query' => array(
                         array(
                             'key' => 'menlog_id_category',
-                            'value' => $menlog_id_category,
-                            'compare' => '='
+                            'compare' => 'EXISTS'
                         )
                     ),
-                    'hide_empty' => false,
-                    'number' => 1
+                    'hide_empty' => false
                 ));
 
-                $new_category_name = trim($category['name']);
-                
-                if (!empty($existing_category) && !is_wp_error($existing_category)) {
-                    $existing_category = $existing_category[0]; // Obtenir le premier résultat
+                if (is_wp_error($existing_categories)) {
+                    throw new Exception('Erreur lors de la récupération des catégories existantes : ' . $existing_categories->get_error_message());
+                }
 
-                    if ($existing_category->name !== $new_category_name) {
-                        wp_update_term($existing_category->term_id, 'product_cat', array('name' => $new_category_name));
-                        $this->categories_updated++;
-                        $this->category_updates[] = "Category '{$existing_category->name}' updated to '{$new_category_name}'";
-                    } else {
-                        $this->categories_skipped++;
+                // Étape 3 : Supprimer les catégories qui n'existent plus dans l'API Menlog
+                foreach ($existing_categories as $existing_category) {
+                    $existing_menlog_id = get_term_meta($existing_category->term_id, 'menlog_id_category', true);
+                    if (!in_array($existing_menlog_id, $menlog_category_ids)) {
+                        $result = wp_delete_term($existing_category->term_id, 'product_cat');
+                        if (is_wp_error($result)) {
+                            error_log("Erreur lors de la suppression de la catégorie '{$existing_category->name}' : " . $result->get_error_message());
+                        } else {
+                            $this->categories_deleted++;
+                            $this->category_deletions[] = "Catégorie '{$existing_category->name}' supprimée car elle n'existe plus dans Menlog.";
+                        }
+                    }
+                }
+
+                // Étape 4 : Importer ou mettre à jour les catégories existantes
+                foreach ($categories as $category) {
+                    $menlog_id_category = $category['idCategory'];
+                    $new_category_name = trim($category['name']);
+
+                    $existing_category = get_terms(array(
+                        'taxonomy' => 'product_cat',
+                        'meta_query' => array(
+                            array(
+                                'key' => 'menlog_id_category',
+                                'value' => $menlog_id_category,
+                                'compare' => '='
+                            )
+                        ),
+                        'hide_empty' => false,
+                        'number' => 1
+                    ));
+
+                    if (is_wp_error($existing_category)) {
+                        error_log("Erreur lors de la recherche de la catégorie avec l'ID Menlog '{$menlog_id_category}' : " . $existing_category->get_error_message());
+                        continue; // Passer à la catégorie suivante
                     }
 
-                    // Mettre à jour ou ajouter l'ID Menlog en tant que méta-donnée, si nécessaire
-                    update_term_meta($existing_category->term_id, 'menlog_id_category', $menlog_id_category);
-                
-                } else {
-                    // Rechercher par slug s'il n'y a pas de correspondance avec le méta
-                    $existing_category_by_slug = get_term_by('slug', $menlog_id_category, 'product_cat');
+                    if (!empty($existing_category)) {
+                        $existing_category = $existing_category[0]; // Obtenir le premier résultat
 
-                    if ($existing_category_by_slug) {
-                        // Mettre à jour le nom si nécessaire
-                        if ($existing_category_by_slug->name !== $new_category_name) {
-                            wp_update_term($existing_category_by_slug->term_id, 'product_cat', array('name' => $new_category_name));
-                            $this->categories_updated++;
-                            $this->category_updates[] = "Category '{$existing_category_by_slug->name}' updated to '{$new_category_name}'";
+                        if ($existing_category->name !== $new_category_name) {
+                            $result = wp_update_term($existing_category->term_id, 'product_cat', array('name' => $new_category_name));
+                            if (is_wp_error($result)) {
+                                error_log("Erreur lors de la mise à jour de la catégorie '{$existing_category->name}' : " . $result->get_error_message());
+                            } else {
+                                $this->categories_updated++;
+                                $this->category_updates[] = "Catégorie '{$existing_category->name}' mise à jour en '{$new_category_name}'";
+                            }
                         } else {
                             $this->categories_skipped++;
                         }
 
-                        // Ajouter l'ID Menlog en tant que méta-donnée
-                        update_term_meta($existing_category_by_slug->term_id, 'menlog_id_category', $menlog_id_category);
+                        update_term_meta($existing_category->term_id, 'menlog_id_category', $menlog_id_category);
 
                     } else {
-                        // Créer une nouvelle catégorie si aucune correspondance n'est trouvée
-                        $new_category = wp_insert_term($new_category_name, 'product_cat', array('slug' => $menlog_id_category));
-                        if (!is_wp_error($new_category)) {
-                            $this->categories_created++;
-                            // Ajouter l'ID Menlog en tant que méta-donnée
-                            update_term_meta($new_category['term_id'], 'menlog_id_category', $menlog_id_category);
+                        $existing_category_by_slug = get_term_by('slug', $menlog_id_category, 'product_cat');
+
+                        if ($existing_category_by_slug) {
+                            if ($existing_category_by_slug->name !== $new_category_name) {
+                                $result = wp_update_term($existing_category_by_slug->term_id, 'product_cat', array('name' => $new_category_name));
+                                if (is_wp_error($result)) {
+                                    error_log("Erreur lors de la mise à jour de la catégorie '{$existing_category_by_slug->name}' : " . $result->get_error_message());
+                                } else {
+                                    $this->categories_updated++;
+                                    $this->category_updates[] = "Catégorie '{$existing_category_by_slug->name}' mise à jour en '{$new_category_name}'";
+                                }
+                            } else {
+                                $this->categories_skipped++;
+                            }
+
+                            update_term_meta($existing_category_by_slug->term_id, 'menlog_id_category', $menlog_id_category);
+
+                        } else {
+                            $new_category = wp_insert_term($new_category_name, 'product_cat', array('slug' => $menlog_id_category));
+                            if (is_wp_error($new_category)) {
+                                error_log("Erreur lors de la création de la nouvelle catégorie '{$new_category_name}' : " . $new_category->get_error_message());
+                            } else {
+                                $this->categories_created++;
+                                update_term_meta($new_category['term_id'], 'menlog_id_category', $menlog_id_category);
+                            }
                         }
                     }
                 }
+            } catch (Exception $e) {
+                error_log("Erreur lors de l'importation des catégories : " . $e->getMessage());
+                $this->envoyer_email_debug('Erreur lors de l\'importation des catégories', $e->getMessage());
             }
         }
 
