@@ -134,8 +134,6 @@ class WooCommerce_API_Integration {
          * @return mixed
          */
         public function get_token() {
-            // TODO : Gérer le cas où on ne récupère pas le token
-            // WP_die en cron, ça donne quoi ? 
             $url = "https://{$this->server}/jwt/authenticate";
         
             $body = array(
@@ -151,10 +149,18 @@ class WooCommerce_API_Integration {
                 'method'  => 'POST',
             );
         
+            // Première tentative
             $response = wp_remote_post($url, $args);
         
             if (is_wp_error($response)) {
-                wp_die('Erreur lors de la récupération du token: ' . $response->get_error_message());
+                error_log('Erreur lors de la première tentative de récupération du token: ' . $response->get_error_message());
+                // Retenter une deuxième fois
+                $response = wp_remote_post($url, $args);
+            }
+        
+            if (is_wp_error($response)) {
+                error_log('Erreur lors de la récupération du token après deux tentatives: ' . $response->get_error_message());
+                return false; // Retourne false en cas d'échec
             }
         
             $body = wp_remote_retrieve_body($response);
@@ -163,9 +169,10 @@ class WooCommerce_API_Integration {
             if (isset($data->token)) {
                 return $data->token;
             } else {
-                wp_die('Le token n\'a pas pu être récupéré.');
+                error_log('Le token n\'a pas pu être récupéré après deux tentatives.');
+                return false; // Retourne false si le token n'a pas été récupéré
             }
-        }
+        }              
 
 
     // -----------------------------
@@ -374,16 +381,11 @@ class WooCommerce_API_Integration {
     // Section API Communication
     // -----------------------------
 
-
-
-
         /**
          * Récupération de tous les produits menlog pour les envoyer à import_menlog_from_api()
          * @return mixed
          */
         private function get_products() {
-            // TODO : Gérer le cas où on ne reçoit pas les produits ; solution de rententer une fois
-            // WP_die, ça donne quoi en CRON ? 
             $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
             
             $options = [
@@ -396,41 +398,46 @@ class WooCommerce_API_Integration {
             $context = stream_context_create($options);
         
             try {
+                // Première tentative de récupération des produits
                 $result = file_get_contents($url, false, $context);
-                
+        
                 if ($result === FALSE) {
-                    throw new Exception('Error obtaining products: failed to retrieve data from API.');
+                    // Retenter une deuxième fois si la première tentative échoue
+                    $result = file_get_contents($url, false, $context);
+        
+                    if ($result === FALSE) {
+                        throw new Exception('Erreur lors de la récupération des produits : échec après deux tentatives de récupération des données depuis l\'API.');
+                    }
                 }
         
                 $data = json_decode($result, true);
-                
+        
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception('Error decoding JSON: ' . json_last_error_msg());
+                    throw new Exception('Erreur lors du décodage du JSON : ' . json_last_error_msg());
                 }
         
-                // Vérifier la réponse pour voir si l'authentification a échoué
                 if (isset($data['message']) && strpos($data['message'], 'InvalidCredentials') !== false) {
-                    throw new Exception('Error: Invalid credentials. Please check your token.');
+                    throw new Exception('Erreur : Identifiants invalides. Veuillez vérifier votre token.');
                 }
         
-                // Vérifier si le code de retour est 401 (Unauthorized)
                 if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
-                    throw new Exception('Error 401: Unauthorized. Please check your token.');
+                    throw new Exception('Erreur 401 : Non autorisé. Veuillez vérifier votre token.');
                 }
         
                 return $data;
         
             } catch (Exception $e) {
-                // Log l'erreur
+                // Log de l'erreur
                 error_log("Erreur lors de la récupération des produits : " . $e->getMessage());
                 
                 // Envoyer un email avec les détails de l'erreur
                 $this->envoyer_email_debug('Erreur lors de la récupération des produits', $e->getMessage());
         
-                // Gérer l'erreur comme vous le souhaitez (par exemple, renvoyer une réponse vide ou une erreur)
+                // Gérer l'erreur comme souhaité (par exemple, renvoyer une réponse vide ou une erreur)
                 return array('error' => true, 'message' => $e->getMessage());
             }
         }
+                
 
         /**
          * Permet de lancer le processus d'import suite au clic sur le bouton
@@ -443,6 +450,10 @@ class WooCommerce_API_Integration {
             if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 if ($_POST['action'] == 'import_products') {
                     $this->token = $this->get_token();
+                    if ($this->token === false) {
+                        error_log('Échec de l\'importation : impossible de récupérer le token.');
+                        return;
+                    }
         
                     // Récupère tous les produits de Menlog (productType 1, 2, 3 et 4)
                     $products_data = $this->get_products();
@@ -526,6 +537,10 @@ class WooCommerce_API_Integration {
         
             // Obtenir le token et les données des produits
             $this->token = $this->get_token();
+            if ($this->token === false) {
+                error_log('Échec de l\'importation dans daily_import_products : impossible de récupérer le token.');
+                return;
+            }
             $products_data = $this->get_products();
         
             if (!empty($products_data)) {
@@ -1951,6 +1966,10 @@ class WooCommerce_API_Integration {
          */
         public function add_client($customer) {
             $token = $this->get_token();
+            if ($this->token === false) {
+                error_log('Échec de l\'ajout d\'un client dans add_client : impossible de récupérer le token.');
+                return;
+            }
         
             // Vérifier si le client est connecté
             if (is_user_logged_in()) {
@@ -2139,6 +2158,10 @@ class WooCommerce_API_Integration {
                     $retry_count++;
                     // Tenter de régénérer un nouveau token
                     $new_token = $this->get_token();
+                    if ($this->token === false) {
+                        error_log('Échec dans 401 dans add_client : impossible de récupérer le token.');
+                        return;
+                    }
                     if ($new_token) {
                         $this->token = $new_token; // Mise à jour du token
                         // Nouvelle tentative (récursion)
