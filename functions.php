@@ -806,33 +806,55 @@ class WooCommerce_API_Integration {
          * $product == tout le contenu d'un productType 1 de Menlog
          */
         private function insert_product($product) {
-            $category_id = get_term_by('slug', $product['idCategory'], 'product_cat')->term_id;
+            try {
+                // Récupération de l'ID de la catégorie WooCommerce associée
+                $category = get_term_by('slug', $product['idCategory'], 'product_cat');
+                if (!$category) {
+                    throw new Exception('Catégorie non trouvée pour le slug : ' . $product['idCategory']);
+                }
+                $category_id = $category->term_id;
 
-            // Création d'un nouveau produit WooCommerce simple
-            $wc_product = new WC_Product_Simple();
-            $wc_product->set_name($product['name']);
-            $wc_product->set_sku($product['sku']);
-            $wc_product->set_regular_price($product['price']);
-            $wc_product->set_description($product['description']);
-            $wc_product->set_category_ids(array($category_id));
-            $wc_product->save();
+                // Création d'un nouveau produit WooCommerce simple
+                $wc_product = new WC_Product_Simple();
+                $wc_product->set_name($product['name']);
+                $wc_product->set_sku($product['sku']);
+                $wc_product->set_regular_price($product['price']);
+                $wc_product->set_description($product['description']);
+                $wc_product->set_category_ids(array($category_id));
 
-            // Ajouter les métadonnées par défaut pour la disponibilité
-            update_post_meta($wc_product->get_id(), 'is_ephemeral', 'no'); // Le produit n'est pas éphémère par défaut
-            update_post_meta($wc_product->get_id(), 'daily_quota', '50'); // Production quotidienne par défaut : 50 unités
+                // Sauvegarder le produit et vérifier si l'ID est valide
+                $wc_product->save();
+                if (!$wc_product->get_id()) {
+                    throw new Exception('Erreur lors de la sauvegarde du produit avec le SKU : ' . $product['sku']);
+                }
 
-            // Définir la disponibilité pour chaque jour de la semaine
-            $days_of_week = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
-            foreach ($days_of_week as $day) {
-                update_post_meta($wc_product->get_id(), 'availability_' . $day, 'yes'); // Disponible chaque jour
+                // Ajouter les métadonnées par défaut pour la disponibilité
+                update_post_meta($wc_product->get_id(), 'is_ephemeral', 'no'); // Le produit n'est pas éphémère par défaut
+                update_post_meta($wc_product->get_id(), 'daily_quota', '50'); // Production quotidienne par défaut : 50 unités
+
+                // Définir la disponibilité pour chaque jour de la semaine
+                $days_of_week = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+                foreach ($days_of_week as $day) {
+                    update_post_meta($wc_product->get_id(), 'availability_' . $day, 'yes'); // Disponible chaque jour
+                }
+
+                // Incrémenter le compteur de produits créés
+                $this->products_created++;
+
+                // Retourner l'ID du produit créé
+                return $wc_product->get_id();
+
+            } catch (Exception $e) {
+                // Log de l'erreur
+                error_log('Erreur lors de l\'insertion du produit : ' . $e->getMessage());
+
+                // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
+                $this->envoyer_email_debug('Erreur lors de l\'insertion du produit', $e->getMessage());
+
+                // Retourner false pour indiquer l'échec de l'insertion
+                return false;
             }
-
-            // Incrémenter le compteur de produits créés
-            $this->products_created++;
-            
-            return $wc_product->get_id();
         }
-
 
         /**
          * Met à jour un produit WooCommerce existant
