@@ -20,6 +20,7 @@ if (file_exists(ABSPATH . 'vendor/autoload.php')) {
 include_once plugin_dir_path(__FILE__) . 'display/formula_product_view/display_formula_product_view.php';
 include_once plugin_dir_path(__FILE__) . 'display/simple_product_view/display_product_view.php';
 include_once plugin_dir_path(__FILE__) . 'order_send/order_send.php';
+include_once plugin_dir_path(__FILE__) . 'utils/bloquer_creation_produits.php';
 
 function enqueue_display_formula_product_view_assets() {
     wp_enqueue_style(
@@ -2610,6 +2611,9 @@ function save_anniversary_plaque_fields($order_id) {
         }
     }
 }
+
+
+
 
 
 ?>
