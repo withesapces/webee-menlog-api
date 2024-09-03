@@ -313,26 +313,44 @@ class WooCommerce_API_Integration {
         public function admin_page() {
             echo '<div class="wrap">';
             echo '<h1>WooCommerce API Integration</h1>';
-            echo '<form method="post" action="">';
+        
+            // Vérifier si le bouton doit être désactivé
+            $is_disabled = get_transient('import_button_disabled');
+        
+            echo '<form method="post" action="" id="import-form">';
             echo '<input type="hidden" name="action" value="import_products">';
-            submit_button('Importer les produits de l\'API');
+            echo '<input type="submit" id="import-button" value="Importer les produits de l\'API" ' . ($is_disabled ? 'disabled' : '') . '>';
             echo '</form>';
+        
+            // Formulaire pour la suppression des produits
             echo '<form method="post" action="">';
             echo '<input type="hidden" name="action" value="delete_products">';
             submit_button('Supprimer tous les produits WooCommerce');
             echo '</form>';
+        
+            // Formulaire pour vérifier le statut du Cron
             echo '<form method="post" action="">';
             echo '<input type="hidden" name="action" value="check_cron">';
             submit_button('Vérifier le statut du Cron');
             echo '</form>';
-    
+        
             $this->display_cron_status();
-    
+        
             // Afficher les produits ayant plusieurs catégories
             echo '<h2>Produits dans plusieurs catégories</h2>';
             $this->display_products_in_multiple_categories();
             echo '</div>';
-        } 
+        
+            // Ajout du script JavaScript pour la confirmation
+            if (!$is_disabled) {
+                echo '<script type="text/javascript">
+                    document.getElementById("import-form").onsubmit = function() {
+                        return confirm("Êtes-vous sûr de vouloir importer les produits? Cette action désactivera cette fonctionnalité pour les 5 prochaines minutes.");
+                    };
+                </script>';
+            }
+        }
+             
         
         private function display_products_in_multiple_categories() {
             $args = array(
@@ -404,7 +422,7 @@ class WooCommerce_API_Integration {
          * @return mixed
          */
         private function get_products() {
-            $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}&nocache=true";
+            $url = "https://{$this->server}/{$this->delivery}/{$this->uuidclient}/{$this->uuidmagasin}/check_products?token={$this->token}";
             
             $options = [
                 'http' => [
@@ -468,6 +486,9 @@ class WooCommerce_API_Integration {
             try {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                     if ($_POST['action'] == 'import_products') {
+                        // Désactiver le bouton pendant 5 minutes
+                        set_transient('import_button_disabled', true, 5 * MINUTE_IN_SECONDS);
+
                         // Obtenir le token
                         $this->token = $this->get_token();
                         if ($this->token === false) {
@@ -561,6 +582,7 @@ class WooCommerce_API_Integration {
             }
         }
     
+        // TODO : Envoyer un mail dans le cas d'un problème avec l'import sur le site
         public function daily_import_products() {
             try {
                 // Démarre la mesure du temps d'exécution
