@@ -53,6 +53,16 @@ function enqueue_display_formula_product_view_assets() {
         '2.0.0',
         true
     );
+
+    if (is_checkout()) {
+        wp_enqueue_script(
+            'custom-checkout-validation',
+            plugin_dir_url(__FILE__) . 'js/custom-checkout-validation.js', 
+            array('jquery'), 
+            '2.0.0',
+            true
+        );
+    }
 }
 add_action('wp_enqueue_scripts', 'enqueue_display_formula_product_view_assets');
 
