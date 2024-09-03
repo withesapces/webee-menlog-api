@@ -1,8 +1,9 @@
 <?php
+
+// TODO : Dans les logs, essayer de toujours avoir le plus de contenu possible
 // Ce code permet d'envoyer une commande sur Menlog
-add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
-function send_order_data_to_api() {
-    // TODO : Peut-être ne pas envoyé tant que la carte n'a pas été validée. Mais il ne faut pas que la carte soit prélevée tant que Menlog n'a pas envoyé un code 200 pour l'ajout du client et l'envoi de la commande
+// add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
+function send_order_data_to_api($order_id) {
     // Vérifier le nonce pour la sécurité
     check_ajax_referer('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
     $api_integration = new WooCommerce_API_Integration();
@@ -432,7 +433,7 @@ function send_order_data_to_api() {
             error_log($log_message);
             envoyer_email_debug('Ce numéro de commande existe déjà.', $log_message);
 
-            $error_message = 'Ce numéro de commande existe déjà. Le paiement n\'a pas été effectué. Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contactez la boulangerie.';
+            $error_message = 'Ce numéro de commande existe déjà. Le paiement n\'a pas été effectué. Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contacter la boulangerie.';
     
             throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
         } 

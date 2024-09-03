@@ -9,13 +9,13 @@ Produits type 1 :
 Produits type 3 : 
             0 créés,
             0 mis à jour, 
-            33 skipped, 
+            37 skipped, 
             0 supprimés
 
 Produits type 2 : 
             0 créés,
             0 mis à jour, 
-            33 skipped, 
+            47 skipped, 
             0 supprimés
 
 Produits type 4 : 
@@ -27,13 +27,13 @@ Produits type 4 :
 Produits type 3 du 4 : 
             0 créés,
             0 mis à jour, 
-            7 skipped, 
+            11 skipped, 
             0 supprimés
 
 Produits type 2 du 3 du 4 : 
             0 créés,
             0 mis à jour, 
-            7 skipped, 
+            21 skipped, 
             0 supprimés
 
 Détails des messages :
@@ -68,38 +68,94 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 --- Débogage: On a bien récupéré le PT4 avec ID 240 SKU m_Fs4Cgybli5FcOnjxHiZC20_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_Fs4Cgybli5FcOnjxHiZC20_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 240. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 240. Nombre trouvé: 1.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 240. Nombre trouvé: 3.
 ----- Débogage: Traitement du produit PT3 avec ID 75 SKU bme6iXcwi5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
------- Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
 ------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
------- Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50
+-------- Débogage: L'option PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80
+-------- Débogage: L'option PT2 avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80 existe encore dans Menlog.
+----- Débogage: Traitement du produit PT3 avec ID 82 SKU ptG1buSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 2.
+------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 2.
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+----- Débogage: Traitement du produit PT3 avec ID 83 SKU o4i!7tSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
+------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 3.
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200
+-------- Débogage: L'option PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
 -- Débogage: Traitement du produit PT4 avec ID 241 SKU m_sTkab7wgi5leJNftu86z*0_0
 --- Débogage: On a bien récupéré le PT4 avec ID 241 SKU m_sTkab7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_sTkab7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 241. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 241. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 76 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 241. Nombre trouvé: 3.
+----- Débogage: Traitement du produit PT3 avec ID 84 SKU EkvgrvSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
+----- Débogage: Traitement du produit PT3 avec ID 85 SKU ptG1buSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 2.
+------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 2.
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+----- Débogage: Traitement du produit PT3 avec ID 86 SKU o4i!7tSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
+------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 pour la question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 3.
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_roF1GpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200
+-------- Débogage: L'option PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0
+-------- Débogage: L'option PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
 -- Débogage: Traitement du produit PT4 avec ID 242 SKU m_qQiZb7wgi5leJNftu86z*0_0
 --- Débogage: On a bien récupéré le PT4 avec ID 242 SKU m_qQiZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_qQiZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 242. Nombre trouvé: 3.
 ---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 242. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 77 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+----- Débogage: Traitement du produit PT3 avec ID 87 SKU EkvgrvSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
@@ -113,14 +169,20 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ---- Débogage: Le produit PT4 avec SKU m_Uo1ab7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 244. Nombre trouvé: 3.
 ---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 244. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 78 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
------- Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 88 SKU ROHCLScwi5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU ROHCLScwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
------- Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
------- Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50 pour la question PT3 avec SKU ROHCLScwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU ROHCLScwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_tLBvPkTOj5*c5eRNPrsOE*_80 pour la question PT3 avec SKU ROHCLScwi5*c5eRNPrsOE*.
+------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 3.
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50
+-------- Débogage: L'option PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_tLBvPkTOj5*c5eRNPrsOE*_80
+-------- Débogage: L'option PT2 avec SKU c_tLBvPkTOj5*c5eRNPrsOE*_80 existe encore dans Menlog.
 -- Débogage: Traitement du produit PT4 avec ID 245 SKU m_kaPZb7wgi5leJNftu86z*0_0
 --- Débogage: On a bien récupéré le PT4 avec ID 245 SKU m_kaPZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_kaPZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
@@ -131,11 +193,11 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ---- Débogage: Le produit PT4 avec SKU m_GVeZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 246. Nombre trouvé: 3.
 ---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 246. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 79 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+----- Débogage: Traitement du produit PT3 avec ID 89 SKU EkvgrvSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
@@ -144,11 +206,11 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ---- Débogage: Le produit PT4 avec SKU m_KOJZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 247. Nombre trouvé: 3.
 ---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 247. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 80 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+----- Débogage: Traitement du produit PT3 avec ID 90 SKU EkvgrvSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
@@ -162,11 +224,11 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ---- Débogage: Le produit PT4 avec SKU m_IppS0ZEli5FcOnjxHiZC20_0 existe toujours dans Menlog.
 ---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 249. Nombre trouvé: 3.
 ---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 249. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 81 SKU bme6iXcwi5*c5eRNPrsOE*
------- Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
+----- Débogage: Traitement du produit PT3 avec ID 91 SKU EkvgrvSOj5*c5eRNPrsOE*
+------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
-------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
+------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.

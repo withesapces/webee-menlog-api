@@ -10,6 +10,13 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+// Ajouter ceci en haut du fichier order_send.php
+if (file_exists(ABSPATH . 'vendor/autoload.php')) {
+    require_once ABSPATH . 'vendor/autoload.php';
+} else {
+    error_log('Autoloader de Composer non trouvé.');
+}
+
 include_once plugin_dir_path(__FILE__) . 'display/formula_product_view/display_formula_product_view.php';
 include_once plugin_dir_path(__FILE__) . 'display/simple_product_view/display_product_view.php';
 include_once plugin_dir_path(__FILE__) . 'order_send/order_send.php';
@@ -2268,13 +2275,34 @@ class WooCommerce_API_Integration {
                     $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'];
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur TIMEOUT lors de l\'ajout d\'un client', $log_message);
-
-                    // TODO : Comprendre ce qu'il faut faire ici
-                    // Actuellement, le client ne passe pas donc la commande n'est pas validée
+                    
+                    // Le client doit pouvoir passer au process d'envoie de la commande. Le timeout veut dire que la caisse est éteinte. 
+                    // Donc qauand elle sera allumée, ça s'enverra automatiquement.
+                    // On peut donc envoyer comme si ça se passait très bien, comme un code 200
+                    // return array(
+                    //     'error' => true,
+                    //     'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                    // );
                     return array(
-                        'error' => true,
-                        'message' => 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.'
+                        'error' => false,
+                        'message' => 'Client ajouté avec succès',
+                        'uidclient' => $uidclient,
+                        'username' => $username,
+                        'first_name' => $first_name,
+                        'last_name' => $last_name,
+                        'email' => $email,
+                        'phone' => substr($billing_phone, 0, 20),
+                        'billing_address_1' => substr($billing_address_1, 0, 100),
+                        'billing_address_2' => substr($billing_address_2, 0, 100),
+                        'billing_postcode' => substr($billing_postcode, 0, 10),
+                        'billing_city' => substr($billing_city, 0, 100),
+                        'billing_country' => substr($billing_country, 0, 50),
+                        'debug_info' => array( // Optionnel, pour le débogage
+                            'http_code' => $http_code,
+                            'response' => $response,
+                        ),
                     );
+
                 }
             }
         
