@@ -415,12 +415,21 @@ function send_order_data_to_api($order_id) {
         error_log('Debug - Contenu exact de $message: ' . $message);
 
         // Dans le cas d'un Timeout
-        // TODO : Comprendre ce qu'il faut faire ici
-        // Actuellement, la commande ne passe pas donc la commande n'est pas validée
         if (strpos($message, 'Timeout') !== false) {
-            $log_message = "Timeout - Le serveur du magasin est indisponible: " . $message . ". {$log_info}";
-            error_log($log_message);
-            envoyer_email_debug('Timeout serveur magasin', $log_message);
+            $error_message = 'Le serveur du magasin n\'est pas connecté. Votre commande a été annulée. Veuillez réessayer ultérieurement.';
+
+            // Appeler l'API UPD_VT pour annuler la commande
+            $upd_vt_response = annuler_commande_menlog($api_integration, $order_id);
+
+            if ($upd_vt_response['success']) {
+                $log_message = "Timeout - Le serveur du magasin est indisponible, la commande client a bien été annulée. La commande menlog a également été annulée et l'information sera transmise au logiciel de caisse à la fin du timeout : " . $message . ". {$log_info}";
+                error_log($log_message);
+                envoyer_email_debug('Timeout serveur magasin', $log_message);
+            } else {
+                $log_message = "Timeout - Le serveur du magasin est indisponible, la commande client a bien été annulée. La commande menlog n'a en revanche pas été annulée : " . $message . ". {$log_info}";
+                error_log($log_message);
+                envoyer_email_debug('Timeout serveur magasin', $log_message);
+            }
             
             $error_message = 'Une erreur s\'est produite lors de la validation de votre commande. Nous vous invitons à vérifier que toutes vos informations sont correctement saisies. Le paiement n\'a pas été effectué. Si le problème persiste, essayez de vider votre panier et de recommencer la commande. Merci de votre compréhension.';
     
@@ -428,6 +437,7 @@ function send_order_data_to_api($order_id) {
         } 
         
         // Dans le cas d'une commande déjà importée
+        // Souvent, c'est parce que le serveur était en TIMEOUT
         elseif (stripos($message, 'Commande déjà importée') !== false) {
             $log_message = "Ce numéro de commande existe déjà: " . $message . ". {$log_info}";
             error_log($log_message);
@@ -516,4 +526,42 @@ function envoyer_email_debug($sujet, $message) {
 
 function custom_round($value) {
     return round((float)$value, 2);
+}
+
+function annuler_commande_menlog($api_integration, $order_id) {
+    $url = 'https://' . $api_integration->get_server() . '/' . $api_integration->get_rlog() . '/' . $api_integration->get_uuidclient() . '/' . $api_integration->get_uuidmagasin() . '/upd_vt?token=' . $api_integration->get_token();
+
+    $body = json_encode(array(
+        'refsite' => $api_integration->get_refsite_ext(),
+        'uiddocext' => $order_id,
+        'status' => -1,
+    ));
+
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => $body,
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+        ),
+    ));
+
+    $response = curl_exec($curl);
+    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($curl);
+    curl_close($curl);
+
+    if ($http_code == 200) {
+        return array('success' => true);
+    } else {
+        error_log("Erreur lors de l'annulation de la commande : {$curl_error}");
+        return array('success' => false, 'error' => $curl_error);
+    }
 }
