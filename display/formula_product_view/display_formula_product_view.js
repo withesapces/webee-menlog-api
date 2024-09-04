@@ -1,137 +1,152 @@
 jQuery(document).ready(function($) {
     var basePrice = parseFloat($('#custom_total_price').val());
 
-    $('.formula-option input[type="radio"]').change(function() {
-        var $option = $(this).closest('.formula-option');
-        var $section = $option.closest('.formula-section');
-        
-        $section.find('.formula-option').not($option).removeClass('selected').find('.formula-suboptions').slideUp();
-        $section.find('.formula-option').not($option).find('input[type="radio"]').prop('checked', false);
-        
-        $option.addClass('selected');
-        $option.find('.formula-suboptions').slideDown();
+    // Gestion de la sélection des produits PT4
+    $('.formula-option input[type="checkbox"]').change(function() {
+        var $section = $(this).closest('.formula-section'); // Section PT3 actuelle
+        var min = parseInt($section.data('min')); // Minimum de produits PT4 à sélectionner
+        var max = parseInt($section.data('max')); // Maximum de produits PT4 à sélectionner
 
-        if ($section.hasClass('pt3-section') && $option.hasClass('pt4-option')) {
-            $section.find('.pt4-option').not($option).hide();
-        }
+        var selectedCount = $section.find('.formula-option > input[type="checkbox"]:checked').length;
 
-        updateTotal();
-        validateSelections();
-    });
-
-    $('.back-button').click(function(e) {
-        e.preventDefault();
-        var $option = $(this).closest('.formula-option');
-        var $section = $option.closest('.formula-section');
-        
-        $option.removeClass('selected');
-        $option.find('.formula-suboptions').slideUp();
-        $option.find('input[type="radio"]').prop('checked', false);
-        
-        $option.find('input[type="checkbox"]').prop('checked', false);
-
-        if ($section.hasClass('pt3-section')) {
-            $section.find('.pt4-option').show();
-        }
-
-        updateTotal();
-        validateSelections();
-    });
-
-    $('.formula-suboption-choice input[type="checkbox"]').change(function() {
-        const $checkbox = $(this);
-        const $qtyContainer = $checkbox.closest('.formula-suboption-choice').find('.option-qty-container');
-        
-        if ($checkbox.is(':checked')) {
-            $qtyContainer.show();
-            const $qtyInput = $qtyContainer.find('.option-qty');
-            $qtyInput.prop('disabled', false);
-            if ($qtyInput.val() === "0" || $qtyInput.val() === "") {
-                $qtyInput.val(1);
-            }
+        if (selectedCount > max) {
+            $(this).prop('checked', false);
+            alert('Vous ne pouvez sélectionner que ' + max + ' options au maximum.');
         } else {
-            $qtyContainer.hide();
-            $qtyContainer.find('.option-qty').val(0).prop('disabled', true);
-        }
-
-        updateTotal();
-        validateSelections();
-    });
-
-    // Ajoutez cet événement pour surveiller les modifications de quantité
-    $('.formula-suboption-choice .option-qty').on('input', function() {
-        const $input = $(this);
-        const maxQty = parseInt($input.attr('max')) || 1;  // Utilisez l'attribut 'max' si disponible, sinon par défaut 1
-        const currentQty = parseInt($input.val());
-
-        // Limiter la quantité à la valeur maximale autorisée pour cette option
-        if (currentQty > maxQty) {
-            $input.val(maxQty); // Restreindre la quantité au maximum autorisé
-        } else if (currentQty < 1) {
-            $input.val(1); // S'assurer que la quantité minimale est 1
-        }
-
-        updateTotal();
-        validateSelections();
-    });
-
-
-    function updateTotal() {
-        var total = basePrice;
-
-        $('.formula-section').each(function() {
-            var $selectedOption = $(this).find('.formula-option.selected');
-            if ($selectedOption.length) {
-                total += parseFloat($selectedOption.data('price'));
-                
-                $selectedOption.find('.formula-suboption-choice input[type="checkbox"]:checked').each(function() {
-                    const qty = parseInt($(this).closest('.formula-suboption-choice').find('.option-qty').val());
-                    total += parseFloat($(this).data('price')) * qty;
-                });
+            if ($(this).hasClass('pt4-checkbox')) { 
+                if ($(this).is(':checked')) {
+                    $(this).closest('.formula-option').find('.formula-suboptions').slideDown();
+                } else {
+                    $(this).closest('.formula-option').find('.formula-suboptions').slideUp();
+                    $(this).closest('.formula-option').find('.formula-suboption input[type="checkbox"]').prop('checked', false);
+                }
             }
-        });
+        }
 
-        $('#formula-total-price').text(total.toFixed(2) + ' €');
-        $('#custom_total_price').val(total.toFixed(2));
+        if (selectedCount >= max) {
+            $section.find('.formula-option > input[type="checkbox"]:not(:checked)').closest('.formula-option').slideUp();
+        } else {
+            $section.find('.formula-option').slideDown();
+        }
+
+        validateSelections($section, min, max);
+        updateTotalPrice();  // Recalcule le prix uniquement après un changement
+    });
+
+    // Gestion de la sélection des sous-options PT2
+    $('.formula-suboption input[type="checkbox"]').change(function() {
+        var $subsection = $(this).closest('.formula-suboption');
+        var $pt4Option = $(this).closest('.formula-option');
+        var min = parseInt($subsection.data('min'));
+        var max = parseInt($subsection.data('max'));
+
+        var selectedSubCount = $subsection.find('input[type="checkbox"]:checked').length;
+
+        if (selectedSubCount > max) {
+            $(this).prop('checked', false);
+            alert('Vous ne pouvez sélectionner que ' + max + ' sous-options.');
+        }
+
+        validateSubOptions($subsection, min, max);
+        updateTotalPrice();  // Recalcule le prix uniquement après un changement
+    });
+
+    // Fonction pour valider les sélections PT4
+    function validateSelections($section, min, max) {
+        var selectedCount = $section.find('.formula-option > input[type="checkbox"]:checked').length;
+        var $pt4Info = $section.find('.pt4-selection-info');
+
+        if (selectedCount < min) {
+            $pt4Info.css('color', 'red').text('Vous devez sélectionner au moins ' + min + ' options.');
+        } else if (selectedCount <= max) {
+            $pt4Info.css('color', 'green').text('Sélection des PT4 valide.');
+        }
+
+        validateGlobal();
     }
 
-    function validateSelections() {
-        let isValid = true;
-        let message = "";
+    // Fonction pour valider les sous-options PT2
+    function validateSubOptions($subsection, min, max) {
+        var selectedSubCount = $subsection.find('input[type="checkbox"]:checked').length;
+        var $pt2Info = $subsection.find('.pt2-selection-info');
+
+        if (selectedSubCount < min) {
+            $pt2Info.css('color', 'red').text('Vous devez sélectionner au moins ' + min + ' sous-options.');
+        } else if (selectedSubCount <= max) {
+            $pt2Info.css('color', 'green').text('Sélection de sous-options valide.');
+        }
+    }
+
+    // Fonction pour valider toutes les sections (global)
+    function validateGlobal() {
+        var isValid = true;
+        var globalMessage = '';
 
         $('.formula-section').each(function() {
-            const $section = $(this);
-            const min = parseInt($section.data('min'));
-            const max = parseInt($section.data('max'));
-            const selected = $section.find('.formula-option.selected').length;
+            var $section = $(this);
+            var min = parseInt($section.data('min'));
+            var max = parseInt($section.data('max'));
+            var selectedCount = $section.find('.formula-option > input[type="checkbox"]:checked').length;
 
-            if (selected < min || selected > max) {
+            if (selectedCount < min) {
                 isValid = false;
-                message += `Sélectionnez entre ${min} et ${max} options pour "${$section.find('h4').text()}". `;
+                globalMessage += 'Vous devez sélectionner au moins ' + min + ' options pour la question "' + $section.find('h4').text() + '". ';
             }
-
-            $section.find('.formula-suboption').each(function() {
-                const $suboption = $(this);
-                const subMin = parseInt($suboption.data('min'));
-                const subMax = parseInt($suboption.data('max'));
-                const subSelected = $suboption.find('input[type="checkbox"]:checked').length;
-
-                if (subSelected < subMin || subSelected > subMax) {
-                    isValid = false;
-                    message += `Sélectionnez entre ${subMin} et ${subMax} options pour "${$suboption.find('h5').text()}". `;
-                }
-            });
         });
 
         if (!isValid) {
-            $('#validation-message').text(message).show();
-            $('button.single_add_to_cart_button').prop('disabled', true);
+            $('#global-validation-message').text(globalMessage).show();
         } else {
-            $('#validation-message').hide();
-            $('button.single_add_to_cart_button').prop('disabled', false);
+            $('#global-validation-message').hide();
         }
     }
 
-    validateSelections();
-    updateTotal();
+    // Fonction pour mettre à jour le prix total
+    function updateTotalPrice() {
+        var totalPrice = basePrice;  // On commence avec le prix de base
+        console.log('Prix de base : ' + basePrice);
+    
+        // Parcourt toutes les sections et ajoute les prix des produits PT4 sélectionnés
+        $('.formula-section').each(function() {
+            var $section = $(this);
+    
+            // PT4 : Ajouter le prix de chaque produit PT4 sélectionné
+            $section.find('.pt4-checkbox:checked').each(function() {
+                var productId = $(this).attr('id');  // Utilisation de l'ID du produit PT4
+                var price = parseFloat($(`#${productId}`).data('price')) || 0;  // Accès direct à l'élément PT4 par son ID
+                totalPrice += price;
+    
+                // Débogage pour chaque option PT4
+                console.log('Ajout du prix du PT4 sélectionné (ID: ' + productId + ') : ' + price + ', Total intermédiaire : ' + totalPrice);
+    
+                // Sous-options PT2 : Ajouter le prix des sous-options PT2 sélectionnées uniquement une fois
+                var uniqueSubOptions = new Set(); // Utilisation d'un Set pour éviter le double comptage
+    
+                // Parcourir les sous-options PT2 associées au PT4
+                $(this).closest('.formula-option').find('.formula-suboption input[type="checkbox"]:checked').each(function() {
+                    var suboptionId = $(this).attr('id');  // Utilisation de l'ID de la sous-option PT2
+                    if (!uniqueSubOptions.has(suboptionId)) {
+                        uniqueSubOptions.add(suboptionId);
+                        var suboptionPrice = parseFloat($(this).data('price')) || 0;
+                        totalPrice += suboptionPrice;
+    
+                        // Débogage pour chaque sous-option PT2
+                        console.log('Ajout du prix de la sous-option PT2 sélectionnée (ID: ' + suboptionId + ') : ' + suboptionPrice + ', Total intermédiaire : ' + totalPrice);
+                    }
+                });
+            });
+        });
+    
+        // Mise à jour de l'affichage du prix total
+        $('#formula-total-price').text(totalPrice.toFixed(2) + ' €');
+        $('#custom_total_price').val(totalPrice.toFixed(2));
+    
+        // Débogage du prix final
+        console.log('Prix total mis à jour : ' + totalPrice.toFixed(2) + ' €');
+    }
+    
+
+    // Initialisation : calculer le prix total et vérifier les sélections au chargement de la page
+    updateTotalPrice();
+    validateGlobal();
 });

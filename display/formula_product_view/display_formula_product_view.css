@@ -93,6 +93,7 @@
     border-radius: 4px;
     cursor: pointer;
     margin-bottom: 16px;
+    width: 100%;
 }
 
 .formula-suboption h5 {
