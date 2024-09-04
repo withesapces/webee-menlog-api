@@ -102,11 +102,7 @@
     margin-bottom: 12px;
 }
 
-.formula-suboption-choice {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
+
 
 .formula-suboption-choice input[type="checkbox"] {
     margin-right: 8px;
@@ -177,4 +173,38 @@
     .formula-option {
         width: 100%;
     }
+}
+
+.formula-suboption-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacement vertical entre les options */
+}
+
+.formula-suboption-choice {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd; /* Optionnel pour mieux délimiter */
+    border-radius: 5px;
+}
+
+.qty-wrapper-pt2 {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 10px; /* Espacement entre la quantité et l'option */
+}
+
+.qty-decrease-pt2, .qty-increase-pt2 {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+}
+
+.pt2-qty {
+    width: 50px;
+    margin: 0 10px;
 }
