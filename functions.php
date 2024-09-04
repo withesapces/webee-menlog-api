@@ -2433,56 +2433,64 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
     if ($is_formula) {
         $cart_item_data['is_formula'] = true;
         $cart_item_data['formula_options'] = [];
-
+    
+        // Récupération des questions liées au produit
         $questions = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_questions WHERE product_id = %d",
             $product_id
         ), ARRAY_A);
-
+    
         foreach ($questions as $question) {
             $question_id = $question['id'];
-            $selected_formula_product_id = isset($_POST["formula_option_{$question_id}"]) ? $_POST["formula_option_{$question_id}"] : null;
-
-            if ($selected_formula_product_id) {
-                $formula_product = $wpdb->get_row($wpdb->prepare(
-                    "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d",
-                    $selected_formula_product_id
-                ), ARRAY_A);
-
-                $cart_item_data['formula_options'][$question_id] = [
-                    'question' => $question['question_text'],
-                    'product' => $formula_product['product_name'],
-                    'sku' => $formula_product['sku'],
-                    'price' => $formula_product['price'],
-                    'id_category' => $formula_product['id_category'],
-                    'description' => $formula_product['description'],
-                    'suboptions' => []
-                ];
-
-                $sub_questions = $wpdb->get_results($wpdb->prepare(
-                    "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
-                    $selected_formula_product_id
-                ), ARRAY_A);
-
-                foreach ($sub_questions as $sub_question) {
-                    $sub_question_id = $sub_question['id'];
-                    if (isset($_POST["option_{$sub_question_id}"])) {
-                        foreach ($_POST["option_{$sub_question_id}"] as $option_sku => $option_data) {
-                            $option = $wpdb->get_row($wpdb->prepare(
-                                "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d AND sku = %s",
-                                $sub_question_id, $option_sku
-                            ), ARRAY_A);
-
-                            $cart_item_data['formula_options'][$question_id]['suboptions'][] = [
-                                'question' => $sub_question['question_text'],
-                                'option' => $option['option_name'],
-                                'sku' => $option_sku,
-                                'price' => $option['price'],
-                                'quantity' => isset($option_data['qty']) ? (int) $option_data['qty'] : 1,
-                                'idCategory' => $option['id_category'],
-                                'description' => $option['description'],
-                                'productType' => 4,
-                            ];
+            $selected_formula_product_ids = isset($_POST["formula_option_{$question_id}"]) ? $_POST["formula_option_{$question_id}"] : null;
+    
+            if ($selected_formula_product_ids) {
+                // Gestion de chaque produit PT4 sélectionné dans la question
+                foreach ($selected_formula_product_ids as $selected_formula_product_id) {
+                    $formula_product = $wpdb->get_row($wpdb->prepare(
+                        "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE id = %d",
+                        $selected_formula_product_id
+                    ), ARRAY_A);
+    
+                    // Ajout du produit PT4 sélectionné dans les données du panier
+                    $cart_item_data['formula_options'][] = [
+                        'question' => $question['question_text'],
+                        'product' => $formula_product['product_name'],
+                        'sku' => $formula_product['sku'],
+                        'price' => $formula_product['price'],
+                        'quantity' => isset($_POST["formula_option_qty_{$selected_formula_product_id}"]) ? (int) $_POST["formula_option_qty_{$selected_formula_product_id}"] : 1,  // Quantité de PT4
+                        'id_category' => $formula_product['id_category'],
+                        'description' => $formula_product['description'],
+                        'suboptions' => [] // Contiendra les sous-options PT2
+                    ];                    
+    
+                    // Récupération des sous-questions (PT2) liées à ce produit PT4
+                    $sub_questions = $wpdb->get_results($wpdb->prepare(
+                        "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d",
+                        $selected_formula_product_id
+                    ), ARRAY_A);
+    
+                    foreach ($sub_questions as $sub_question) {
+                        $sub_question_id = $sub_question['id'];
+                        if (isset($_POST["suboption_{$sub_question_id}"])) {
+                            foreach ($_POST["suboption_{$sub_question_id}"] as $sub_option_id) {
+                                $option = $wpdb->get_row($wpdb->prepare(
+                                    "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE id = %d",
+                                    $sub_option_id
+                                ), ARRAY_A);
+    
+                                // Ajout des sous-options PT2 dans le tableau des sous-options pour ce PT4
+                                $cart_item_data['formula_options'][count($cart_item_data['formula_options']) - 1]['suboptions'][] = [
+                                    'question' => $sub_question['question_text'],
+                                    'option' => $option['option_name'],
+                                    'sku' => $option['sku'],
+                                    'price' => $option['price'],
+                                    'quantity' => isset($_POST["suboption_qty_{$sub_option_id}"]) ? (int) $_POST["suboption_qty_{$sub_option_id}"] : 1,  // Quantité de PT2
+                                    'idCategory' => $option['id_category'],
+                                    'description' => $option['description'],
+                                    'productType' => 4,
+                                ];
+                            }
                         }
                     }
                 }
@@ -2535,27 +2543,49 @@ function add_custom_options_to_cart($cart_item_data, $product_id, $variation_id)
 add_filter('woocommerce_get_item_data', 'display_custom_options_in_cart', 10, 2);
 function display_custom_options_in_cart($item_data, $cart_item) {
     if (isset($cart_item['is_formula']) && $cart_item['is_formula']) {
+        $grouped_items = []; // Tableau pour regrouper les items par question
+    
         foreach ($cart_item['formula_options'] as $question_id => $formula_option) {
+            // Récupérer le produit sélectionné
             $item_value = $formula_option['product'];
-            
+            $product_qty = isset($formula_option['quantity']) ? $formula_option['quantity'] : 1;
+    
+            // Si la quantité est supérieure à 1, on l'ajoute à l'affichage
+            if ($product_qty > 1) {
+                $item_value .= ' <span class="product-quantity">x' . $product_qty . '</span>';
+            }
+    
+            // Gestion des sous-options
             if (!empty($formula_option['suboptions'])) {
                 $suboption_values = [];
                 foreach ($formula_option['suboptions'] as $suboption) {
                     $suboption_text = $suboption['option'];
                     $suboption_qty = isset($suboption['quantity']) ? $suboption['quantity'] : 1;
-
+    
+                    // Si la quantité des sous-options est supérieure à 1, on l'ajoute à l'affichage
                     if ($suboption_qty > 1) {
-                        $suboption_text .= ' x' . $suboption_qty;
+                        $suboption_text .= ' <span class="suboption-quantity">x' . $suboption_qty . '</span>';
                     }
-
+    
                     $suboption_values[] = $suboption_text;
                 }
-                $item_value .= ' (' . implode(', ', $suboption_values) . ')';
+                // Ajouter les sous-options entre parenthèses
+                $item_value .= ' <i>(' . implode(', ', $suboption_values) . ')</i>';
             }
     
+            // Regrouper les produits par question
+            $question_key = $formula_option['question'];
+            if (!isset($grouped_items[$question_key])) {
+                $grouped_items[$question_key] = [];
+            }
+            $grouped_items[$question_key][] = $item_value;
+        }
+    
+        // Construire les données à afficher avec les éléments regroupés
+        foreach ($grouped_items as $question => $items) {
             $item_data[] = [
-                'key'   => $formula_option['question'],
-                'value' => $item_value
+                'key'   => $question,
+                'value' => implode(', ', $items) // Concaténer les items avec une virgule
             ];
         }
     } elseif (isset($cart_item['custom_options'])) {
