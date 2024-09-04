@@ -1,8 +1,7 @@
 <?php
 
-// TODO : Dans les logs, essayer de toujours avoir le plus de contenu possible
 // Ce code permet d'envoyer une commande sur Menlog
-// add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
+add_action('woocommerce_checkout_order_processed', 'send_order_data_to_api', 10, 1);
 function send_order_data_to_api($order_id) {
     // Vérifier le nonce pour la sécurité
     check_ajax_referer('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
@@ -109,7 +108,7 @@ function send_order_data_to_api($order_id) {
                     "sku" => $formula_option['sku'],
                     "name" => $formula_option['product'],
                     "price" => custom_round($formula_option['price']),
-                    "quantity" => 1,
+                    "quantity" => $formula_option['quantity'],
                     "idCategory" => $formula_option['id_category'],
                     "description" => $formula_option['description'],
                     "subItems" => []
@@ -325,7 +324,7 @@ function send_order_data_to_api($order_id) {
     curl_close($curl);
 
     // Collecte des informations pour le log et l'email
-    $log_info = "Client: {$customer_name}, Email: {$customer_email}, Téléphone: {$customer_phone}, Date de commande: {$order_time}";
+    $log_info = "Client: {$customer_name}, Email: {$customer_email}, Téléphone: {$customer_phone}, Date de commande: {$order_time}, Données de la commande envoyées: " . json_encode($order_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
     if ($response === false) {
         $log_message = "Erreur cURL: {$curl_error}. {$log_info}";
