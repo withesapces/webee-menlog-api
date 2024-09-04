@@ -9,27 +9,70 @@ jQuery(document).ready(function($) {
     // Fonction pour vérifier les erreurs et afficher/masquer le bouton "Ajouter au panier"
     function checkErrors() {
         var hasError = false;
-
-        // Vérification des sections PT4
+        console.log("Passe à false au début de la fonction");
+    
+        // Vérification des sections PT4 sélectionnées
         $('.formula-section').each(function() {
             var $section = $(this);
             var min = parseInt($section.data('min'));  // Minimum requis pour cette section
             var max = parseInt($section.data('max'));  // Maximum autorisé pour cette section
             var totalQty = 0;
-
-            // Calculer la quantité totale sélectionnée pour cette section
+    
+            // Calculer la quantité totale sélectionnée pour cette section PT4 (seulement les options cochées)
             $section.find('.pt4-checkbox:checked').each(function() {
-                var qty = parseInt($(this).closest('.formula-option').find('.pt4-qty').val()) || 0;
+                var $formulaOption = $(this).closest('.formula-option');
+                var qty = parseInt($formulaOption.find('.pt4-qty').val()) || 0;
                 totalQty += qty;
+    
+                console.log("PT4 sélectionné avec quantité: " + qty);
+    
+                // Vérification des sous-options PT2 associées au PT4 sélectionné
+                $formulaOption.find('.formula-suboption').each(function() {
+                    var $subsection = $(this);
+                    var questionText = $subsection.find('h5').text();  // Texte de la question pour cette sous-section
+                    var minPT2 = parseInt($subsection.data('min'));  // Minimum requis pour cette sous-section
+                    var maxPT2 = parseInt($subsection.data('max'));  // Maximum autorisé pour cette sous-section
+                    var selectedCount = $subsection.find('input[type="checkbox"]:checked').length;  // Nombre d'options PT2 sélectionnées
+                    var totalQtyPT2 = 0;
+    
+                    console.log("Sous-section (PT2): " + questionText);
+                    console.log("Min PT2 requis: " + minPT2 + ", Max PT2 autorisé: " + maxPT2);
+                    console.log("Nombre d'options PT2 sélectionnées: " + selectedCount);
+    
+                    // Calculer la quantité totale sélectionnée pour cette sous-section PT2
+                    $subsection.find('input[type="checkbox"]:checked').each(function() {
+                        var $option = $(this).closest('.formula-suboption-choice');
+                        var optionText = $option.find('.formula-suboption-name').text();  // Nom de l'option sélectionnée
+                        var qtyPT2 = parseInt($option.find('.pt2-qty').val()) || 1;
+                        
+                        console.log("Option PT2 cochée: " + optionText + " avec quantité: " + qtyPT2);
+                        totalQtyPT2 += qtyPT2;
+                    });
+    
+                    console.log("Quantité totale sélectionnée pour cette sous-section PT2: " + totalQtyPT2);
+    
+                    // Vérification des limites des sous-options PT2
+                    if (selectedCount === 0 && minPT2 > 0) {
+                        hasError = true;
+                        console.log("Erreur : Aucune sous-option PT2 sélectionnée dans '" + questionText + "', un minimum de " + minPT2 + " est requis.");
+                    } else if (totalQtyPT2 < minPT2 || totalQtyPT2 > maxPT2) {
+                        hasError = true;
+                        console.log("Erreur : Quantité sélectionnée dans '" + questionText + "' en dehors des limites (min: " + minPT2 + ", max: " + maxPT2 + "). Quantité actuelle: " + totalQtyPT2);
+                    } else {
+                        console.log("Pas d'erreur détectée dans '" + questionText + "'.");
+                    }
+    
+                    console.log("Statut de hasError après vérification de '" + questionText + "': " + hasError);
+                });
             });
-
-            // Vérifier si la quantité sélectionnée est en dehors des limites
+    
+            // Vérifier si la quantité totale de la section PT4 est en dehors des limites
             if (totalQty < min || totalQty > max) {
                 hasError = true;
-                console.log("Erreur dans la section avec min: " + min + " et max: " + max + ". Quantité actuelle: " + totalQty);
+                console.log("Erreur dans la section PT4 avec min: " + min + " et max: " + max + ". Quantité actuelle: " + totalQty);
             }
         });
-
+    
         // Si une erreur est détectée, cacher le bouton, sinon l'afficher
         if (hasError) {
             console.log("Des erreurs détectées, bouton désactivé et caché");
@@ -42,6 +85,9 @@ jQuery(document).ready(function($) {
             $('button.single_add_to_cart_button').prop('disabled', false).css('visibility', 'visible');
         }
     }
+    
+    
+    
 
     function showErrorMessage(message) {
         var $globalMessage = $('#global-validation-message');
@@ -313,24 +359,25 @@ jQuery(document).ready(function($) {
      */
     function updateSubOptions($subsection) {
         var selectedSubCount = 0;
+        var min = parseInt($subsection.data('min'));
         var max = parseInt($subsection.data('max'));
         var $pt2Info = $subsection.find('.pt2-selection-info');
-        
+
         // Compter le nombre total de sous-options sélectionnées et leurs quantités
         $subsection.find('input[type="checkbox"]:checked').each(function() {
             var qty = parseInt($(this).closest('.formula-suboption-choice').find('.pt2-qty').val()) || 1;
             selectedSubCount += qty;
         });
-    
+
         // Mettre à jour l'affichage de la sélection
-        $pt2Info.text('Sélection : ' + selectedSubCount + ' / ' + max);
-        $pt2Info.css('color', selectedSubCount <= max ? 'green' : 'red');
+        $pt2Info.text('Vous pouvez sélectionner entre ' + min + " et " + max + " options. Sélection actuelle : " + selectedSubCount + ' / ' + max);
+        $pt2Info.css('color', (selectedSubCount >= min && selectedSubCount <= max) ? 'green' : 'red');
         
         // Afficher/Masquer les champs de quantité PT2 pour chaque sous-option sélectionnée
         $subsection.find('input[type="checkbox"]').each(function() {
             var $checkbox = $(this);
             var $qtyWrapper = $checkbox.closest('.formula-suboption-choice').find('.qty-wrapper-pt2');
-    
+
             if ($checkbox.is(':checked')) {
                 $qtyWrapper.slideDown();
                 $qtyWrapper.find('.pt2-qty').prop('disabled', false);
@@ -341,14 +388,18 @@ jQuery(document).ready(function($) {
                 $qtyWrapper.find('.qty-decrease-pt2').prop('disabled', true); 
             }
         });
-    
+
         // Si la quantité sélectionnée atteint ou dépasse le maximum, masquer les autres options
         if (selectedSubCount >= max) {
             $subsection.find('input[type="checkbox"]').not(':checked').closest('.formula-suboption-choice').hide();
         } else {
             $subsection.find('.formula-suboption-choice').show();  // Afficher toutes les options si le max n'est pas atteint
         }
+
+        // Appeler checkErrors() après la mise à jour
+        checkErrors();
     }
+
 
     /**
      * Met à jour le prix total basé sur les options sélectionnées.

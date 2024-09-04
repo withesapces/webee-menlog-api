@@ -70,7 +70,7 @@ function display_custom_questions_and_options_for_formula() {
 
                             echo "<div class='formula-suboption' data-question-id='{$nested_question_id}' data-min='{$nested_min}' data-max='{$nested_max}'>";
                             echo "<h5 class='mt-3'>{$nested_question_text}</h5>";
-                            echo "<p class='selection-info pt2-selection-info mb-2'>Sélection : <span class='badge bg-info'>0</span> / <span class='badge bg-secondary'>{$nested_max}</span></p>";
+                            echo "<p class='selection-info pt2-selection-info mb-2'>Vous pouvez sélectionner entre {$nested_min} et {$nested_max} options. Sélection actuelle : 0.</p>";
 
                             $nested_options = $wpdb->get_results($wpdb->prepare(
                                 "SELECT * FROM {$wpdb->prefix}custom_options_for_formulas WHERE formula_question_id = %d", $nested_question_id
