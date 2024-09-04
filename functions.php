@@ -311,44 +311,88 @@ class WooCommerce_API_Integration {
         }
 
         public function admin_page() {
-            echo '<div class="wrap">';
-            echo '<h1>WooCommerce API Integration</h1>';
-        
-            // Vérifier si le bouton doit être désactivé
             $is_disabled = get_transient('import_button_disabled');
-        
-            echo '<form method="post" action="" id="import-form">';
-            echo '<input type="hidden" name="action" value="import_products">';
-            echo '<input type="submit" id="import-button" value="Importer les produits de l\'API" ' . ($is_disabled ? 'disabled' : '') . '>';
-            echo '</form>';
-        
-            // Formulaire pour la suppression des produits
-            echo '<form method="post" action="">';
-            echo '<input type="hidden" name="action" value="delete_products">';
-            submit_button('Supprimer tous les produits WooCommerce');
-            echo '</form>';
-        
-            // Formulaire pour vérifier le statut du Cron
-            echo '<form method="post" action="">';
-            echo '<input type="hidden" name="action" value="check_cron">';
-            submit_button('Vérifier le statut du Cron');
-            echo '</form>';
-        
-            $this->display_cron_status();
-        
-            // Afficher les produits ayant plusieurs catégories
-            echo '<h2>Produits dans plusieurs catégories</h2>';
-            $this->display_products_in_multiple_categories();
-            echo '</div>';
-        
-            // Ajout du script JavaScript pour la confirmation
-            if (!$is_disabled) {
-                echo '<script type="text/javascript">
-                    document.getElementById("import-form").onsubmit = function() {
-                        return confirm("Êtes-vous sûr de vouloir importer les produits? Cette action désactivera cette fonctionnalité pour les 5 prochaines minutes.");
-                    };
-                </script>';
-            }
+            ?>
+            <div class="wrap woocommerce-api-integration">
+                <h1>WooCommerce API Integration</h1>
+                
+                <div class="admin-grid">
+                    <div class="card">
+                        <h2>Importer les produits</h2>
+                        <form method="post" action="" id="import-form">
+                            <input type="hidden" name="action" value="import_products">
+                            <button type="submit" id="import-button" class="button button-primary" <?php echo $is_disabled ? 'disabled' : ''; ?>>
+                                Importer les produits de l'API
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Supprimer les produits</h2>
+                        <form method="post" action="">
+                            <input type="hidden" name="action" value="delete_products">
+                            <?php submit_button('Supprimer tous les produits WooCommerce', 'delete'); ?>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Statut du Cron</h2>
+                        <form method="post" action="">
+                            <input type="hidden" name="action" value="check_cron">
+                            <?php submit_button('Vérifier le statut du Cron', 'secondary'); ?>
+                        </form>
+                        <?php $this->display_cron_status(); ?>
+                    </div>
+                </div>
+
+                <div class="card full-width">
+                    <h2>Produits dans plusieurs catégories</h2>
+                    <?php $this->display_products_in_multiple_categories(); ?>
+                </div>
+            </div>
+
+            <style>
+                .woocommerce-api-integration .admin-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                    margin-bottom: 20px;
+                }
+                .woocommerce-api-integration .card {
+                    background: #fff;
+                    border: 1px solid #ccd0d4;
+                    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+                    padding: 20px;
+                    border-radius: 5px;
+                }
+                .woocommerce-api-integration .full-width {
+                    grid-column: 1 / -1;
+                }
+                .woocommerce-api-integration h2 {
+                    margin-top: 0;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 10px;
+                }
+                .woocommerce-api-integration .button {
+                    margin-top: 10px;
+                }
+                .woocommerce-api-integration .button.delete {
+                    background: #d63638;
+                    border-color: #d63638;
+                    color: #fff;
+                }
+                .woocommerce-api-integration .button.delete:hover {
+                    background: #b32d2e;
+                    border-color: #b32d2e;
+                }
+            </style>
+
+            <script type="text/javascript">
+            document.getElementById("import-form").onsubmit = function() {
+                return confirm("Êtes-vous sûr de vouloir importer les produits? Cette action désactivera cette fonctionnalité pour les 5 prochaines minutes.");
+            };
+            </script>
+            <?php
         }
              
         
