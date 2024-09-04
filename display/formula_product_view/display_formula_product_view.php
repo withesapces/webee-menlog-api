@@ -27,7 +27,7 @@ function display_custom_questions_and_options_for_formula() {
             echo "<div class='formula-section card mb-4' data-question-id='{$question_id}' data-min='{$min}' data-max='{$max}'>";
             echo "<div class='card-header bg-primary text-white'><h4 class='mb-0'>{$question_text}</h4></div>";
             echo "<div class='card-body'>";
-            echo "<p class='selection-info pt4-selection-info mb-3'>Sélection : <span class='badge bg-info'>0</span> / <span class='badge bg-secondary'>{$max}</span></p>";
+            echo "<p class='selection-info pt4-selection-info mb-3' style='color: red;'>Vous devez sélectionner au moins {$min} produits. Sélection actuelle : 0.</p>";
 
             $formula_products = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}custom_formula_products WHERE question_id = %d", $question_id
@@ -52,9 +52,9 @@ function display_custom_questions_and_options_for_formula() {
                     echo "</div>";
                     echo "<div class='mt-2 d-flex align-items-center qty-wrapper' style='display: none;'>";
                     echo "<button type='button' class='btn btn-outline-secondary qty-decrease' disabled>-</button>";  // Bouton pour diminuer la quantité
-                    echo "<input type='number' class='form-control pt4-qty mx-2' name='formula_option_qty_{$product_id}' min='1' value='1' disabled style='width: 60px;'>";
+                    echo "<input type='number' class='form-control pt4-qty mx-2' name='formula_option_qty_{$product_id}' min='1' value='1' readonly style='width: 60px;'>";  // Ajout de 'readonly'
                     echo "<button type='button' class='btn btn-outline-secondary qty-increase'>+</button>";  // Bouton pour augmenter la quantité
-                    echo "</div>";                    
+                    echo "</div>";     
 
                     $nested_questions = $wpdb->get_results($wpdb->prepare(
                         "SELECT * FROM {$wpdb->prefix}custom_questions_for_formulas WHERE formula_product_id = %d", $product_id
@@ -91,7 +91,7 @@ function display_custom_questions_and_options_for_formula() {
                                     echo "</label>";
                                     echo "<div class='mt-2 d-flex align-items-center qty-wrapper-pt2' style='display: none;'>";
                                     echo "<button type='button' class='btn btn-outline-secondary qty-decrease-pt2'>-</button>";
-                                    echo "<input type='number' class='form-control pt2-qty mx-2' name='suboption_qty_{$option_id}' min='0' value='1' disabled style='width: 60px;'>";
+                                    echo "<input type='number' class='form-control pt2-qty mx-2' name='suboption_qty_{$option_id}' min='0' value='1' readonly style='width: 60px;'>";
                                     echo "<button type='button' class='btn btn-outline-secondary qty-increase-pt2'>+</button>";
                                     echo "</div>";
                                     echo "</div>";

@@ -208,3 +208,15 @@
     width: 50px;
     margin: 0 10px;
 }
+
+#global-validation-message {
+    margin-top: 24px;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.7);
+    color: rgba(255, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none;
+    text-align: center;
+}

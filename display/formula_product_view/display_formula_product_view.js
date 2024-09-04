@@ -3,6 +3,56 @@ jQuery(document).ready(function($) {
 
     var basePrice = parseFloat($('#custom_total_price').val());
 
+    // Cache initialement le bouton ajouter au panier
+    $('.single_add_to_cart_button').prop("disabled", true);
+
+    // Fonction pour vérifier les erreurs et afficher/masquer le bouton "Ajouter au panier"
+    function checkErrors() {
+        var hasError = false;
+
+        // Vérification des sections PT4
+        $('.formula-section').each(function() {
+            var $section = $(this);
+            var min = parseInt($section.data('min'));  // Minimum requis pour cette section
+            var max = parseInt($section.data('max'));  // Maximum autorisé pour cette section
+            var totalQty = 0;
+
+            // Calculer la quantité totale sélectionnée pour cette section
+            $section.find('.pt4-checkbox:checked').each(function() {
+                var qty = parseInt($(this).closest('.formula-option').find('.pt4-qty').val()) || 0;
+                totalQty += qty;
+            });
+
+            // Vérifier si la quantité sélectionnée est en dehors des limites
+            if (totalQty < min || totalQty > max) {
+                hasError = true;
+                console.log("Erreur dans la section avec min: " + min + " et max: " + max + ". Quantité actuelle: " + totalQty);
+            }
+        });
+
+        // Si une erreur est détectée, cacher le bouton, sinon l'afficher
+        if (hasError) {
+            console.log("Des erreurs détectées, bouton désactivé et caché");
+            $('button.single_add_to_cart_button').prop('disabled', true).css('visibility', 'hidden');
+            var $globalMessage = $('#global-validation-message');
+            $globalMessage.text("Il manque des informations, veuillez vérifier vos données avant de pouvoir ajouter l'article au panier.").slideDown();
+        } else {
+            console.log("Aucune erreur, bouton activé et visible");
+            $('#global-validation-message').slideUp().text('');
+            $('button.single_add_to_cart_button').prop('disabled', false).css('visibility', 'visible');
+        }
+    }
+
+    function showErrorMessage(message) {
+        var $globalMessage = $('#global-validation-message');
+        $globalMessage.text(message).slideDown();
+    }
+    
+    function hideErrorMessage() {
+        $('#global-validation-message').slideUp().text('');
+    }
+    
+
     /**
      * Gestion de l'affichage de la quantité et activation/désactivation des options 
      * lorsque l'utilisateur coche ou décoche une option PT4.
@@ -19,8 +69,21 @@ jQuery(document).ready(function($) {
             // Masquer et désactiver les champs de quantité
             $formulaOption.find('.qty-wrapper').slideUp();
             $formulaOption.find('.pt4-qty').val(1).prop('disabled', true);
+    
+            // Réinitialiser les sous-options PT2
+            $formulaOption.find('.formula-suboptions input[type="checkbox"]').prop('checked', false); // Décocher toutes les sous-options
+            $formulaOption.find('.formula-suboptions .pt2-qty').val(0).prop('disabled', true); // Mettre les quantités à 0 et désactiver les inputs
+            $formulaOption.find('.formula-suboptions .qty-wrapper-pt2').slideUp(); // Masquer les champs de quantité PT2
+    
+            // Réinitialiser les compteurs PT2
+            $formulaOption.find('.formula-suboption').each(function() {
+                updateSubOptions($(this)); // Mettre à jour chaque sous-option PT2
+            });
         }
+    
+        checkErrors(); // Appel à une fonction pour vérifier les erreurs éventuelles
     });
+    
 
     /**
      * Gérer la diminution de la quantité PT4 via le bouton "-".
@@ -37,6 +100,7 @@ jQuery(document).ready(function($) {
         $(this).prop('disabled', currentVal <= 2);
 
         updateSectionData($(this).closest('.formula-section'));
+        checkErrors();
     });
 
     /**
@@ -51,6 +115,7 @@ jQuery(document).ready(function($) {
         $(this).siblings('.qty-decrease').prop('disabled', false);
 
         updateSectionData($(this).closest('.formula-section'));
+        checkErrors();
     });
 
     /**
@@ -71,6 +136,7 @@ jQuery(document).ready(function($) {
 
         // Mettre à jour les informations de sélection
         updateSubOptions($subsection);
+        checkErrors();
     });
     
 
@@ -95,6 +161,7 @@ jQuery(document).ready(function($) {
 
         // Mettre à jour les informations de sélection
         updateSubOptions($subsection);
+        checkErrors();
     });
 
     
@@ -115,6 +182,7 @@ jQuery(document).ready(function($) {
         }
 
         updateSectionData($section);
+        checkErrors();
     });
 
     /**
@@ -131,6 +199,7 @@ jQuery(document).ready(function($) {
         $input.siblings('.qty-decrease').prop('disabled', currentVal <= 1);
 
         updateSectionData($(this).closest('.formula-section'));
+        checkErrors();
     });
 
     /**
@@ -147,6 +216,7 @@ jQuery(document).ready(function($) {
         }
 
         updateSubOptions($subsection);
+        checkErrors();
     });
 
     /**
@@ -222,12 +292,12 @@ jQuery(document).ready(function($) {
      */
     function validateSelections($section, min, max) {
         var totalQty = 0;
-
+    
         $section.find('.pt4-checkbox:checked').each(function() {
             var qty = parseInt($(this).closest('.formula-option').find('.pt4-qty').val()) || 0;
             totalQty += qty;
         });
-
+    
         var $pt4Info = $section.find('.pt4-selection-info');
         if (totalQty < min) {
             $pt4Info.css('color', 'red').text('Vous devez sélectionner au moins ' + min + ' produits. Sélection actuelle : ' + totalQty + '.');
@@ -279,9 +349,6 @@ jQuery(document).ready(function($) {
             $subsection.find('.formula-suboption-choice').show();  // Afficher toutes les options si le max n'est pas atteint
         }
     }
-    
-    
-    
 
     /**
      * Met à jour le prix total basé sur les options sélectionnées.
@@ -316,9 +383,10 @@ jQuery(document).ready(function($) {
         // Mise à jour du prix total
         $('#formula-total-price').text(totalPrice.toFixed(2) + ' €');
         $('#custom_total_price').val(totalPrice.toFixed(2));
-    }
+    }    
     
 
     // Initialisation : calculer le prix total et valider les sélections au chargement de la page
     updateTotalPrice();
+    checkErrors();
 });
