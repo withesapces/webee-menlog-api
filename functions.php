@@ -551,9 +551,11 @@ class WooCommerce_API_Integration {
                         }
         
                         // Importer les catégories
+                        // Si quelque chose se passe mal, c'est déjà envoyé directement dans la fonction import_categories()
                         $this->import_categories($products_data['menu']['categories']);
         
                         // Importer les produits
+                        // Si quelque chose se passe mal, c'est déjà envoyé directement dans la fonction import_products()
                         $this->import_products($products_data['menu']['products']);
         
                         // Écrire les résultats dans un fichier texte
@@ -625,8 +627,7 @@ class WooCommerce_API_Integration {
                 wp_unschedule_event($timestamp, 'wc_api_daily_import');
             }
         }
-    
-        // TODO : Envoyer un mail dans le cas d'un problème avec l'import sur le site
+        
         public function daily_import_products() {
             try {
                 // Démarre la mesure du temps d'exécution
@@ -652,10 +653,11 @@ class WooCommerce_API_Integration {
                     throw new Exception('Les données des produits ou des catégories sont manquantes dans la réponse de l\'API.');
                 }
         
-                // Importer les catégories
+                // Si quelque chose se passe mal, c'est déjà envoyé directement dans la fonction import_categories()
                 $this->import_categories($products_data['menu']['categories']);
         
                 // Importer les produits
+                // Si quelque chose se passe mal, c'est déjà envoyé directement dans la fonction import_products()
                 $this->import_products($products_data['menu']['products']);
         
                 // Écrire les résultats de l'importation
@@ -812,7 +814,7 @@ class WooCommerce_API_Integration {
                 }
             } catch (Exception $e) {
                 error_log("Erreur lors de l'importation des catégories : " . $e->getMessage());
-                $this->envoyer_email_debug('Erreur lors de l\'importation des catégories', $e->getMessage());
+                $this->envoyer_email_debug('Erreur lors de l\'importation des catégories lors de l\'importation des produits menlog sur le site : ', $e->getMessage());
             }
         }
     
@@ -878,7 +880,7 @@ class WooCommerce_API_Integration {
                 error_log('Erreur lors de l\'importation des produits : ' . $e->getMessage());
         
                 // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
-                $this->envoyer_email_debug('Erreur lors de l\'importation des produits', $e->getMessage());
+                $this->envoyer_email_debug('Erreur lors de l\'importation des produits Menlog sur le site ecommerce dans la fonction "importe_products" : ', $e->getMessage());
         
                 // Ajouter le message d'erreur pour un affichage ultérieur
                 $this->message_erreur .= $e->getMessage() . "\n";
@@ -2275,7 +2277,7 @@ class WooCommerce_API_Integration {
                 elseif (isset($data['error']) && $data['error'] == 1) {
                     // Dans le cas de l'erreur "Invalid body"
                     if (strpos($data['msg'], 'Invalid body') !== false) {
-                        $log_message = 'Erreur: Contenu du body invalide. ' . $data['msg'];
+                        $log_message = 'Erreur: Contenu du body invalide. ' . $data['msg'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de contenu du body lors de l\'ajout d\'un client', $log_message);
                         return array(
@@ -2286,7 +2288,7 @@ class WooCommerce_API_Integration {
                     
                     // Dans le cas de l'erreur "FAILED - GDSError"
                     elseif (strpos($data['msg'], 'FAILED - GDSError') !== false) {
-                        $log_message = 'Erreur: Données non conformes. ' . $data['msg'];
+                        $log_message = 'Erreur: Données non conformes. ' . $data['msg'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                         error_log($log_message);
                         $this->envoyer_email_debug('Erreur de données non conformes lors de l\'ajout d\'un client', $log_message);
                         return array(
@@ -2301,7 +2303,7 @@ class WooCommerce_API_Integration {
             elseif ($http_code == 400) {
                 // Le JSON envoyé à Menlog est mal formaté (manquement d'une virgule, accolade, etc)
                 if (isset($data['message']) && strpos($data['message'], 'Invalid JSON') !== false) {
-                    $log_message = 'Erreur: JSON invalide. ' . $data['message'];
+                    $log_message = 'Erreur: JSON invalide. ' . $data['message'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur JSON invalide lors de l\'ajout d\'un client', $log_message);
                     return array(
@@ -2317,7 +2319,7 @@ class WooCommerce_API_Integration {
                 static $retry_count = 0;
                 $max_retries = 1; // Limiter à une tentative de régénération du token
 
-                $log_message = 'Erreur d\'authentification: ' . $data['message'];
+                $log_message = 'Erreur d\'authentification: ' . $data['message'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                 error_log($log_message);
                 $this->envoyer_email_debug('Erreur d\'authentification lors de l\'ajout d\'un client', $log_message);
 
@@ -2349,7 +2351,7 @@ class WooCommerce_API_Integration {
             // Le client ne passe pas en code 500
             elseif ($http_code == 500) {
                 if (isset($data['message']) && strpos($data['message'], 'TIMEOUT') !== false) {
-                    $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'];
+                    $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur TIMEOUT lors de l\'ajout d\'un client', $log_message);
                     
