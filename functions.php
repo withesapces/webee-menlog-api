@@ -82,6 +82,7 @@ class WooCommerce_API_Integration {
         private $uuidmagasin = 'MfSBUAdui5Vg!tO*wd5lA!';
         private $username = 'yanna_dev';
         private $password = 'A33_DKq(QFJ1r*9;)';
+        private $refsite = 'devapi';
 
         private $categories_created = 0;
         private $categories_updated = 0;
@@ -145,6 +146,14 @@ class WooCommerce_API_Integration {
 
         public function get_uuidmagasin() {
             return $this->uuidmagasin;
+        }
+
+        public function get_rlog() {
+            return $this->rlog;
+        }
+
+        public function get_refsite() {
+            return $this->refsite;
         }
 
         /**

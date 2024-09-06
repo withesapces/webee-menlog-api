@@ -128,13 +128,14 @@ function send_order_data_to_api($order_id) {
                         );
                         // Ajoute la sous-option dans les subItems de l'option principale
                         $sub_item_data['subItems'][] = $sub_sub_item_data;
-                        $prix_total += custom_round($suboption['price']);
+                        $prix_total += custom_round($suboption['price'] * $suboption['quantity'] * $formula_option['quantity']);
+                        custom_round($item_data['price']*$cart_item['quantity']);
                     }
                 }
 
                 // Ajoute l'option principale dans les subItems de l'élément principal
                 $item_data['subItems'][] = $sub_item_data;
-                $prix_total += custom_round($formula_option['price']);
+                $prix_total += custom_round($formula_option['price']*$formula_option['quantity']);
             }
         }
 
@@ -182,7 +183,7 @@ function send_order_data_to_api($order_id) {
     $pickup_time = WC()->session->get('pickup_time');
 
     // Limitez les IDs générés à 12 caractères
-    $order_id = substr("id_" . time(), 0, 12);
+    $custom_order_id = substr("id_" . time(), 0, 12);
     $channel_order_display_id = substr("TK_" . time(), 0, 12);
 
     error_log("Prix total avant construction de order_data: " . print_r($prix_total, true));
@@ -244,7 +245,7 @@ function send_order_data_to_api($order_id) {
     $order_data = array(
         "account" => $api_integration->get_uuidclient(),
         "location" => "Sandbox",
-        "id" => $order_id,
+        "id" => $custom_order_id,
         "channelOrderDisplayId" => $channel_order_display_id,
         "channelOrderId" => "",
         "source" => "ecommerce",
@@ -514,6 +515,31 @@ function send_order_data_to_api($order_id) {
         // Afficher le message d'erreur à l'utilisateur
         throw new WC_Data_Exception('woocommerce_invalid_order', $error_message, 400);
     }
+
+    if (strpos($order_id, 'id_') !== false) {
+        $order_id = (int) str_replace('id_', '', $order_id); // Extraire uniquement la partie numérique
+    }
+
+    // Vérifier si l'ID de commande est valide
+    if (!$order_id || !is_numeric($order_id)) {
+        error_log("ID de commande non valide : " . print_r($order_id, true));
+        return; // Arrêter l'exécution si l'ID n'est pas valide
+    }
+
+    // Récupérer la commande
+    $order = wc_get_order($order_id);
+
+    if (!$order) {
+        error_log("Commande introuvable pour l'ID : " . $order_id);
+        return; // Arrêter si la commande n'est pas trouvée
+    }
+
+    // Vérifier si le paiement a échoué
+    if ($order->get_status() === 'failed') {
+        // Lancer l'annulation via Menlog
+        $api_integration = new WooCommerce_API_Integration();
+        annuler_commande_menlog($api_integration, $order_id);
+    }
 }
 
 // Fonction pour envoyer un email de débogage
@@ -531,7 +557,7 @@ function annuler_commande_menlog($api_integration, $order_id) {
     $url = 'https://' . $api_integration->get_server() . '/' . $api_integration->get_rlog() . '/' . $api_integration->get_uuidclient() . '/' . $api_integration->get_uuidmagasin() . '/upd_vt?token=' . $api_integration->get_token();
 
     $body = json_encode(array(
-        'refsite' => $api_integration->get_refsite_ext(),
+        'refsite' => $api_integration->get_refsite(),
         'uiddocext' => $order_id,
         'status' => -1,
     ));
@@ -558,6 +584,7 @@ function annuler_commande_menlog($api_integration, $order_id) {
     curl_close($curl);
 
     if ($http_code == 200) {
+        error_log("Commande annulée avec succès via Menlog : " . $order_id);
         return array('success' => true);
     } else {
         error_log("Erreur lors de l'annulation de la commande : {$curl_error}");

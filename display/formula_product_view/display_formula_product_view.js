@@ -1,4 +1,3 @@
-// TODO : Meilleure vérification PT2 pour ne pas afficher le panier si encore des erreurs
 jQuery(document).ready(function($) {
 
     var basePrice = parseFloat($('#custom_total_price').val());
