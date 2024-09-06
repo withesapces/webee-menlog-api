@@ -122,13 +122,13 @@ function send_order_data_to_api($order_id) {
                             "sku" => $suboption['sku'],
                             "name" => $suboption['option'],
                             "price" => custom_round($suboption['price']),
-                            "quantity" => $suboption['quantity'],
+                            "quantity" => $suboption['quantity'] * $formula_option['quantity'], // Multiplication des quantités
                             "idCategory" => $suboption['idCategory'],
                             "description" => $suboption['description']
                         );
                         // Ajoute la sous-option dans les subItems de l'option principale
                         $sub_item_data['subItems'][] = $sub_sub_item_data;
-                        $prix_total += custom_round($suboption['price'] * $suboption['quantity'] * $formula_option['quantity']);
+                        $prix_total += custom_round($suboption['price'] * $sub_sub_item_data['quantity']);
                         custom_round($item_data['price']*$cart_item['quantity']);
                     }
                 }
