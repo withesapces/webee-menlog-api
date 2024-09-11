@@ -1,10 +1,426 @@
 Catégories : 0 créées, 0 mises à jour, 13 skipped, 0 deleted.
 Produits type 1 : 
             0 créés,
-            0 mis à jour, 
-            416 skipped, 
+            414 mis à jour, 
+            2 skipped, 
             0 supprimés,
             0 produits type 1 on un ou plusieurs PT3
+
+Détails des mises à jour des produits PT1:
+Product 'KtVVb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product '0rTVb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product '6p6Vb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product 'U9FVb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product 'OyCVb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product 'WsXVb7wgi5leJNftu86z*0' updated: Price: '34.0284' to '35.9'
+Product 'M3vVb7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'OlsVb7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'CuAVb7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'y3xVb7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'gx8Vb7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'IDzVb7wgi5leJNftu86z*0' updated: Price: '5.5924' to '5.9'
+Product 'SevUb7wgi5leJNftu86z*0' updated: Price: '4.6446' to '4.9'
+Product 'C61Wb7wgi5leJNftu86z*0' updated: Price: '19.8104' to '20.9'
+Product 'ybkYb7wgi5leJNftu86z*0' updated: Price: '4.6446' to '4.9'
+Product 'wgmYb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'sZeYb7wgi5leJNftu86z*0' updated: Price: '3.7915' to '4'
+Product 'MgiYb7wgi5leJNftu86z*0' updated: Price: '4.6446' to '4.9'
+Product 'eSdGb7wgi5leJNftu86z*0' updated: Price: '18.8626' to '19.9'
+Product 'MKFHb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product 'QHIHb7wgi5leJNftu86z*0' updated: Price: '13.1754' to '13.9'
+Product 'yOKGb7wgi5leJNftu86z*0' updated: Price: '12.2275' to '12.9'
+Product 'ughHb7wgi5leJNftu86z*0' updated: Price: '10.9005' to '11.5'
+Product 'AV*Ib7wgi5leJNftu86z*0' updated: Price: '13.7441' to '14.5'
+Product '!XzGb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'tTgPiKVsi5FcOnjxHiZC20' updated: Price: '10.3318' to '10.9'
+Product 'qoKHb7wgi5leJNftu86z*0' updated: Price: '14.9763' to '15.8'
+Product 'IDQGb7wgi5leJNftu86z*0' updated: Price: '12.2275' to '12.9'
+Product 'SSRHb7wgi5leJNftu86z*0' updated: Price: '7.109' to '7.5'
+Product 'GBGGb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product '8owGb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'sk*Hb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'YQIGb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product 'ODkHb7wgi5leJNftu86z*0' updated: Price: '8.0569' to '8.5'
+Product 'aotGb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'wmbHb7wgi5leJNftu86z*0' updated: Price: '7.4882' to '7.9'
+Product 'kQ2Hb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'qMwhwpjsi5FcOnjxHiZC20' updated: Price: '23.6019' to '24.9'
+Product 'ItTHb7wgi5leJNftu86z*0' updated: Price: '13.7441' to '14.5'
+Product 'wt4Hb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'sxMHb7wgi5leJNftu86z*0' updated: Price: '18.8626' to '19.9'
+Product 'mLPHb7wgi5leJNftu86z*0' updated: Price: '21.8009' to '23'
+Product '0XyHb7wgi5leJNftu86z*0' updated: Price: '5.6872' to '6'
+Product 'oYjGb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product '0YoGb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product '6LvHb7wgi5leJNftu86z*0' updated: Price: '3.7915' to '4'
+Product 'Yf9Hb7wgi5leJNftu86z*0' updated: Price: '6.5403' to '6.9'
+Product 'GieHb7wgi5leJNftu86z*0' updated: Price: '5.6872' to '6'
+Product 'yCsHb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '29mGb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '2FZHb7wgi5leJNftu86z*0' updated: Price: '13.7441' to '14.5'
+Product 'CMCHb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'kNSGb7wgi5leJNftu86z*0' updated: Price: '18.8626' to '19.9'
+Product 'QVWHb7wgi5leJNftu86z*0' updated: Price: '11.8483' to '12.5'
+Product '8I7Hb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'ijqGb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'EUgGb7wgi5leJNftu86z*0' updated: Price: '28.3412' to '29.9'
+Product '6m!Qb7wgi5leJNftu86z*0' updated: Price: '5.6872' to '6'
+Product 'Sc6Qb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'Yj2Qb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product 'on0Qb7wgi5leJNftu86z*0' updated: Price: '4.7393' to '5'
+Product 'w8qRb7wgi5leJNftu86z*0' updated: PriceWithoutTax: '1.35' to '1.2796'
+Product 'wBoRb7wgi5leJNftu86z*0' updated: PriceWithoutTax: '1.35' to '1.2796'
+Product '2buQb7wgi5leJNftu86z*0' updated: PriceWithoutTax: '19.2' to '18.1991'
+Product '4g4Qb7wgi5leJNftu86z*0' updated: Price: '25.5924' to '27'
+Product 'CTgUb7wgi5leJNftu86z*0' updated: PriceWithoutTax: '18' to '17.0616'
+Product 'f8bJmbcwi5*c5eRNPrsOE*' updated: Price: '9.5455' to '10.5'
+Product '2IGUb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product 'w6vTb7wgi5leJNftu86z*0' updated: Price: '11.2796' to '11.9'
+Product 'ONiUb7wgi5leJNftu86z*0' updated: Price: '11.2796' to '11.9'
+Product '4HmUb7wgi5leJNftu86z*0' updated: Price: '12.2275' to '12.9'
+Product 'EVbUb7wgi5leJNftu86z*0' updated: Price: '14.1232' to '14.9'
+Product 'xZGw3fQli5FcOnjxHiZC20' updated: Price: '9.3839' to '9.9'
+Product '2GEUb7wgi5leJNftu86z*0' updated: Price: '10.3318' to '10.9'
+Product '8aXUb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product '8HhTb7wgi5leJNftu86z*0' updated: Price: '37.9147' to '40'
+Product 'oAxTb7wgi5leJNftu86z*0' updated: Price: '8.4834' to '8.95'
+Product 'aO**yjQli5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product 'G5*Ub7wgi5leJNftu86z*0' updated: Price: '12.2275' to '12.9'
+Product 'disYk8yni5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product 'sshQ76yni5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product '00eG05yni5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product 'tJWsCZQli5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product '3tHIvI1ui5FcOnjxHiZC20' updated: Price: '14.1232' to '14.9'
+Product 'r9!C2E1ui5FcOnjxHiZC20' updated: Price: '14.1232' to '14.9'
+Product 'mFVTb7wgi5leJNftu86z*0' updated: Price: '21.7062' to '22.9'
+Product 'aElTb7wgi5leJNftu86z*0' updated: Price: '21.7062' to '22.9'
+Product 'C31Ub7wgi5leJNftu86z*0' updated: Price: '21.7062' to '22.9'
+Product 'eAoUb7wgi5leJNftu86z*0' updated: Price: '21.7062' to '22.9'
+Product 'GgVUb7wgi5leJNftu86z*0' updated: Price: '1.327' to '1.4'
+Product 'K2qUb7wgi5leJNftu86z*0' updated: Price: '7.4882' to '7.9'
+Product 'CTgUb7wgi5leJNftu86z*0' updated: Price: '17.0616' to '18'
+Product 'iGpTb7wgi5leJNftu86z*0' updated: Price: '6.1611' to '6.5'
+Product 'sfRUb7wgi5leJNftu86z*0' updated: Price: '7.4882' to '7.9'
+Product 'SXZUb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'bNrc8YQli5FcOnjxHiZC20' updated: Price: '9.3839' to '9.9'
+Product 'nlZUbjQli5FcOnjxHiZC20' updated: Price: '9.3839' to '9.9'
+Product 'cWdUb7wgi5leJNftu86z*0' updated: Price: '9.3839' to '9.9'
+Product 'XSrnMfQli5FcOnjxHiZC20' updated: Price: '11.2796' to '11.9'
+Product 'CkTUb7wgi5leJNftu86z*0' updated: Price: '1.4218' to '1.5'
+Product 'JZBUFjQli5FcOnjxHiZC20' updated: Price: '9.3839' to '9.9'
+Product 'Ot*Sb7wgi5leJNftu86z*0' updated: Price: '4.3602' to '4.6'
+Product 'oSZRb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product 'E5wRb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product '82RSb7wgi5leJNftu86z*0' updated: Price: '3.8863' to '4.1'
+Product 'Ee3Rb7wgi5leJNftu86z*0' updated: Price: '3.6019' to '3.8'
+Product 'SvzRb7wgi5leJNftu86z*0' updated: Price: '3.8863' to '4.1'
+Product 'u7qQb7wgi5leJNftu86z*0' updated: Price: '3.6967' to '3.9'
+Product 'G6aQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'go1Sb7wgi5leJNftu86z*0' updated: Price: '11.2796' to '11.9'
+Product 'kDsRb7wgi5leJNftu86z*0' updated: Price: '3.0332' to '3.2'
+Product 'My5Rb7wgi5leJNftu86z*0' updated: Price: '3.3649' to '3.55'
+Product 'Q*VSb7wgi5leJNftu86z*0' updated: Price: '37.8199' to '39.9'
+Product 'EZlQb7wgi5leJNftu86z*0' updated: Price: '3.0332' to '3.2'
+Product 'S9mRb7wgi5leJNftu86z*0' updated: Price: '3.6019' to '3.8'
+Product 'i1hQb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product '0rGSb7wgi5leJNftu86z*0' updated: Price: '4.2654' to '4.5'
+Product 'GgESb7wgi5leJNftu86z*0' updated: Price: '28.3412' to '29.9'
+Product 'MKsQb7wgi5leJNftu86z*0' updated: Price: '4.7393' to '5'
+Product '2iXQb7wgi5leJNftu86z*0' updated: Price: '3.7915' to '4'
+Product 'UaCQb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product '6uETb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'EhPQb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product '6uISb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product 'wBoRb7wgi5leJNftu86z*0' updated: Price: '1.2796' to '1.35'
+Product 'w8qRb7wgi5leJNftu86z*0' updated: Price: '1.2796' to '1.35'
+Product '6*yRb7wgi5leJNftu86z*0' updated: Price: '3.4123' to '3.6'
+Product 'EA8Rb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product '8dRQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'CTcQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'svnQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'eqIQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product '2buQb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product '2WVQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'oPbRb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product 'UXTQb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product '6yMSb7wgi5leJNftu86z*0' updated: Price: '3.8863' to '4.1'
+Product 'MuITb7wgi5leJNftu86z*0' updated: Price: '4.6446' to '4.9'
+Product 'aMATb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'M2zQb7wgi5leJNftu86z*0' updated: Price: '3.6967' to '3.9'
+Product 'yC*Rb7wgi5leJNftu86z*0' updated: Price: '4.0758' to '4.3'
+Product 'SowQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'KcKRb7wgi5leJNftu86z*0' updated: Price: '4.3602' to '4.6'
+Product 'q4PSb7wgi5leJNftu86z*0' updated: Price: '4.2654' to '4.5'
+Product 'sqCTb7wgi5leJNftu86z*0' updated: Price: '4.3602' to '4.6'
+Product 'ksEQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'MvGQb7wgi5leJNftu86z*0' updated: Price: '4.2654' to '4.5'
+Product 'meNQb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'UEjQb7wgi5leJNftu86z*0' updated: Price: '4.2654' to '4.5'
+Product 'KT1Rb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product 'A!LSb7wgi5leJNftu86z*0' updated: Price: '4.1706' to '4.4'
+Product 'QoeQb7wgi5leJNftu86z*0' updated: Price: '3.6967' to '3.9'
+Product '8TXRb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'GfMRb7wgi5leJNftu86z*0' updated: Price: '3.6019' to '3.8'
+Product '48uRb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product 'qJUIb7wgi5leJNftu86z*0' updated: Price: '15.545' to '16.4'
+Product 'iQPIb7wgi5leJNftu86z*0' updated: Price: '19.4313' to '20.5'
+Product 'EDWIb7wgi5leJNftu86z*0' updated: Price: '23.3175' to '24.6'
+Product 'g7SIb7wgi5leJNftu86z*0' updated: Price: '31.09' to '32.8'
+Product '2YDLb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'un9Lb7wgi5leJNftu86z*0' updated: Price: '45.4976' to '48'
+Product '4KHLb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'mMFLb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'ShBLb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product 'CPCJb7wgi5leJNftu86z*0' updated: Price: '16.019' to '16.9'
+Product '67FJb7wgi5leJNftu86z*0' updated: Price: '16.019' to '16.9'
+Product 'quSJb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'ifVJb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product '8NYJb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'w6bJb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'mqqIb7wgi5leJNftu86z*0' updated: Price: '16.9668' to '17.9'
+Product 'OxdJb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'GYgJb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'AjWMb7wgi5leJNftu86z*0' updated: Price: '15.6398' to '16.5'
+Product 'Uu!Mb7wgi5leJNftu86z*0' updated: Price: '18.7678' to '19.8'
+Product 'kmwLb7wgi5leJNftu86z*0' updated: Price: '25.0237' to '26.4'
+Product 'UDJLb7wgi5leJNftu86z*0' updated: Price: '46.4455' to '49'
+Product 'GZlNb7wgi5leJNftu86z*0' updated: Price: '39.8104' to '42'
+Product 'wEcMb7wgi5leJNftu86z*0' updated: Price: '17.8199' to '18.8'
+Product 'YlOLb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'm3LLb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product '64eMb7wgi5leJNftu86z*0' updated: Price: '22.2749' to '23.5'
+Product 'KFgMb7wgi5leJNftu86z*0' updated: Price: '26.7299' to '28.2'
+Product '0zMLb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'YdQLb7wgi5leJNftu86z*0' updated: Price: '37.1564' to '39.2'
+Product 'Ml3Nb7wgi5leJNftu86z*0' updated: Price: '35.6398' to '37.6'
+Product 'OlgOb7wgi5leJNftu86z*0' updated: Price: '23.6019' to '24.9'
+Product 'UOaMb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'mF3Ptlvpi5FcOnjxHiZC20' updated: Price: '37.1564' to '39.2'
+Product 'qoSPb7wgi5leJNftu86z*0' updated: Price: '46.4455' to '49'
+Product 'IAGOb7wgi5leJNftu86z*0' updated: Price: '18.8626' to '19.9'
+Product 'p1ZKZeqti5FcOnjxHiZC20' updated: Price: '23.6019' to '24.9'
+Product '!lSOb7wgi5leJNftu86z*0' updated: Price: '28.3412' to '29.9'
+Product 'M0PMb7wgi5leJNftu86z*0' updated: Price: '45.4976' to '48'
+Product 'goUMb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product '8nbLb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'KsZLb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'kvSMb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product 'isKPb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'MsMPb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product '2uOPb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'GbkKb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'QPiKb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'KKEOb7wgi5leJNftu86z*0' updated: Price: '45.4976' to '48'
+Product 'QD6Ob7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'aU8Ob7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'gXAOb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'sRCOb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product 'cjoIb7wgi5leJNftu86z*0' updated: Price: '15.545' to '16.4'
+Product '2g8Ib7wgi5leJNftu86z*0' updated: Price: '19.4313' to '20.5'
+Product 'eOMIb7wgi5leJNftu86z*0' updated: Price: '23.3175' to '24.6'
+Product 'SVBIb7wgi5leJNftu86z*0' updated: Price: '31.09' to '32.8'
+Product 'aA!Jb7wgi5leJNftu86z*0' updated: Price: '15.545' to '16.4'
+Product 'sdoKb7wgi5leJNftu86z*0' updated: Price: '1.4218' to '1.5'
+Product 'Am61y70vi5FcOnjxHiZC20' updated: Price: '47.2038' to '49.8'
+Product '0GLKb7wgi5leJNftu86z*0' updated: Price: '33.0806' to '34.9'
+Product 'AhmKb7wgi5leJNftu86z*0' updated: Price: '23.6019' to '24.9'
+Product '0x5Lb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'Au7Lb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'csQPb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product '0vWPb7wgi5leJNftu86z*0' updated: Price: '19.3365' to '20.4'
+Product 'osYPb7wgi5leJNftu86z*0' updated: Price: '24.1706' to '25.5'
+Product 'kqaPb7wgi5leJNftu86z*0' updated: Price: '29.0047' to '30.6'
+Product 'UjFKb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product '8ZHKb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'cRJKb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'QyyLb7wgi5leJNftu86z*0' updated: Price: '46.4455' to '49'
+Product 'iiMMb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product '2S8Mb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product '0g4Mb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'WzQMb7wgi5leJNftu86z*0' updated: Price: '37.1564' to '39.2'
+Product 'ijKJb7wgi5leJNftu86z*0' updated: Price: '17.0616' to '18'
+Product 'MWiJb7wgi5leJNftu86z*0' updated: Price: '21.327' to '22.5'
+Product 'uPNJb7wgi5leJNftu86z*0' updated: Price: '25.5924' to '27'
+Product 'O6QJb7wgi5leJNftu86z*0' updated: Price: '34.1232' to '36'
+Product 'gtHJb7wgi5leJNftu86z*0' updated: Price: '4.455' to '4.7'
+Product 'K5APb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'YLCPb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'UJEPb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'aWGPb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product 'S8sJb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'E5YIb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product '41uJb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'SuvJb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product 'etUPb7wgi5leJNftu86z*0' updated: Price: '44.5498' to '47'
+Product 'e7VOb7wgi5leJNftu86z*0' updated: Price: '17.8199' to '18.8'
+Product '851Jb7wgi5leJNftu86z*0' updated: Price: '22.2749' to '23.5'
+Product 'w2XOb7wgi5leJNftu86z*0' updated: Price: '26.7299' to '28.2'
+Product 'ExYOb7wgi5leJNftu86z*0' updated: Price: '35.6398' to '37.6'
+Product '!bmJb7wgi5leJNftu86z*0' updated: Price: '22.2749' to '23.5'
+Product '2SoJb7wgi5leJNftu86z*0' updated: Price: '26.7299' to '28.2'
+Product 'iHqJb7wgi5leJNftu86z*0' updated: Price: '31.09' to '32.8'
+Product 'uXkJb7wgi5leJNftu86z*0' updated: Price: '17.8199' to '18.8'
+Product 'wVIPb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'ytiOb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'OluIb7wgi5leJNftu86z*0' updated: Price: '19.4313' to '20.5'
+Product 'eLxIb7wgi5leJNftu86z*0' updated: Price: '18.4834' to '19.5'
+Product 'SyaOb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'KscOb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'mZYMb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'cneOb7wgi5leJNftu86z*0' updated: Price: '37.1564' to '39.2'
+Product 'os3Jb7wgi5leJNftu86z*0' updated: Price: '15.545' to '16.4'
+Product 'Gm6Jb7wgi5leJNftu86z*0' updated: Price: '19.4313' to '20.5'
+Product 'ee9Jb7wgi5leJNftu86z*0' updated: Price: '23.3175' to '24.6'
+Product 'eq7Kb7wgi5leJNftu86z*0' updated: Price: '17.4408' to '18.4'
+Product 'wv9Kb7wgi5leJNftu86z*0' updated: Price: '21.8009' to '23'
+Product 'InBKb7wgi5leJNftu86z*0' updated: Price: '26.1611' to '27.6'
+Product '0rDKb7wgi5leJNftu86z*0' updated: Price: '34.8815' to '36.8'
+Product '4AWLb7wgi5leJNftu86z*0' updated: Price: '45.4976' to '48'
+Product 'YqdLb7wgi5leJNftu86z*0' updated: Price: '18.1991' to '19.2'
+Product 'UY6Mb7wgi5leJNftu86z*0' updated: Price: '22.7488' to '24'
+Product 'Oq0Mb7wgi5leJNftu86z*0' updated: Price: '27.2986' to '28.8'
+Product 'Mq2Mb7wgi5leJNftu86z*0' updated: Price: '36.3981' to '38.4'
+Product '2qfLb7wgi5leJNftu86z*0' updated: Price: '46.4455' to '49'
+Product 'o!YLb7wgi5leJNftu86z*0' updated: Price: '18.5782' to '19.6'
+Product 'MLULb7wgi5leJNftu86z*0' updated: Price: '23.2227' to '24.5'
+Product 'aSSLb7wgi5leJNftu86z*0' updated: Price: '27.8673' to '29.4'
+Product 'gMuLb7wgi5leJNftu86z*0' updated: Price: '37.1564' to '39.2'
+Product 'cutG6Pipi5FcOnjxHiZC20' updated: Price: '55.7346' to '58.8'
+Product 'wzWJx0Ooi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'NM54PX9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product '2rKfqa9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'yzvkZZ9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'HBJZrW9oi5FcOnjxHiZC20' updated: Price: '6.5403' to '6.9'
+Product 'zpg36b9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'VTtCLc9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product '*Dd24c9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product '2gXgqf9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'pcDDfb9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'ukBEhc9oi5FcOnjxHiZC20' updated: Price: '6.1611' to '6.5'
+Product 'q0EGb7wgi5leJNftu86z*0' updated: Price: '28.3412' to '29.9'
+Product 'cIe!5Z9oi5FcOnjxHiZC20' updated: Price: '6.5403' to '6.9'
+Product 'hikjVa9oi5FcOnjxHiZC20' updated: Price: '6.5403' to '6.9'
+Product 'uqsb4a9oi5FcOnjxHiZC20' updated: Price: '6.5403' to '6.9'
+Product 'IUgZb7wgi5leJNftu86z*0' updated: Price: '4.6446' to '4.9'
+Product 'IRQWb7wgi5leJNftu86z*0' updated: Price: '0.9479' to '1'
+Product 'm7aWb7wgi5leJNftu86z*0' updated: Price: '0.4739' to '0.5'
+Product 'wgGWb7wgi5leJNftu86z*0' updated: Price: '1.8957' to '2'
+Product 'Ad3Yb7wgi5leJNftu86z*0' updated: Price: '2.0853' to '2.2'
+Product 's1sWb7wgi5leJNftu86z*0' updated: Price: '2.654' to '2.8'
+Product 'SGUWb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'aq*Xb7wgi5leJNftu86z*0' updated: Price: '2.654' to '2.8'
+Product 'ULSWb7wgi5leJNftu86z*0' updated: Price: '2.7488' to '2.9'
+Product 'eXBXb7wgi5leJNftu86z*0' updated: Price: '4.7393' to '5'
+Product 'Y8uWb7wgi5leJNftu86z*0' updated: Price: '2.5592' to '2.7'
+Product 'Iy4Wb7wgi5leJNftu86z*0' updated: Price: '2.7962' to '2.95'
+Product 'K!yWb7wgi5leJNftu86z*0' updated: Price: '0.4739' to '0.5'
+Product 'mvzWb7wgi5leJNftu86z*0' updated: Price: '1.2322' to '1.3'
+Product 'I56Yb7wgi5leJNftu86z*0' updated: Price: '8.436' to '8.9'
+Product 'qvktaYEli5FcOnjxHiZC20' updated: Price: '4.6919' to '4.95'
+Product 'i6ZXb7wgi5leJNftu86z*0' updated: Price: '3.0332' to '3.2'
+Product 'yXCYb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product '4n3Xb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '6n1Xb7wgi5leJNftu86z*0' updated: Price: '4.7393' to '5'
+Product 'yC1Yb7wgi5leJNftu86z*0' updated: Price: '0.3318' to '0.35'
+Product 'g3wWb7wgi5leJNftu86z*0' updated: Price: '1.6114' to '1.7'
+Product 'gOFXb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'edNYb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'YHmZb7wgi5leJNftu86z*0' updated: Price: '0.7583' to '0.8'
+Product '2f7Xb7wgi5leJNftu86z*0' updated: Price: '0.9479' to '1'
+Product 'AcKWb7wgi5leJNftu86z*0' updated: Price: '0.0095' to '0.01'
+Product 'Wi5Xb7wgi5leJNftu86z*0' updated: Price: '0.0948' to '0.1'
+Product 'sTDXb7wgi5leJNftu86z*0' updated: Price: '9.4787' to '10'
+Product 'w5YWb7wgi5leJNftu86z*0' updated: Price: '2.654' to '2.8'
+Product 'YkUXb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'wHHXb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'o13Wb7wgi5leJNftu86z*0' updated: Price: '2.891' to '3.05'
+Product 'ccJYb7wgi5leJNftu86z*0' updated: Price: '0.9479' to '1'
+Product 'OaLYb7wgi5leJNftu86z*0' updated: Price: '0.8531' to '0.9'
+Product 'qxyXb7wgi5leJNftu86z*0' updated: Price: '0.9479' to '1'
+Product 'OFbHWzbli5FcOnjxHiZC20' updated: Price: '9.4787' to '10'
+Product '0ZMWb7wgi5leJNftu86z*0' updated: Price: '4.8341' to '5.1'
+Product 'M7*Yb7wgi5leJNftu86z*0' updated: Price: '2.4171' to '2.55'
+Product 'AfdXb7wgi5leJNftu86z*0' updated: Price: '2.7488' to '2.9'
+Product 'WBbXb7wgi5leJNftu86z*0' updated: Price: '0.5213' to '0.55'
+Product 'KKrXb7wgi5leJNftu86z*0' updated: Price: '2.7488' to '2.9'
+Product 'IwEYb7wgi5leJNftu86z*0' updated: Price: '0.6635' to '0.7'
+Product 'ibHYb7wgi5leJNftu86z*0' updated: Price: '0.7109' to '0.75'
+Product 'o!uXb7wgi5leJNftu86z*0' updated: Price: '0.95' to '1'
+Product 'GhEWb7wgi5leJNftu86z*0' updated: Price: '8.7678' to '9.25'
+Product 'UAWWb7wgi5leJNftu86z*0' updated: Price: '3.4123' to '3.6'
+Product 'kbAYb7wgi5leJNftu86z*0' updated: Price: '7.4882' to '7.9'
+Product 'qcIWb7wgi5leJNftu86z*0' updated: Price: '0.2844' to '0.3'
+Product 'gm8Wb7wgi5leJNftu86z*0' updated: Price: '3.0806' to '3.25'
+Product 'Ua9Xb7wgi5leJNftu86z*0' updated: Price: '3.128' to '3.3'
+Product 'k1XXb7wgi5leJNftu86z*0' updated: Price: '3.0332' to '3.2'
+Product 'MppWb7wgi5leJNftu86z*0' updated: Price: '3.8389' to '4.05'
+Product '4YwXb7wgi5leJNftu86z*0' updated: Price: '3.2227' to '3.4'
+Product 'wR8Yb7wgi5leJNftu86z*0' updated: Price: '3.6967' to '3.9'
+Product 'kqPYb7wgi5leJNftu86z*0' updated: Price: '4.3602' to '4.6'
+Product 'at6Wb7wgi5leJNftu86z*0' updated: Price: '1.2322' to '1.3'
+Product 'IUOWb7wgi5leJNftu86z*0' updated: Price: '1.1374' to '1.2'
+Product '!4cWb7wgi5leJNftu86z*0' updated: Price: '1.7062' to '1.8'
+Product 'yz3bb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product '6w9bb7wgi5leJNftu86z*0' updated: Price: '1.8957' to '2'
+Product '!NCbb7wgi5leJNftu86z*0' updated: Price: '2.7488' to '2.9'
+Product 'wz5bb7wgi5leJNftu86z*0' updated: Price: '1.5166' to '1.6'
+Product 'Iw7bb7wgi5leJNftu86z*0' updated: Price: '1.4692' to '1.55'
+Product 'UZXcb7wgi5leJNftu86z*0' updated: Price: '1.8009' to '1.9'
+Product '6lNbb7wgi5leJNftu86z*0' updated: Price: '1.6588' to '1.75'
+Product '4lPbb7wgi5leJNftu86z*0' updated: Price: '0.9479' to '1'
+Product '!hRbb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '4kTbb7wgi5leJNftu86z*0' updated: Price: '1.1848' to '1.25'
+Product 'UiVbb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product 'InXbb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '2oZbb7wgi5leJNftu86z*0' updated: Price: '1.5166' to '1.6'
+Product 'uulbb7wgi5leJNftu86z*0' updated: Price: '1.8483' to '1.95'
+Product 'Uvnbb7wgi5leJNftu86z*0' updated: Price: '1.8483' to '1.95'
+Product 'Qtpbb7wgi5leJNftu86z*0' updated: Price: '1.8483' to '1.95'
+Product 'Mrrbb7wgi5leJNftu86z*0' updated: Price: '1.8957' to '2'
+Product 'kntbb7wgi5leJNftu86z*0' updated: Price: '1.8957' to '2'
+Product 'eLkUb7wgi5leJNftu86z*0' updated: Price: '5.4028' to '5.7'
+Product '6*Lcb7wgi5leJNftu86z*0' updated: Price: '0.5687' to '0.6'
+Product 'QJacb7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product '0Kccb7wgi5leJNftu86z*0' updated: Price: '1.2322' to '1.3'
+Product 'izycb7wgi5leJNftu86z*0' updated: Price: '1.7536' to '1.85'
+Product 'sE*db7wgi5leJNftu86z*0' updated: Price: '1.564' to '1.65'
+Product 'KC1db7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product 'aw*bb7wgi5leJNftu86z*0' updated: Price: '10.237' to '10.8'
+Product 'a53db7wgi5leJNftu86z*0' updated: Price: '1.7536' to '1.85'
+Product 'I*5db7wgi5leJNftu86z*0' updated: Price: '1.8009' to '1.9'
+Product 'Eu6db7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product 'Er8db7wgi5leJNftu86z*0' updated: Price: '1.7062' to '1.8'
+Product 'ex1bb7wgi5leJNftu86z*0' updated: Price: '1.8009' to '1.9'
+Product 'Fs4Cgybli5FcOnjxHiZC20' updated: Price: '5.1659' to '5.45'
+Product 'sTkab7wgi5leJNftu86z*0' updated: Price: '6.0664' to '6.4'
+Product 'y6Hab7wgi5leJNftu86z*0' updated: Price: '5.2133' to '5.5'
+Product 'uNNab7wgi5leJNftu86z*0' updated: Price: '3.5545' to '3.75'
+Product 'qQiZb7wgi5leJNftu86z*0' updated: Price: '4.8341' to '5.1'
+Product 'aMkZb7wgi5leJNftu86z*0' updated: Price: '0.6161' to '0.65'
+Product 'mBcZb7wgi5leJNftu86z*0' updated: Price: '4.5498' to '4.8'
+Product 'Uo1ab7wgi5leJNftu86z*0' updated: Price: '4.9289' to '5.2'
+Product 'kaPZb7wgi5leJNftu86z*0' updated: Price: '4.6919' to '4.95'
+Product 'GVeZb7wgi5leJNftu86z*0' updated: Price: '5.1185' to '5.4'
+Product '0SJab7wgi5leJNftu86z*0' updated: Price: '2.3697' to '2.5'
+Product 'KOJZb7wgi5leJNftu86z*0' updated: Price: '5.1659' to '5.45'
+Product 'IkEab7wgi5leJNftu86z*0' updated: Price: '5.3081' to '5.6'
+Product 'IppS0ZEli5FcOnjxHiZC20' updated: Price: '5.1659' to '5.45'
+Product '!pxab7wgi5leJNftu86z*0' updated: Price: '1.7536' to '1.85'
+Product 'UVaFb7wgi5leJNftu86z*0' updated: Price: '2.4545' to '2.7'
+Product 'mXMHnCnmi5FcOnjxHiZC20' updated: Price: '3.6967' to '3.9'
+Product 'e3hFb7wgi5leJNftu86z*0' updated: Price: '1.8483' to '1.95'
+Product 'wKlFb7wgi5leJNftu86z*0' updated: Price: '2.0853' to '2.2'
+Product 'yoeFb7wgi5leJNftu86z*0' updated: Price: '1.8182' to '2'
+Product 'MLnFb7wgi5leJNftu86z*0' updated: Price: '1.9905' to '2.1'
+Product 'cDjFb7wgi5leJNftu86z*0' updated: Price: '2.2727' to '2.5'
+Product '881Gb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'; Description: 'erfezferf' to ''
+Product 'qAwFb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product 'c1*Gb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product 'RuN4RmXpi5FcOnjxHiZC20' updated: Price: '3.3175' to '3.5'
+Product 'ksPNLDDli5FcOnjxHiZC20' updated: Price: '3.6967' to '3.9'
+Product 'sntFb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product 'EiyFb7wgi5leJNftu86z*0' updated: Price: '3.3175' to '3.5'
+Product 'sgcFb7wgi5leJNftu86z*0' updated: Price: '1.8957' to '2'
 
 Produits type 3 : 
             0 créés,
@@ -40,18 +456,18 @@ Détails des messages :
 
 
 Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 pour le produit Menlog sku f8bJmbcwi5*c5eRNPrsOE*.
-- Débogage: Récupération des produits de formule PT4 pour la question ID 531. Nombre trouvé: 10.
+- Débogage: Récupération des produits de formule PT4 pour la question ID 567. Nombre trouvé: 10.
 - Débogage: Stockage des données PT4 BDD dans formula_products_by_id :
--- Débogage: Produit PT4 trouvé dans BDD avec ID 240 avec SKU m_Fs4Cgybli5FcOnjxHiZC20_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 241 avec SKU m_sTkab7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 242 avec SKU m_qQiZb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 243 avec SKU m_mBcZb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 244 avec SKU m_Uo1ab7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 245 avec SKU m_kaPZb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 246 avec SKU m_GVeZb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 247 avec SKU m_KOJZb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 248 avec SKU m_IkEab7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 249 avec SKU m_IppS0ZEli5FcOnjxHiZC20_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 267 avec SKU m_Fs4Cgybli5FcOnjxHiZC20_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 268 avec SKU m_sTkab7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 269 avec SKU m_qQiZb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 270 avec SKU m_mBcZb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 271 avec SKU m_Uo1ab7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 272 avec SKU m_kaPZb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 273 avec SKU m_GVeZb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 274 avec SKU m_KOJZb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 275 avec SKU m_IkEab7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 276 avec SKU m_IppS0ZEli5FcOnjxHiZC20_0.
 - Débogage: Stockage des données SKU des PT4 Menlog dans new_formula_skus :
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_Fs4Cgybli5FcOnjxHiZC20_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_sTkab7wgi5leJNftu86z*0_0.
@@ -64,12 +480,12 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_IkEab7wgi5leJNftu86z*0_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_IppS0ZEli5FcOnjxHiZC20_0.
 - Débogage: Comparaison des produits PT4 en BDD et dans Menlog pour la combinaison PT1 > PT3 :
--- Débogage: Traitement du produit PT4 avec ID 240 SKU m_Fs4Cgybli5FcOnjxHiZC20_0
---- Débogage: On a bien récupéré le PT4 avec ID 240 SKU m_Fs4Cgybli5FcOnjxHiZC20_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 267 SKU m_Fs4Cgybli5FcOnjxHiZC20_0
+--- Débogage: On a bien récupéré le PT4 avec ID 267 SKU m_Fs4Cgybli5FcOnjxHiZC20_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_Fs4Cgybli5FcOnjxHiZC20_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 240. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 240. Nombre trouvé: 3.
------ Débogage: Traitement du produit PT3 avec ID 75 SKU bme6iXcwi5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 267. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 267. Nombre trouvé: 3.
+----- Débogage: Traitement du produit PT3 avec ID 92 SKU bme6iXcwi5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -77,13 +493,13 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
 ------- Débogage: Option PT2 trouvée dans Menlog avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80 pour la question PT3 avec SKU bme6iXcwi5*c5eRNPrsOE*.
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 3.
------- Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
--------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
-------- Débogage: Traitement du produit PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50
+------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50
 -------- Débogage: L'option PT2 avec SKU c_CfmldkTOj5*c5eRNPrsOE*_50 existe encore dans Menlog.
+------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
+-------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80
 -------- Débogage: L'option PT2 avec SKU c_0b!N2lTOj5*c5eRNPrsOE*_80 existe encore dans Menlog.
------ Débogage: Traitement du produit PT3 avec ID 82 SKU ptG1buSOj5*c5eRNPrsOE*
+----- Débogage: Traitement du produit PT3 avec ID 93 SKU ptG1buSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 2.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -94,7 +510,7 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -------- Débogage: L'option PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0
 -------- Débogage: L'option PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
------ Débogage: Traitement du produit PT3 avec ID 83 SKU o4i!7tSOj5*c5eRNPrsOE*
+----- Débogage: Traitement du produit PT3 avec ID 94 SKU o4i!7tSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -108,12 +524,12 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -------- Débogage: L'option PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0
 -------- Débogage: L'option PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 241 SKU m_sTkab7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 241 SKU m_sTkab7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 268 SKU m_sTkab7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 268 SKU m_sTkab7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_sTkab7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 241. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 241. Nombre trouvé: 3.
------ Débogage: Traitement du produit PT3 avec ID 84 SKU EkvgrvSOj5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 268. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 268. Nombre trouvé: 3.
+----- Débogage: Traitement du produit PT3 avec ID 95 SKU EkvgrvSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -121,7 +537,7 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
------ Débogage: Traitement du produit PT3 avec ID 85 SKU ptG1buSOj5*c5eRNPrsOE*
+----- Débogage: Traitement du produit PT3 avec ID 96 SKU ptG1buSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU ptG1buSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 2.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -132,7 +548,7 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -------- Débogage: L'option PT2 avec SKU c_wWzA0vSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0
 -------- Débogage: L'option PT2 avec SKU c_wEL*WvSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
------ Débogage: Traitement du produit PT3 avec ID 86 SKU o4i!7tSOj5*c5eRNPrsOE*
+----- Débogage: Traitement du produit PT3 avec ID 97 SKU o4i!7tSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU o4i!7tSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -146,12 +562,12 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -------- Débogage: L'option PT2 avec SKU c_9r8ETpSOj5*c5eRNPrsOE*_200 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0
 -------- Débogage: L'option PT2 avec SKU c_u8GXMpSOj5*c5eRNPrsOE*_0 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 242 SKU m_qQiZb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 242 SKU m_qQiZb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 269 SKU m_qQiZb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 269 SKU m_qQiZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_qQiZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 242. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 242. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 87 SKU EkvgrvSOj5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 269. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 269. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 98 SKU EkvgrvSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -159,17 +575,17 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 243 SKU m_mBcZb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 243 SKU m_mBcZb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 270 SKU m_mBcZb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 270 SKU m_mBcZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_mBcZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 243. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 243. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 244 SKU m_Uo1ab7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 244 SKU m_Uo1ab7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 270. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 270. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 271 SKU m_Uo1ab7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 271 SKU m_Uo1ab7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_Uo1ab7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 244. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 244. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 88 SKU ROHCLScwi5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 271. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 271. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 99 SKU ROHCLScwi5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU ROHCLScwi5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 3.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -183,17 +599,17 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
 ------- Débogage: Traitement du produit PT2 avec SKU c_tLBvPkTOj5*c5eRNPrsOE*_80
 -------- Débogage: L'option PT2 avec SKU c_tLBvPkTOj5*c5eRNPrsOE*_80 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 245 SKU m_kaPZb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 245 SKU m_kaPZb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 272 SKU m_kaPZb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 272 SKU m_kaPZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_kaPZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 245. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 245. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 246 SKU m_GVeZb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 246 SKU m_GVeZb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 272. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 272. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 273 SKU m_GVeZb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 273 SKU m_GVeZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_GVeZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 246. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 246. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 89 SKU EkvgrvSOj5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 273. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 273. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 100 SKU EkvgrvSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -201,12 +617,12 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 247 SKU m_KOJZb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 247 SKU m_KOJZb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 274 SKU m_KOJZb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 274 SKU m_KOJZb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_KOJZb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 247. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 247. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 90 SKU EkvgrvSOj5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 274. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 274. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 101 SKU EkvgrvSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -214,17 +630,17 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 ------ Débogage: Récupération des PT2 Menlog pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: ------- Débogage: Traitement du produit PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30
 -------- Débogage: L'option PT2 avec SKU c_L6tQNGcwi5*c5eRNPrsOE*_30 existe encore dans Menlog.
--- Débogage: Traitement du produit PT4 avec ID 248 SKU m_IkEab7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 248 SKU m_IkEab7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 275 SKU m_IkEab7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 275 SKU m_IkEab7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_IkEab7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 248. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 248. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 249 SKU m_IppS0ZEli5FcOnjxHiZC20_0
---- Débogage: On a bien récupéré le PT4 avec ID 249 SKU m_IppS0ZEli5FcOnjxHiZC20_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 275. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 275. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 276 SKU m_IppS0ZEli5FcOnjxHiZC20_0
+--- Débogage: On a bien récupéré le PT4 avec ID 276 SKU m_IppS0ZEli5FcOnjxHiZC20_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_IppS0ZEli5FcOnjxHiZC20_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 249. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 249. Nombre trouvé: 1.
------ Débogage: Traitement du produit PT3 avec ID 91 SKU EkvgrvSOj5*c5eRNPrsOE*
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 276. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 276. Nombre trouvé: 1.
+----- Débogage: Traitement du produit PT3 avec ID 102 SKU EkvgrvSOj5*c5eRNPrsOE*
 ------ Débogage: La question PT3 avec SKU EkvgrvSOj5*c5eRNPrsOE* existe encore dans Menlog. Vérification des options PT2 en cours.
 ------ Débogage: Récupération des PT2 BDD pour ce PT3 Formule terminé. Nombre trouvé: 1.
 ------ Débogage: Récupération des PTD Menlog pour ce PT3 Formule en cours : 
@@ -235,16 +651,16 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 
 
 Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 pour le produit Menlog sku f8bJmbcwi5*c5eRNPrsOE*.
-- Débogage: Récupération des produits de formule PT4 pour la question ID 532. Nombre trouvé: 8.
+- Débogage: Récupération des produits de formule PT4 pour la question ID 568. Nombre trouvé: 8.
 - Débogage: Stockage des données PT4 BDD dans formula_products_by_id :
--- Débogage: Produit PT4 trouvé dans BDD avec ID 250 avec SKU m_6w9bb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 251 avec SKU m_wz5bb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 252 avec SKU m_Iw7bb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 253 avec SKU m_6lNbb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 254 avec SKU m_!hRbb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 255 avec SKU m_UiVbb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 256 avec SKU m_InXbb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 257 avec SKU m_izycb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 277 avec SKU m_6w9bb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 278 avec SKU m_wz5bb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 279 avec SKU m_Iw7bb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 280 avec SKU m_6lNbb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 281 avec SKU m_!hRbb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 282 avec SKU m_UiVbb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 283 avec SKU m_InXbb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 284 avec SKU m_izycb7wgi5leJNftu86z*0_0.
 - Débogage: Stockage des données SKU des PT4 Menlog dans new_formula_skus :
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_6w9bb7wgi5leJNftu86z*0_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_wz5bb7wgi5leJNftu86z*0_0.
@@ -255,60 +671,60 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_InXbb7wgi5leJNftu86z*0_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_izycb7wgi5leJNftu86z*0_0.
 - Débogage: Comparaison des produits PT4 en BDD et dans Menlog pour la combinaison PT1 > PT3 :
--- Débogage: Traitement du produit PT4 avec ID 250 SKU m_6w9bb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 250 SKU m_6w9bb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 277 SKU m_6w9bb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 277 SKU m_6w9bb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_6w9bb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 250. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 250. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 251 SKU m_wz5bb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 251 SKU m_wz5bb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 277. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 277. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 278 SKU m_wz5bb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 278 SKU m_wz5bb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_wz5bb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 251. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 251. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 252 SKU m_Iw7bb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 252 SKU m_Iw7bb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 278. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 278. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 279 SKU m_Iw7bb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 279 SKU m_Iw7bb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_Iw7bb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 252. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 252. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 253 SKU m_6lNbb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 253 SKU m_6lNbb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 279. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 279. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 280 SKU m_6lNbb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 280 SKU m_6lNbb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_6lNbb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 253. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 253. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 254 SKU m_!hRbb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 254 SKU m_!hRbb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 280. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 280. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 281 SKU m_!hRbb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 281 SKU m_!hRbb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_!hRbb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 254. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 254. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 255 SKU m_UiVbb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 255 SKU m_UiVbb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 281. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 281. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 282 SKU m_UiVbb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 282 SKU m_UiVbb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_UiVbb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 255. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 255. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 256 SKU m_InXbb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 256 SKU m_InXbb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 282. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 282. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 283 SKU m_InXbb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 283 SKU m_InXbb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_InXbb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 256. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 256. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 257 SKU m_izycb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 257 SKU m_izycb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 283. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 283. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 284 SKU m_izycb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 284 SKU m_izycb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_izycb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 257. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 257. Nombre trouvé: 0.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 284. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 284. Nombre trouvé: 0.
 
 
 Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 pour le produit Menlog sku f8bJmbcwi5*c5eRNPrsOE*.
-- Débogage: Récupération des produits de formule PT4 pour la question ID 533. Nombre trouvé: 9.
+- Débogage: Récupération des produits de formule PT4 pour la question ID 569. Nombre trouvé: 9.
 - Débogage: Stockage des données PT4 BDD dans formula_products_by_id :
--- Débogage: Produit PT4 trouvé dans BDD avec ID 258 avec SKU m_e3hFb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 259 avec SKU m_wKlFb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 260 avec SKU m_MLnFb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 261 avec SKU m_881Gb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 262 avec SKU m_qAwFb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 263 avec SKU m_c1*Gb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 264 avec SKU m_ksPNLDDli5FcOnjxHiZC20_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 265 avec SKU m_sntFb7wgi5leJNftu86z*0_0.
--- Débogage: Produit PT4 trouvé dans BDD avec ID 266 avec SKU m_EiyFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 285 avec SKU m_e3hFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 286 avec SKU m_wKlFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 287 avec SKU m_MLnFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 288 avec SKU m_881Gb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 289 avec SKU m_qAwFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 290 avec SKU m_c1*Gb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 291 avec SKU m_ksPNLDDli5FcOnjxHiZC20_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 292 avec SKU m_sntFb7wgi5leJNftu86z*0_0.
+-- Débogage: Produit PT4 trouvé dans BDD avec ID 293 avec SKU m_EiyFb7wgi5leJNftu86z*0_0.
 - Débogage: Stockage des données SKU des PT4 Menlog dans new_formula_skus :
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_e3hFb7wgi5leJNftu86z*0_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_wKlFb7wgi5leJNftu86z*0_0.
@@ -320,48 +736,48 @@ Débogage: Le produit est une formule. Traitement de la combinaison PT1 > PT3 po
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_sntFb7wgi5leJNftu86z*0_0.
 -- Débogage: Produit PT4 trouvé dans Menlog avec SKU m_EiyFb7wgi5leJNftu86z*0_0.
 - Débogage: Comparaison des produits PT4 en BDD et dans Menlog pour la combinaison PT1 > PT3 :
--- Débogage: Traitement du produit PT4 avec ID 258 SKU m_e3hFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 258 SKU m_e3hFb7wgi5leJNftu86z*0_0 dans le BDD.
+-- Débogage: Traitement du produit PT4 avec ID 285 SKU m_e3hFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 285 SKU m_e3hFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_e3hFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 258. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 258. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 259 SKU m_wKlFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 259 SKU m_wKlFb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 285. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 285. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 286 SKU m_wKlFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 286 SKU m_wKlFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_wKlFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 259. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 259. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 260 SKU m_MLnFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 260 SKU m_MLnFb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 286. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 286. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 287 SKU m_MLnFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 287 SKU m_MLnFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_MLnFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 260. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 260. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 261 SKU m_881Gb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 261 SKU m_881Gb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 287. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 287. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 288 SKU m_881Gb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 288 SKU m_881Gb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_881Gb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 261. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 261. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 262 SKU m_qAwFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 262 SKU m_qAwFb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 288. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 288. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 289 SKU m_qAwFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 289 SKU m_qAwFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_qAwFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 262. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 262. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 263 SKU m_c1*Gb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 263 SKU m_c1*Gb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 289. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 289. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 290 SKU m_c1*Gb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 290 SKU m_c1*Gb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_c1*Gb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 263. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 263. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 264 SKU m_ksPNLDDli5FcOnjxHiZC20_0
---- Débogage: On a bien récupéré le PT4 avec ID 264 SKU m_ksPNLDDli5FcOnjxHiZC20_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 290. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 290. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 291 SKU m_ksPNLDDli5FcOnjxHiZC20_0
+--- Débogage: On a bien récupéré le PT4 avec ID 291 SKU m_ksPNLDDli5FcOnjxHiZC20_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_ksPNLDDli5FcOnjxHiZC20_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 264. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 264. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 265 SKU m_sntFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 265 SKU m_sntFb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 291. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 291. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 292 SKU m_sntFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 292 SKU m_sntFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_sntFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 265. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 265. Nombre trouvé: 0.
--- Débogage: Traitement du produit PT4 avec ID 266 SKU m_EiyFb7wgi5leJNftu86z*0_0
---- Débogage: On a bien récupéré le PT4 avec ID 266 SKU m_EiyFb7wgi5leJNftu86z*0_0 dans le BDD.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 292. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 292. Nombre trouvé: 0.
+-- Débogage: Traitement du produit PT4 avec ID 293 SKU m_EiyFb7wgi5leJNftu86z*0_0
+--- Débogage: On a bien récupéré le PT4 avec ID 293 SKU m_EiyFb7wgi5leJNftu86z*0_0 dans le BDD.
 ---- Débogage: Le produit PT4 avec SKU m_EiyFb7wgi5leJNftu86z*0_0 existe toujours dans Menlog.
----- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 266. Nombre trouvé: 3.
----- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 266. Nombre trouvé: 0.
+---- Débogage: Récupération des questions PT3 dans la BDD pour le produit PT4 ID 293. Nombre trouvé: 3.
+---- Débogage: Récupération des questions PT3 dans Menlog le produit PT4 ID 293. Nombre trouvé: 0.

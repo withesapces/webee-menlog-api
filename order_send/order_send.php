@@ -241,7 +241,7 @@ function send_order_data_to_api($order_id) {
     error_log("Réduction totale calculée manuellement : " . $discount_total . "\n\n");
     
 
-    // Génératoin de la requête
+    // Génération de la requête
     $order_data = array(
         "account" => $api_integration->get_uuidclient(),
         "location" => "Sandbox",
@@ -535,6 +535,8 @@ function send_order_data_to_api($order_id) {
     }
 
     // Vérifier si le paiement a échoué
+    // TODO : Voir pour plutôt check sur thank you page
+    // Est-ce qu'on peut avoir le status commande dans woocommerce_checkout_order_processed ??
     if ($order->get_status() === 'failed') {
         // Lancer l'annulation via Menlog
         $api_integration = new WooCommerce_API_Integration();
@@ -552,6 +554,18 @@ function envoyer_email_debug($sujet, $message) {
 function custom_round($value) {
     return round((float)$value, 2);
 }
+
+add_action('woocommerce_order_status_changed', 'check_order_failed_status', 10, 4);
+
+function check_order_failed_status($order_id, $old_status, $new_status, $order) {
+    if ($new_status === 'failed') {
+        // Lancer l'annulation via Menlog si le paiement a échoué
+        $api_integration = new WooCommerce_API_Integration();
+        annuler_commande_menlog($api_integration, $order_id);
+        error_log("Commande annulée sur Menlog après échec de paiement pour l'ID : " . $order_id);
+    }
+}
+
 
 function annuler_commande_menlog($api_integration, $order_id) {
     $url = 'https://' . $api_integration->get_server() . '/' . $api_integration->get_rlog() . '/' . $api_integration->get_uuidclient() . '/' . $api_integration->get_uuidmagasin() . '/upd_vt?token=' . $api_integration->get_token();

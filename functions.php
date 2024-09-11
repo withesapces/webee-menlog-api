@@ -908,7 +908,7 @@ class WooCommerce_API_Integration {
                     throw new Exception('Catégorie non trouvée pour le slug : ' . $product['idCategory']);
                 }
                 $category_id = $category->term_id;
-
+        
                 // Création d'un nouveau produit WooCommerce simple
                 $wc_product = new WC_Product_Simple();
                 $wc_product->set_name($product['name']);
@@ -916,40 +916,47 @@ class WooCommerce_API_Integration {
                 $wc_product->set_regular_price($product['price']);
                 $wc_product->set_description($product['description']);
                 $wc_product->set_category_ids(array($category_id));
-
+        
+                // Ajouter le prix hors taxes et le taux de TVA (si nécessaire)
+                $wc_product->set_price($product['priceWithoutTax']);
+                update_post_meta($wc_product->get_id(), '_regular_price', $product['priceWithoutTax']); // Prix HT
+                update_post_meta($wc_product->get_id(), '_tax_class', ''); // Optionnel, à utiliser si un taux de TVA spécifique est requis
+                update_post_meta($wc_product->get_id(), 'vat_rate', $product['vatRate']); // Taux de TVA
+                update_post_meta($wc_product->get_id(), 'fid_rate', $product['fidRate']); // Taux de fidélité
+        
                 // Sauvegarder le produit et vérifier si l'ID est valide
                 $wc_product->save();
                 if (!$wc_product->get_id()) {
                     throw new Exception('Erreur lors de la sauvegarde du produit avec le SKU : ' . $product['sku']);
                 }
-
+        
                 // Ajouter les métadonnées par défaut pour la disponibilité
                 update_post_meta($wc_product->get_id(), 'is_ephemeral', 'no'); // Le produit n'est pas éphémère par défaut
                 update_post_meta($wc_product->get_id(), 'daily_quota', '50'); // Production quotidienne par défaut : 50 unités
-
+        
                 // Définir la disponibilité pour chaque jour de la semaine
                 $days_of_week = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
                 foreach ($days_of_week as $day) {
                     update_post_meta($wc_product->get_id(), 'availability_' . $day, 'yes'); // Disponible chaque jour
                 }
-
+        
                 // Incrémenter le compteur de produits créés
                 $this->products_created++;
-
+        
                 // Retourner l'ID du produit créé
                 return $wc_product->get_id();
-
+        
             } catch (Exception $e) {
                 // Log de l'erreur
                 error_log('Erreur lors de l\'insertion du produit : ' . $e->getMessage());
-
+        
                 // Envoyer un email avec les détails de l'erreur pour notifier l'administrateur
                 $this->envoyer_email_debug('Erreur lors de l\'insertion du produit', $e->getMessage());
-
+        
                 // Retourner false pour indiquer l'échec de l'insertion
                 return false;
             }
-        }
+        }        
 
         /**
          * Met à jour un produit WooCommerce existant
@@ -997,58 +1004,88 @@ class WooCommerce_API_Integration {
         private function update_product($product_id, $product_data, $menlogProducts) {
             // Crée une instance de produit WooCommerce simple pour l'ID donné
             $wc_product = new WC_Product_Simple($product_id);
-
-            // Récupère le nom actuel du produit WooCommerce
+        
+            // Récupère les informations actuelles du produit WooCommerce
             $current_name = $wc_product->get_name();
-            // Récupère le prix actuel du produit WooCommerce
             $current_price = $wc_product->get_regular_price();
-            // Récupère la description actuelle du produit WooCommerce
             $current_description = $wc_product->get_description();
-            // Récupère les IDs des catégories actuelles du produit WooCommerce
             $current_category_ids = $wc_product->get_category_ids();
-
+            $current_sku = $wc_product->get_sku();
+            $current_priceWithoutTax = get_post_meta($product_id, '_regular_price', true); // Prix HT
+            $current_vatRate = get_post_meta($product_id, 'vat_rate', true);
+            $current_fidRate = get_post_meta($product_id, 'fid_rate', true);
+        
             // Récupère l'ID de la catégorie correspondant au slug de catégorie fourni dans les données du produit
             $category_id = get_term_by('slug', $product_data['idCategory'], 'product_cat')->term_id;
-
-            // Vérifie si le nom du produit a changé
+        
+            // Vérifications des différences entre les nouvelles données et les données actuelles
             $is_name_different = $current_name !== $product_data['name'];
-            // Vérifie si le prix du produit a changé (comparaison non stricte)
             $is_price_different = $current_price != $product_data['price'];
-            // Vérifie si la description du produit a changé
             $is_description_different = $current_description !== $product_data['description'];
-            // Vérifie si la catégorie du produit a changé ou si une nouvelle catégorie doit être ajoutée
             $is_category_different = !in_array($category_id, $current_category_ids);
-
+            $is_sku_different = $current_sku !== $product_data['sku'];
+            $is_priceWithoutTax_different = $current_priceWithoutTax != $product_data['priceWithoutTax'];
+            $is_vatRate_different = $current_vatRate != $product_data['vatRate'];
+            $is_fidRate_different = $current_fidRate != $product_data['fidRate'];
+        
             // Initialise un tableau pour garder trace des mises à jour effectuées
             $updates = [];
-            // Met à jour le nom du produit si nécessaire et enregistre le changement
+        
+            // Met à jour le nom du produit si nécessaire
             if ($is_name_different) {
                 $updates[] = "Name: '{$current_name}' to '{$product_data['name']}'";
                 $wc_product->set_name($product_data['name']);
             }
-            // Met à jour le prix du produit si nécessaire et enregistre le changement
+        
+            // Met à jour le prix TTC du produit si nécessaire
             if ($is_price_different) {
                 $updates[] = "Price: '{$current_price}' to '{$product_data['price']}'";
                 $wc_product->set_regular_price($product_data['price']);
             }
-            // Met à jour la description du produit si nécessaire et enregistre le changement
+        
+            // Met à jour le prix HT si nécessaire
+            if ($is_priceWithoutTax_different) {
+                $updates[] = "PriceWithoutTax: '{$current_priceWithoutTax}' to '{$product_data['priceWithoutTax']}'";
+                update_post_meta($product_id, '_regular_price', $product_data['priceWithoutTax']);
+            }
+        
+            // Met à jour la description du produit si nécessaire
             if ($is_description_different) {
                 $updates[] = "Description: '{$current_description}' to '{$product_data['description']}'";
                 $wc_product->set_description($product_data['description']);
             }
-            // Ajoute une nouvelle catégorie au produit si nécessaire et enregistre le changement
+        
+            // Met à jour le SKU si nécessaire
+            if ($is_sku_different) {
+                $updates[] = "SKU: '{$current_sku}' to '{$product_data['sku']}'";
+                $wc_product->set_sku($product_data['sku']);
+            }
+        
+            // Met à jour le taux de TVA si nécessaire
+            if ($is_vatRate_different) {
+                $updates[] = "VAT Rate: '{$current_vatRate}' to '{$product_data['vatRate']}'";
+                update_post_meta($product_id, 'vat_rate', $product_data['vatRate']);
+            }
+        
+            // Met à jour le taux de fidélité si nécessaire
+            if ($is_fidRate_different) {
+                $updates[] = "Fidelity Rate: '{$current_fidRate}' to '{$product_data['fidRate']}'";
+                update_post_meta($product_id, 'fid_rate', $product_data['fidRate']);
+            }
+        
+            // Ajoute une nouvelle catégorie au produit si nécessaire
             if ($is_category_different) {
                 $current_category_ids[] = $category_id;
                 $updates[] = "Category added: '{$product_data['idCategory']}'";
                 $wc_product->set_category_ids($current_category_ids);
             }
-
-            // Vérifie et met à jour les sous-produits associés (productType 3) si le PT1 a des PT3 associés
+        
+            // Vérifie et met à jour les sous-produits associés (productType 3)
             if (!empty($product_data['subProducts'])) {
-                // Traite les sous-produits associés au produit principal PT1 en cours
                 $this->process_sub_products($product_id, $product_data['subProducts'], $menlogProducts, $product_data);
             }
-
+        
+            // Si des modifications ont été effectuées, enregistre le produit et incrémente les compteurs
             if (!empty($updates)) {
                 $this->products_updated++;
                 $this->product_updates[] = "Product '{$product_data['sku']}' updated: " . implode('; ', $updates);
@@ -1056,7 +1093,7 @@ class WooCommerce_API_Integration {
             } else {
                 $this->products_skipped++;
             }
-        }
+        }        
 
         /**
          * Met les produits en brouillon s'ils ne sont plus présents sur Menlog.
@@ -2359,7 +2396,7 @@ class WooCommerce_API_Integration {
             
             // Le client ne passe pas en code 500
             elseif ($http_code == 500) {
-                if (isset($data['message']) && strpos($data['message'], 'TIMEOUT') !== false) {
+                if (isset($data['message']) && stripos($data['message'], 'timeout') !== false) {
                     $log_message = 'Erreur de serveur: TIMEOUT. ' . $data['message'] . '\n' . json_encode($client_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     error_log($log_message);
                     $this->envoyer_email_debug('Erreur TIMEOUT lors de l\'ajout d\'un client', $log_message);
